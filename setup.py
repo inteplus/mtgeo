@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='geomt',
-    version='0.0.1',
+    version='0.0.2',
     description="The most fundamental geometric modules in Python for Minh-Tri Pham",
     author=["Minh-Tri Pham"],
     packages=find_packages(),
@@ -12,7 +12,4 @@ setup(
         'numpy',
         'basemt',
     ],
-    dependency_links=[
-        'https://github.com/inteplus/basemt/tarball/master#egg=0.0.2',
-    ]
 )
