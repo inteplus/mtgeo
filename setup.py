@@ -10,6 +10,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         'numpy',
-        'basemt',
+        'basemt>=0.0.2',
     ],
 )
