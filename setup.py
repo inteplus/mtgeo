@@ -9,7 +9,7 @@ setup(
     author=["Minh-Tri Pham"],
     packages=find_packages(),
     install_requires=[
-        'numpy'
+        'numpy',
         'basemt',
     ],
     dependency_links=[
