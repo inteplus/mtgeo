@@ -11,7 +11,7 @@ setup(
     install_requires=[
         'numpy'
         'basemt',
-    ]
+    ],
     dependency_links=[
         'https://github.com/inteplus/basemt/tarball/master#egg=0.0.2',
     ]
