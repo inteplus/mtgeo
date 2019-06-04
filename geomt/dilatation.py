@@ -7,7 +7,7 @@ class dlt(aff):
 
     :Examples:
     >>> import numpy as _np
-    >>> import mlcore.geo as _mg
+    >>> import geomt as _mg
     >>> a = _mg.dlt(offset=_np.array([1,2]), scale=_np.array([3,4]))
     >>> ~a
     dlt(offset=[-0.33333333 -0.5       ], scale=[0.33333333 0.25      ])

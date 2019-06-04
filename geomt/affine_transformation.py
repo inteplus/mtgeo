@@ -7,7 +7,7 @@ class aff(object):
     :Examples:
 
     >>> import numpy as _np
-    >>> import mlcore.geo as _mg
+    >>> import geomt as _mg
     >>> a = _mg.aff(weight=_np.array([[1,-1],[-2,3]]), bias=_np.array([3,4]))
     >>> a.bias
     array([3, 4])
