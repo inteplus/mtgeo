@@ -23,6 +23,15 @@ def trapezium_integral(poly, func):
     :References:
         [1] Pham et al. Fast Polygonal Integration and Its Application in Extending Haar-like Features To Improve Object Detection. CVPR, 2010.
         [2] exterior algebra
+
+    :Examples:
+    >>> from geomt.polygon2d import trapezium_integral
+    >>> import numpy as np
+    >>> poly = np.array([[1,2]])
+    >>> trapezium_integral(poly, None)
+    0
+
+    
     '''
     retval = 0
     N = len(poly)
