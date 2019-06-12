@@ -30,8 +30,10 @@ def trapezium_integral(poly, func):
     >>> poly = np.array([[1,2]])
     >>> trapezium_integral(poly, None)
     0
+    >>> poly = np.array([[20,10],[30,20]])
+    >>> trapezium_integral(poly, None)
+    0
 
-    
     '''
     retval = 0
     N = len(poly)
