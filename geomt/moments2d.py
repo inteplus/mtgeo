@@ -2,6 +2,9 @@
 
 import numpy as _np
 import math as _m
+import sys as _sys
+
+EPSILON = _m.sqrt(_sys.float_info.epsilon)
 
 class moments2d(object):
     '''Raw moments up to 2nd order of 2D points.'''
@@ -17,19 +20,40 @@ class moments2d(object):
             m2 : numpy 2x2 matrix
                 2nd-order raw moment
         '''
-        self.m0 = _np.float(m0)
-        self.m1 = _np.array(m1)
-        self.m2 = _np.array(m2)
+        self._m0 = _np.float(m0)
+        self._m1 = _np.array(m1)
+        self._m2 = _np.array(m2)
+        self._mean = None
+        self._cov = None
+
+    @property
+    def m0(self):
+        '''0th-order moment'''
+        return self._m0
+
+    @property
+    def m1(self):
+        '''1st-order moment'''
+        return self._m1
+
+    @property
+    def m2(self):
+        '''2nd-order moment'''
+        return self._m2
 
     @property
     def mean(self):
         '''Returns the mean vector.'''
-        return self.m1 / self.m0
+        if self._mean is None:
+            self._mean = _np.zeros(2) if abs(self.m0) < EPSILON else self.m1/self.m0
+        return self._mean
 
     @property
     def cov(self):
         '''Returns the covariance matrix.'''
-        return (self.m2 / self.m0) - _np.dot(self.m1, self.m1.T)
+        if self._cov is None:
+            self._cov = _np.eye(2) if abs(self.m0) < EPSILON else (self.m2/self.m0) - _np.dot(self.mean, self.mean.T)
+        return self._cov
 
     @staticmethod
     def from_pointset(arr):
