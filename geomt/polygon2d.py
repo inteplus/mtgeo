@@ -150,5 +150,3 @@ def to_moments2d(poly):
     mxy = moment_xy(poly)
     m2 = [[moment_xx(poly), mxy], [mxy, moment_yy(poly)]]
     return moments2d(m0, m1, m2)
-
-# MT-TODO: make some doctests for each function
