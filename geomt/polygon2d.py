@@ -33,6 +33,9 @@ def trapezium_integral(poly, func):
     >>> poly = np.array([[20,10],[30,20]])
     >>> trapezium_integral(poly, None)
     0
+    >>> poly = np.array([[1,1],[0,0],[1,0]])
+    >>> trapezium_integral(poly, lambda x1, y1, x2, y2: x1*y2-x2*y1)
+    1
 
     '''
     retval = 0
@@ -46,7 +49,14 @@ def trapezium_integral(poly, func):
     return retval
 
 def signed_area(poly):
-    '''Returns the signed area of a polygon.'''
+    '''Returns the signed area of a polygon.
+
+    >>> from geomt.polygon2d import signed_area
+    >>> import numpy as np
+    >>> poly = np.array([[10,10],[20,10],[20,20]])
+    >>> signed_area(poly)
+    -50.0
+    '''
     return trapezium_integral(poly, lambda x1, y1, x2, y2: 0.5*(x2-x1)*(y1+y2))
 
 
