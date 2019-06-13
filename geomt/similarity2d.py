@@ -1,7 +1,7 @@
 import numpy as _np
 import math as _m
 
-from geomt.dilated_isometry import dliso
+from .dilated_isometry import dliso
 
 class sim2(dliso):
     '''Similarity (angle-preserving) transformation in 2D.

@@ -2,8 +2,8 @@
 
 import numpy as _np
 import numpy.linalg as _nl
-from geomt.affine_transformation import aff
-from geomt.rect import rect
+from .affine_transformation import aff
+from .rect import rect
 
 class ellipse(object):
     '''Ellipse, defined as an affine transform the unit circle x^2+y^2=1.

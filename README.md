@@ -5,7 +5,7 @@ Testing
 
 Use nose:
 
-`nosetests --with-doctest -v geomt`
+`nosetests --with-doctest -v`
 
 References
 ----------

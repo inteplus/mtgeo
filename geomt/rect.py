@@ -2,7 +2,7 @@
 
 import numpy as _np
 
-from geomt.box import box
+from .box import box
 
 class rect(box):
     '''A 2D rectangle,

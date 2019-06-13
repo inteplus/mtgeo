@@ -1,6 +1,6 @@
 import numpy as _np
 
-from geomt.affine_transformation import aff
+from .affine_transformation import aff
 
 class dlt(aff):
     '''Dilatation (scaling and translation) in n-dim space. Here, scaling is per dimension, not uniform scaling.

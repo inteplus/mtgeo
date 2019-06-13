@@ -2,7 +2,7 @@ import numpy as _np
 import numpy.linalg as _nl
 import math as _m
 
-from geomt.dilated_isometry import dliso
+from .dilated_isometry import dliso
 
 class iso(dliso):
     '''Isometry = orthogonal transformation followed by translation.

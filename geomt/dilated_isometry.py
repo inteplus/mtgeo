@@ -2,7 +2,7 @@ import numpy as _np
 import numpy.linalg as _nl
 import math as _m
 
-from geomt.affine_transformation import aff
+from .affine_transformation import aff
 
 class dliso(aff):
     '''Dilated isometry = Isometry followed by a uniform scaling.
