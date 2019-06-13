@@ -1,5 +1,12 @@
 The most fundamental geometric modules in Python for Minh-Tri Pham.
 
+Testing
+-------
+
+Use nose:
+
+`nosetests --with-doctest -v geomt`
+
 References
 ----------
 
