@@ -4,6 +4,8 @@ import numpy as _np
 import numpy.linalg as _nl
 from .affine_transformation import aff
 from .rect import rect
+from .moments2d import ELLIPSE, moments2d
+
 
 class ellipse(object):
     '''Ellipse, defined as an affine transform the unit circle x^2+y^2=1.
@@ -41,6 +43,8 @@ class ellipse(object):
         '''Affine-transforms the ellipse. The resultant ellipse has affine transformation `aff_tfm*self.aff_tfm`.'''
         return ellipse(aff_tfm*self.aff_tfm)
 
+    # ----- bounding rect -----
+
     def to_bounding_rect(self, rotated=False):
         '''Returns a bounding rectangle of the ellipse.
 
@@ -65,3 +69,25 @@ class ellipse(object):
         if not isinstance(x, rect):
             raise ValueError("Input type a `rect`, '{}' given.".format(x.__class__))
         return ellipse(aff(weight=_np.array([[x.w/2,0],[0,x.h/2]]), bias=x.center_pt))
+
+    # ----- moments2d -----
+
+    def to_moments2d(self):
+        '''Returns a moments2d capturing the pdf representing the interior of the ellipse.'''
+        # MT-TODO
+        pass
+
+    @staticmethod
+    def from_moments2d(mom):
+        '''Creates an ellipse whose moments match with the given moments.
+
+        :Parameters:
+            mom : moments2d
+                a collection of moments up to 2nd order in 2D
+
+        :Returns:
+            retval : ellipse
+                an ellipse whose interior generates moments that match with the given collection of moments
+        '''
+        # MT-TODO
+        return None
