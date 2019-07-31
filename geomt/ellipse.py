@@ -4,7 +4,7 @@ import numpy as _np
 import numpy.linalg as _nl
 from .affine_transformation import aff
 from .rect import rect
-from .moments2d import ELLIPSE, moments2d
+from .moments2d import EPSILON, moments2d
 
 
 class ellipse(object):
