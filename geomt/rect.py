@@ -51,6 +51,10 @@ class rect(box):
     def cy(self):
         return (self.min_y + self.max_y)/2
 
+    @property
+    def area(self):
+        return self.w*self.h
+
     # ----- methods -----
 
     def __init__(self, min_x, min_y, max_x, max_y, force_valid=False):

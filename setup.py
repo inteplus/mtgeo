@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='geomt',
-    version='0.0.4',
+    version='0.0.5',
     description="The most fundamental geometric modules in Python for Minh-Tri Pham",
     author=["Minh-Tri Pham"],
     packages=find_packages(),
