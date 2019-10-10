@@ -1,4 +1,5 @@
 # distutils: language = c++
+# distutils: language_level = 3
 
 import numpy as _np
 
@@ -30,7 +31,7 @@ cpdef void ssr2mat(double[:] i, double[:] o):
     Formula::
 
         a0 = sx*(h*sr + cr)
-        a1 = sx*(h*cr + sr)
+        a1 = sx*(h*cr - sr)
         a2 = sy*sr
         a3 = sy*cr
 
@@ -49,7 +50,7 @@ cpdef void ssr2mat(double[:] i, double[:] o):
     cr = i[4]
     sr = i[5]
     o[0] = sx*(h*sr + cr)
-    o[1] = sx*(h*cr + sr)
+    o[1] = sx*(h*cr - sr)
     o[2] = sy*sr
     o[3] = sy*cr
 
@@ -178,40 +179,53 @@ cdef class lin2(object):
     Examples
     --------
 
-    >>> import numpy as _np
-    >>> import math as _m
-    >>> import geomt.linear2d as _gl
+    >>> import numpy as np
+    >>> import math as m
+    >>> import geomt.linear2d as gl
     >>> a = gl.lin2()
     >>> a
-    lin2(scale=[1. 1.], angle=0.0, shear=0.0)
+    lin2(scale=[1. 1.], shear=0.0, angle=0.0)
     >>> ~a
-    lin2(scale=[1. 1.], angle=0.0, shear=0.0)
-    >>> (~a).matrix
-    array([[ 1., -0.],
-           [-0.,  1.]])
-    >>> a = gl.lin2(scale=(0.4, 5))
-    >>> a
-    lin2(scale=[0.4 5. ], angle=0.0, shear=0.0)
-    >>> ~a
-    lin2(scale=[2.5 0.2], angle=-0.0, shear=0.0)
-    >>> a = gl.lin2(angle=10)
-    >>> a
-    lin2(scale=[1. 1.], angle=0.5752220392306207, shear=0.0)
-    >>> ~a
-    lin2(scale=[1. 1.], angle=-0.5752220392306207, shear=0.0)
+    lin2(scale=[1. 1.], shear=0.0, angle=0.0)
     >>> a = gl.lin2(shear=1)
     >>> a
-    lin2(scale=[1. 1.], angle=0.0, shear=1.0)
+    lin2(scale=[1. 1.], shear=1.0, angle=0.0)
+    >>> a*a
+    lin2(scale=[1. 1.], shear=2.0, angle=0.0)
+    >>> a/a
+    lin2(scale=[1. 1.], shear=0.0, angle=0.0)
+    >>> a%a
+    lin2(scale=[1. 1.], shear=0.0, angle=0.0)
     >>> ~a
-    lin2(scale=[1.         2.41889182], angle=-0.0, shear=2.4420710092412734)
-    >>> a = gl.lin2(angle=1, shear=1)
+    lin2(scale=[1. 1.], shear=-1.0, angle=-0.0)
+    >>> a = gl.lin2(scale=[-3,1])
     >>> a
-    lin2(scale=[1. 1.], angle=1.0, shear=1.0)
+    lin2(scale=[-3.  1.], shear=0.0, angle=0.0)
+    >>> ~a
+    lin2(scale=[-0.33333333  1.        ], shear=0.0, angle=0.0)
+    >>> a*a
+    lin2(scale=[9. 1.], shear=0.0, angle=0.0)
+    >>> ~a/a
+    lin2(scale=[0.11111111 1.        ], shear=0.0, angle=0.0)
+    >>> a = gl.lin2(angle=m.pi/6)
+    >>> a
+    lin2(scale=[1. 1.], shear=0.0, angle=0.5235987755982988)
     >>> a.matrix
-    array([[ 0.54030231, -0.90929743],
-           [ 0.84147098, -0.41614684]])
-    >>> gl.lin2.from_matrix(a.matrix)
-    lin2(scale=[1. 1.], angle=1.0, shear=1.0)
+    array([[ 0.8660254, -0.5      ],
+           [ 0.5      ,  0.8660254]])
+    >>> a*a
+    lin2(scale=[1. 1.], shear=0.0, angle=1.0471975511965976)
+    >>> (a*a).matrix
+    array([[ 0.5      , -0.8660254],
+           [ 0.8660254,  0.5      ]])
+    >>> a = gl.lin2(scale=[-2,3], shear=4, angle=1)
+    >>> a
+    lin2(scale=[-2.  3.], shear=4.0, angle=1.0)
+    >>> a.matrix
+    array([[-7.81237249, -2.63947648],
+           [ 2.52441295,  1.62090692]])
+    >>> a/a*a
+    lin2(scale=[-2.  3.], shear=3.9999999999999982, angle=0.9999999999999998)
 
 
     References
@@ -305,7 +319,7 @@ cdef class lin2(object):
         '''Returns the linear transformation matrix.'''
         cdef double[4] m
         ssr2mat(self.m_buf, m)
-        return _np.array([m[0], m[1]], [m[2], m[3]])
+        return _np.array([[m[0], m[1]], [m[2], m[3]]])
 
     # ----- methods -----
 
