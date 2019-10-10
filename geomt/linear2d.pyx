@@ -39,7 +39,7 @@ cdef class lin2(object):
         sx = hypot(a0, a2)
         sy = hypot(a1, a3)
         r = atan2(a2, a0)
-        h = atan2(a1, a3) - r
+        h = atan2(-a1, a3) - r
 
     Multiplication of two 2D linear transformations is a bit involved. Suppose the two 2D linear transformations are (sx_a, sy_a, r_a, h_a) and (sx_b, sy_b, r_b, h_b). Let the product of two corresponding matrices be [[c0, c1], [c2, c3]]. First, we rewrite each row of mat(sx_a, sy_a, r_a, h_a) as::
 
@@ -153,7 +153,7 @@ cdef class lin2(object):
         sx = hypot(a0, a2)
         sy = hypot(a1, a3)
         r = radian_range(atan2(a2, a0))
-        h = radian_range(atan2(a1, a3) - r)
+        h = radian_range(atan2(-a1, a3) - r)
 
         return lin2(scale=_np.array([sx, sy]), angle=r, shear=h)
 
