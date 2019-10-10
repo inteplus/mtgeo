@@ -1,10 +1,12 @@
 import numpy as _np
 import numpy.linalg as _nl
 
+
 class aff(object):
     '''Affine transformation in n-dim space.
 
-    :Examples:
+    Examples
+    --------
 
     >>> import numpy as _np
     >>> import geomt as _mg
@@ -55,7 +57,8 @@ class aff(object):
     @bias.setter
     def bias(self, bias):
         if len(bias.shape) != 1:
-            raise ValueError("Bias is not a vector, shape {}.".format(bias.shape))
+            raise ValueError(
+                "Bias is not a vector, shape {}.".format(bias.shape))
         self.__bias = bias
 
     @property
@@ -66,7 +69,8 @@ class aff(object):
     @weight.setter
     def weight(self, weight):
         if len(weight.shape) != 2:
-            raise ValueError("bias has non-matrix shape {}.".format(weight.shape))
+            raise ValueError(
+                "bias has non-matrix shape {}.".format(weight.shape))
         self.__weight = weight
 
     # ----- derived properties -----
@@ -86,7 +90,8 @@ class aff(object):
         '''Returns the dimension of the transformation.'''
         val = self.bias_dim
         if self.weight_shape != (val, val):
-            raise ValueError("Weight does not have a square matrix shape {}.".format(self.weight.shape))
+            raise ValueError(
+                "Weight does not have a square matrix shape {}.".format(self.weight.shape))
         return val
 
     @property
@@ -106,7 +111,7 @@ class aff(object):
         self.weight = weight
         self.bias = bias
         if check_shapes:
-            _ = self.dim # just to check shapes
+            _ = self.dim  # just to check shapes
 
     def __repr__(self):
         return "aff(weight_diagonal={}, bias={})".format(self.weight.diagonal(), self.bias)
@@ -114,7 +119,8 @@ class aff(object):
     def __lshift__(self, x):
         '''left shift = Lie action'''
         if x.shape != (self.dim,):
-            raise ValueError("Input shape {} is not ({},).".format(x.shape, self.dim))
+            raise ValueError(
+                "Input shape {} is not ({},).".format(x.shape, self.dim))
         return _np.dot(self.weight, x)+self.bias
 
     def __rshift__(self, x):
@@ -124,12 +130,14 @@ class aff(object):
     def __mul__(self, other):
         '''a*b = Lie operator'''
         if not isinstance(other, aff):
-            raise ValueError("Expecting 'other' to be an affine transformation, but {} received.".format(other.__class__))
+            raise ValueError(
+                "Expecting 'other' to be an affine transformation, but {} received.".format(other.__class__))
         return aff(_np.dot(self.weight, other.weight), self << other.bias)
 
     def __invert__(self):
         '''Lie inverse'''
-        invWeight = _nl.inv(self.weight) # slow, and assuming weight matrix is invertible
+        invWeight = _nl.inv(
+            self.weight)  # slow, and assuming weight matrix is invertible
         return aff(invWeight, _np.dot(invWeight, -self.bias))
 
     def __truediv__(self, other):
@@ -142,7 +150,7 @@ class aff(object):
 
     def weight_sign(self, eps=1e-06):
         '''Returns whether weight determinant is positive (+1), close to zero (0), or negative (-1).'''
-        det = _nl.det(self.weight) # slow method
+        det = _nl.det(self.weight)  # slow method
         return 1 if det > eps else -1 if det < -eps else 0
 
     def conjugate(self, other):
@@ -155,9 +163,10 @@ class aff(object):
 def shear2d(theta):
     '''Returns the shearing. Theta is in radian.'''
     return aff(weight=_np.array([
-            [1, -_np.sin(theta)],
-            [0, _np.cos(theta)]]),
+        [1, -_np.sin(theta)],
+        [0, _np.cos(theta)]]),
         bias=_np.zeros(2))
+
 
 def originate2d(tfm, x, y):
     '''Tweaks an affine transformation so that it acts as if it originates at (x,y) instead of (0,0).'''
