@@ -105,6 +105,11 @@ class aff(object):
         a[dim, dim] = 1
         return a
 
+    @property
+    def det(self):
+        '''Returns the determinant of the transformation matrix.'''
+        return _nl.det(self.weight)  # slow method 
+
     # ----- methods -----
 
     def __init__(self, weight=_np.identity(3), bias=_np.zeros(3), check_shapes=True):
@@ -150,7 +155,7 @@ class aff(object):
 
     def weight_sign(self, eps=1e-06):
         '''Returns whether weight determinant is positive (+1), close to zero (0), or negative (-1).'''
-        det = _nl.det(self.weight)  # slow method
+        det = self.det
         return 1 if det > eps else -1 if det < -eps else 0
 
     def conjugate(self, other):

@@ -321,6 +321,11 @@ cdef class lin2(object):
         ssr2mat(self.m_buf, m)
         return _np.array([[m[0], m[1]], [m[2], m[3]]])
 
+    @property
+    def det(self):
+        '''Returns the determinant of the transformation matrix.'''
+        return self.m_buf[0]*self.m_buf[1]
+
     # ----- methods -----
 
     def __init__(self, scale=_np.ones(2), shear=0, angle=0):
