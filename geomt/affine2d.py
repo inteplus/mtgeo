@@ -147,7 +147,7 @@ def flipud2d(height):
 
 def shear2d(theta):
     '''Returns the shearing. Theta is a scalar.'''
-    return aff2(shear=theta)
+    return aff2(linear=lin2(shear=theta))
 
 def originate2d(tfm, x, y):
     '''Tweaks a 2D affine transformation so that it acts as if it originates at (x,y) instead of (0,0).'''
