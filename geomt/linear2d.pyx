@@ -20,51 +20,160 @@ cpdef double radian_range(double rad):
     return rad
 
 
+# Redundant vector (sx,sy,h,r,cr,sr).
+# Matrix 2x2 parametrised as [a0,a1,a2,a3].
+
+
+cpdef void ssr2mat(double[:] i, double[:] o):
+    '''Converts redundant vector (sx,sy,h,r,cr,sr) representing scale2d(sx,sy) shear2d(h) rotate2d(r) into a 2x2 transformation matrix.
+    
+    Formula::
+
+        a0 = sx*(h*sr + cr)
+        a1 = sx*(h*cr + sr)
+        a2 = sy*sr
+        a3 = sy*cr
+
+    Parameters
+    ----------
+    i : input 6-vector
+        redundant vector (sx,sy,h,r,cr,sr)
+    o : output 4-vector
+        flattened 2x2 matrix
+    '''
+    cdef double sx, sy, h, r, cr, sr
+    sx = i[0]
+    sy = i[1]
+    h = i[2]
+    r = i[3]
+    cr = i[4]
+    sr = i[5]
+    o[0] = sx*(h*sr + cr)
+    o[1] = sx*(h*cr + sr)
+    o[2] = sy*sr
+    o[3] = sy*cr
+
+
+cpdef void mat2ssr(double[:] i, double[:] o):
+    '''Converts a 2x2 transformation matrix into an redundant vector (sx,sy,h,r,cr,sr) representing scale2d(sx,sy) shear2d(h) rotate2d(r).
+    
+    Formula::
+
+        sy = hypot(a2,a3)
+        r = atan2(a2,a3)
+        sx = det(A)/sy
+        h = (a0*sr + a1*cr)/sx
+
+    Parameters
+    ----------
+    i : input 4-vector
+        flattened 2x2 matrix
+    o : output 6-vector
+        redundant vector (sx,sy,h,r,cr,sr)
+    '''
+    cdef double sx, sy, h, r, cr, sr
+    sy = hypot(i[2],i[3])
+    r = atan2(i[2],i[3])
+    sr = i[2]/sy
+    cr = i[3]/sy
+    sx = (i[0]*i[3] - i[1]*i[2])/sy
+    h = (i[0]*sr + i[1]*cr)/sx
+    o[0] = sx
+    o[1] = sy
+    o[2] = h
+    o[3] = r
+    o[4] = cr
+    o[5] = sr
+
+
+cpdef void rss2mat(double[:] i, double[:] o):
+    '''Converts redundant vector (sx,sy,h,r,cr,sr) representing rotate2d(r) shear2d(h) scale2d(sx,sy) into a 2x2 transformation matrix.
+    
+    Formula::
+
+        a0 = sx*sr
+        a1 = sy*(h*cr - sr)
+        a2 = sx*cr
+        a3 = sy*(h*sr + cr)
+
+    Parameters
+    ----------
+    i : input 6-vector
+        redundant vector (sx,sy,h,r,cr,sr)
+    o : output 4-vector
+        flattened 2x2 matrix
+    '''
+    cdef double sx, sy, h, r, cr, sr
+    sx = i[0]
+    sy = i[1]
+    h = i[2]
+    r = i[3]
+    cr = i[4]
+    sr = i[5]
+    o[0] = sx*sr
+    o[1] = sy*(h*cr - sr)
+    o[2] = sx*cr
+    o[3] = sy*(h*sr + cr)
+
+
+cpdef void mat2rss(double[:] i, double[:] o):
+    '''Converts a 2x2 transformation matrix into an redundant vector (sx,sy,h,r,cr,sr) representing rotate2d(r) shear2d(h) scale2d(sx,sy).
+    
+    Formula when `det(A) > 0`::
+
+        sx = hypot(a2,a0)
+        r = atan2(a2,a0)
+        sy = det(A)/sx
+        h = (a3*sr + a1*cr)/sy
+
+    Formula when `det(A) < 0`::
+
+        sx = -hypot(a2,a0)
+        r = atan2(-a2,-a0)
+        sy = det(A)/sx
+        h = (a3*sr + a1*cr)/sy
+
+    Parameters
+    ----------
+    i : input 4-vector
+        flattened 2x2 matrix
+    o : output 6-vector
+        redundant vector (sx,sy,h,r,cr,sr)
+    '''
+    cdef double sx, sy, h, r, cr, sr, det
+    det = i[0]*i[3] - i[1]*i[2]
+    if det > 0:
+        sx = hypot(i[2],i[0])
+        r = atan2(i[2],i[0])
+    else:
+        sx = -hypot(i[2],i[0])
+        r = atan2(-i[2],-i[0])
+    sr = i[2]/sx
+    cr = i[0]/sx
+    sy = det/sx
+    h = (i[3]*sr + i[1]*cr)/sy
+    o[0] = sx
+    o[1] = sy
+    o[2] = h
+    o[3] = r
+    o[4] = cr
+    o[5] = sr
+
+
 cdef class lin2(object):
     '''Linear transformation in 2D.
 
-    #skimage.transform.AffineTransform>`_. However, we rip the translation part from it.
-    We follow skimage's parametrization of 2D affine transformations `skimage.transform.AffineTransformation <https://scikit-image.org/docs/dev/api/skimage.transform.html
+    The 2D linear transformation in this class is parametrised as the following::
 
-    The 2D linear transformation has the following form::
+        lin2(sx, sy, h, r) = scale2d(sx,sy) shear2d(h) rotate2d(r)
 
-        X = a0*x + a1*y
-        X = sx*cos(r)*x - sy*sin(r + h)*y
-        Y = a2*x + a3*y
-        Y = sx*sin(r)*x + sy*cos(r + h)*y
-        mat = [[a0, a1], [a2, a3]]
+    where `sx != 0` and `sy > 0`, `scale2d(sx,sy) = [[sx, 0], [0, sy]]`, `shear2d(h) = [[1, h], [0, 1]]` and `rotate2d(r) = [[cr, -sr], [sr, cr]]` with `cr = cos(r)` and `sr = sin(r)`. We call this parametrisation as the `ssr` parametrisation.
 
-    where `s=(sx,sy)` are the scaling parameters, `r` is the rotation angle (in radian), `h` is the shearing angle (in radian). To make the parametrization unique, we assume both `sx`, `sy` are positive, both `r` and `h` are in range '[-pi, +pi)' and `h` is not 'pi/2' or '-pi/2' (at which point the transformation matrix is singular). We then obtain the inverse form::
+    There is a reverse parametrisation::
 
-        sx = hypot(a0, a2)
-        sy = hypot(a1, a3)
-        r = atan2(a2, a0)
-        h = atan2(-a1, a3) - r
+        lin2_reverse(sx, sy, h, r) = rotate2d(r) shear2d(h) scale2d(sx,sy)
 
-    Multiplication of two 2D linear transformations is a bit involved. Suppose the two 2D linear transformations are (sx_a, sy_a, r_a, h_a) and (sx_b, sy_b, r_b, h_b). Let the product of two corresponding matrices be [[c0, c1], [c2, c3]]. First, we rewrite each row of mat(sx_a, sy_a, r_a, h_a) as::
-
-        (lx, qx) = trig2(sx_a*cos(r_a), sy_a*sin(r_a + h_a))
-        (ly, qy) = trig2(sy_a*cos(r_a + h_a), sx_a*sin(r_a))
-        [a0, a1] = [lx*cos(qx), -lx*sin(qx)]
-        [a2, a3] = [ly*sin(qy),  ly*cos(qy)]
-
-    Key equation:
-
-        cos(qx-qy) = 0 <=> cos(h_a) = 0
-
-    Multiplying it with the second matrix, we obtain::
-
-        c0 =  lx*sx_b*cos(qx + r_b)
-        c1 = -lx*sy_b*sin(qx + r_b + h_b)
-        c2 =  ly*sx_b*sin(qy + r_b)
-        c3 =  ly*sy_b*cos(qy + r_b + h_b)
-
-    From the above equations, if we assume (sx_b, sy_b, r_b, h_b) is the inverse of (sx_a, sy_a, r_a, h_a), then we obtain a closed form::
-
-        r_b  = -qy or pi - qy, whichever that makes cos(qx + r_b) positive
-        h_b  = qy - qx or pi + qy - qx, whichever that makes cos(qy + r_b + h_b) positive
-        sx_b = 1/cos(qx + r_b)/lx
-        sy_b = 1/cos(qy + r_b + h_b)/ly
+    with the same conditions, which we call the `rss` parametrisation. If `lin2(sx,sy,h,r) = lin2_reverse(sx',sy',h'r')` then inv(lin2(sx,sy,h,r)) = lin2(1/sx',1/sy',-h',-r')`.
 
     Examples
     --------
@@ -112,23 +221,7 @@ cdef class lin2(object):
 
     # ----- C/C++ vars -----
 
-    cdef double m_sx, m_sy, m_r, m_h
-    cdef bool m_dirty
-    cdef double m_lx, m_ly, m_qx, m_qy
-
-    cdef cleanse(self):
-        cdef double c0, c1, s0, s1
-
-        if self.m_dirty:
-            c0 = self.m_sx*cos(self.m_r)
-            s0 = self.m_sy*sin(self.m_r + self.m_h)
-            c1 = self.m_sy*cos(self.m_r + self.m_h)
-            s1 = self.m_sx*sin(self.m_r)
-            self.m_lx = hypot(c0, s0)
-            self.m_qx = atan2(s0, c0)
-            self.m_ly = hypot(c1, s1)
-            self.m_qy = atan2(s1, c1)
-            self.m_dirty = False
+    cdef double[6] m_buf
 
     # ----- static methods -----
 
@@ -150,148 +243,101 @@ cdef class lin2(object):
         -----
         For speed reasons, no checking is involved.
         '''
-        cdef double a0, a1, a2, a3
-        cdef double sx, sy, r, h
-
-        a0 = mat[0, 0]
-        a1 = mat[0, 1]
-        a2 = mat[1, 0]
-        a3 = mat[1, 1]
-
-        sx = hypot(a0, a2)
-        sy = hypot(a1, a3)
-        r = radian_range(atan2(a2, a0))
-        h = radian_range(atan2(-a1, a3) - r)
-
-        return lin2(scale=_np.array([sx, sy]), angle=r, shear=h)
+        cdef double[4] i = [mat[0,0], mat[0,1], mat[1,0], mat[1,1]]
+        cdef double[6] o
+        mat2ssr(i,o)
+        return lin2(scale=[o[0], o[1]], shear=o[2], angle=[o[3], o[4], o[5]])
 
     # ----- data encapsulation -----
 
     @property
     def sx(self):
-        return self.m_sx
+        return self.m_buf[0]
 
     @property
     def sy(self):
-        return self.m_sy
+        return self.m_buf[1]
 
     @property
     def scale(self):
-        return _np.array([self.m_sx, self.m_sy])
+        return _np.array([self.m_buf[0], self.m_buf[1]])
 
     @scale.setter
     def scale(self, scale):
         if len(scale) != 2:
             raise ValueError("Scale is not a pair: {}".format(scale))
-        if not (scale[0] > 0):
+        if not (scale[0] != 0):
             raise ValueError(
-                "The first scale component ({}) is not positive.".format(scale[0]))
+                "The first scale component ({}) is not non-zero.".format(scale[0]))
         if not (scale[1] > 0):
             raise ValueError(
                 "The second scale component ({}) is not positive.".format(scale[1]))
-        self.m_sx = scale[0]
-        self.m_sy = scale[1]
-        self.m_dirty = True
-
-    @property
-    def angle(self):
-        return self.m_r
-
-    @angle.setter
-    def angle(self, angle):
-        self.m_r = radian_range(angle)
-        self.m_dirty = True
+        self.m_buf[0] = scale[0]
+        self.m_buf[1] = scale[1]
 
     @property
     def shear(self):
-        return self.m_h
+        return self.m_buf[2]
 
     @shear.setter
     def shear(self, shear):
-        cdef double h = radian_range(shear)
-        if feq(h, M_PI_2):
-            raise ValueError(
-                "Singular case detected. Shearing of right angle is not accepted.")
-        if feq(h, -M_PI_2):
-            raise ValueError(
-                "Singular case detected. Shearing of negative right angle is not accepted.")
-        self.m_h = h
-        self.m_dirty = True
+        self.m_buf[2] = shear
+
+    @property
+    def angle(self):
+        return self.m_buf[3]
+
+    @angle.setter
+    def angle(self, angle):
+        if isinstance(angle, (float, int)):
+            self.m_buf[3] = angle
+            self.m_buf[4] = cos(angle)
+            self.m_buf[5] = sin(angle)
+        else:
+            self.m_buf[3] = angle[0]
+            self.m_buf[4] = angle[1]
+            self.m_buf[5] = angle[2]
 
     # ----- derived properties -----
 
     @property
     def matrix(self):
         '''Returns the linear transformation matrix.'''
-        return _np.array([
-            [self.m_sx*cos(self.m_r), -self.m_sy*sin(self.m_r + self.m_h)],
-            [self.m_sx*sin(self.m_r),  self.m_sy*cos(self.m_r + self.m_h)]])
+        cdef double[4] m
+        ssr2mat(self.m_buf, m)
+        return _np.array([m[0], m[1]], [m[2], m[3]])
 
     # ----- methods -----
 
-    def __init__(self, scale=_np.ones(2), angle=0, shear=0):
+    def __init__(self, scale=_np.ones(2), shear=0, angle=0):
         self.scale = scale
-        self.angle = angle
         self.shear = shear
+        self.angle = angle
 
     def __repr__(self):
-        return "lin2(scale={}, angle={}, shear={})".format(self.scale, self.angle, self.shear)
+        return "lin2(scale={}, shear={}, angle={})".format(self.scale, self.shear, self.angle)
 
     def __lshift__(self, x):
         '''left shift = Lie action'''
         if x.shape != (2,):
             raise ValueError("Input shape {} is not (2,).".format(x.shape))
-        return _np.dot(self.to_matrix(), x)
+        return _np.dot(self.matrix, x)
 
     def __rshift__(self, x):
         '''right shift = inverted Lie action'''
         return (~self) << x
 
-    cpdef __cmul__(self, lin2 other):  # hack
-        cdef double b_sx, b_sy, b_r, b_h
-
-        b_sx = other.m_sx
-        b_sy = other.m_sy
-        b_r = other.m_r
-        b_h = other.m_h
-
-        self.cleanse()
-
-        # MT-NOTE: this is a bit slow.
-        return lin2.from_matrix(_np.array([
-            [self.m_lx*b_sx*cos(self.m_qx + b_r), -self.m_lx *
-             b_sy*sin(self.m_qx + b_r + b_h)],
-            [self.m_ly*b_sx*sin(self.m_qy + b_r),  self.m_ly*b_sy*cos(self.m_qy + b_r + b_h)]]))
-
     def __mul__(self, other):
         '''a*b = Lie operator'''
-        return self.__cmul__(other)
+        return lin2.from_matrix(_np.dot(self.matrix, other.matrix))
 
     def __invert__(self):
         '''Lie inverse'''
-        cdef double b_sx, b_sy, b_r, b_h
-
-        self.cleanse()
-
-        # Non-singularity implies: `cos(qx-qy) |? 0 <=> cos(h_a) |? 0` where `|?` can be '=', '<' and '>'
-
-        # rotation and shearing angle
-        # cos(h_a) and cos(qx-qy) > 0
-        if self.m_h > -M_PI_2 and self.m_h < M_PI_2:
-            # so that sin(qy + r_b) = 0 and cos(qx + r_b) > 0
-            b_r = radian_range(-self.m_qy)
-            # so that sin(qx + r_b + h_b) = 0 and cos(qy + r_b + h_b) > 0
-            b_h = radian_range(M_PI + self.m_qy - self.m_qx)
-        else:  # cos(h_a) and cos(qx-qy) < 0
-            # so that sin(qy + r_b) = 0 and cos(qx + r_b) > 0
-            b_r = radian_range(M_PI - self.m_qy)
-            # so that sin(qx + r_b + h_b) = 0 and cos(qy + r_b + h_b) > 0
-            b_h = radian_range(self.m_qy - self.m_qx)
-
-        b_sx = 1/self.m_lx/cos(self.m_qx + b_r)
-        b_sy = 1/self.m_ly/cos(self.m_qy + b_r + b_h)
-
-        return lin2(scale=_np.array([b_sx, b_sy]), angle=b_r, shear=b_h)
+        cdef double[4] m
+        cdef double[6] rss
+        ssr2mat(self.m_buf, m)
+        mat2rss(m, rss)
+        return lin2(scale=[1/rss[0], 1/rss[1]], shear=-rss[2], angle=[-rss[3], rss[4], -rss[5]])
 
     def __truediv__(self, other):
         '''a/b = a*(~b)'''
