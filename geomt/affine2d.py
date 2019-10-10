@@ -130,3 +130,25 @@ class aff2(aff):
         invOffset = invLinear << (-self.offset)
         return aff2(offset=invOffset, linear=invLinear)
     __invert__.__doc__ = aff.__invert__.__doc__
+
+# ----- useful 2D transformations -----
+
+def fliplr2d(width):
+    '''Returns a fliplr for a given width.'''
+    return aff2.from_matrix(_np.array([
+        [-1, 0, width],
+        [ 0, 1, 0]]))
+
+def flipud2d(height):
+    '''Returns a flipud for a given height.'''
+    return aff2.from_matrix(_np.array([
+        [1,  0, 0],
+        [0, -1, height]]))
+
+def shear2d(theta):
+    '''Returns the shearing. Theta is a scalar.'''
+    return aff2(shear=theta)
+
+def originate2d(tfm, x, y):
+    '''Tweaks a 2D affine transformation so that it acts as if it originates at (x,y) instead of (0,0).'''
+    return aff2(offset=_np.array((x, y))).conjugate(tfm)

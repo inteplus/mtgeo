@@ -163,16 +163,23 @@ class aff(object):
         return self*(other/self)
 
 
-# ----- useful 2D transformations -----
+# ----- obsolete useful 2D transformations -----
 
 def shear2d(theta):
     '''Returns the shearing. Theta is in radian.'''
+    if not shear2d.warned:
+        print("geomt.affine_transformation.shear2d() is obsolete and mathematically incorrect. Use geomt.affine2d.shear2d() instead.")
+        shear2d.warned = True
     return aff(weight=_np.array([
         [1, -_np.sin(theta)],
         [0, _np.cos(theta)]]),
         bias=_np.zeros(2))
-
+shear2d.warned = False
 
 def originate2d(tfm, x, y):
     '''Tweaks an affine transformation so that it acts as if it originates at (x,y) instead of (0,0).'''
+    if not originate2d.warned:
+        print("geomt.affine_transformation.originate2d() is obsolete. Use geomt.affine2d.originate2d() instead.")
+        originate2d.warned = True
     return aff(weight=_np.identity(2), bias=_np.array((x, y))).conjugate(tfm)
+originate2d.warned = False
