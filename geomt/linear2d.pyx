@@ -63,8 +63,8 @@ cdef class lin2(object):
 
         r_b  = -qy or pi - qy, whichever that makes cos(qx + r_b) positive
         h_b  = qy - qx or pi + qy - qx, whichever that makes cos(qy + r_b + h_b) positive
-        sx_b = 1/|cos(qx - qy)|/lx
-        sy_b = 1/|cos(qx - qy)|/ly
+        sx_b = 1/cos(qx + r_b)/lx
+        sy_b = 1/cos(qy + r_b + h_b)/ly
 
     Examples
     --------
@@ -95,6 +95,14 @@ cdef class lin2(object):
     lin2(scale=[1. 1.], angle=0.0, shear=1.0)
     >>> ~a
     lin2(scale=[1.         2.41889182], angle=-0.0, shear=2.4420710092412734)
+    >>> a = gl.lin2(angle=1, shear=1)
+    >>> a
+    lin2(scale=[1. 1.], angle=1.0, shear=1.0)
+    >>> a.matrix
+    array([[ 0.54030231, -0.90929743],
+           [ 0.84147098, -0.41614684]])
+    >>> gl.lin2.from_matrix(a.matrix)
+    lin2(scale=[1. 1.], angle=1.0, shear=1.0)
 
 
     References
@@ -261,7 +269,7 @@ cdef class lin2(object):
 
     def __invert__(self):
         '''Lie inverse'''
-        cdef double b_r, b_h, g
+        cdef double b_sx, b_sy, b_r, b_h
 
         self.cleanse()
 
@@ -274,15 +282,16 @@ cdef class lin2(object):
             b_r = radian_range(-self.m_qy)
             # so that sin(qx + r_b + h_b) = 0 and cos(qy + r_b + h_b) > 0
             b_h = radian_range(M_PI + self.m_qy - self.m_qx)
-            g = 1/cos(self.m_qx - self.m_qy)
         else:  # cos(h_a) and cos(qx-qy) < 0
             # so that sin(qy + r_b) = 0 and cos(qx + r_b) > 0
             b_r = radian_range(M_PI - self.m_qy)
             # so that sin(qx + r_b + h_b) = 0 and cos(qy + r_b + h_b) > 0
             b_h = radian_range(self.m_qy - self.m_qx)
-            g = -1/cos(self.m_qx - self.m_qy)
 
-        return lin2(scale=_np.array([g/self.m_lx, g/self.m_ly]), angle=b_r, shear=b_h)
+        b_sx = 1/self.m_lx/cos(self.m_qx + b_r)
+        b_sy = 1/self.m_ly/cos(self.m_qy + b_r + b_h)
+
+        return lin2(scale=_np.array([b_sx, b_sy]), angle=b_r, shear=b_h)
 
     def __truediv__(self, other):
         '''a/b = a*(~b)'''
