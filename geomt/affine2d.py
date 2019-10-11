@@ -152,3 +152,11 @@ def shear2d(theta):
 def originate2d(tfm, x, y):
     '''Tweaks a 2D affine transformation so that it acts as if it originates at (x,y) instead of (0,0).'''
     return aff2(offset=_np.array((x, y))).conjugate(tfm)
+
+def rotate2d(theta, x, y):
+    '''Returns the rotation about a reference point (x,y). Theta is in radian.'''
+    return originate2d(aff2(angle=theta), x, y)
+
+def translate2d(x,y):
+    '''Returns the translation.'''
+    return aff2(offset=_np.array([x,y]))

@@ -54,13 +54,20 @@ class iso(dliso):
 
 def rotate2d(theta):
     '''Returns the rotation. Theta is in radian.'''
+    if not rotate2d.warned:
+        print("geomt.isometry.rotate2d() is obsolete. Use geomt.affine2d.rotate2d() instead.")
+        rotate2d.warned = True
     return iso(
         offset=_np.zeros(2),
         unitary=_np.array([
             [_np.cos(theta), -_np.sin(theta)],
             [_np.sin(theta), _np.cos(theta)]]))
+rotate2d.warned = False
 
 def translate2d(x,y):
     '''Returns the translation.'''
+    if not translate2d.warned:
+        print("geomt.isometry.translate2d() is obsolete. Use geomt.affine2d.translate2d() instead.")
+        translate2d.warned = True
     return iso(offset=_np.array((x,y)), unitary=_np.identity(2))
-
+translate2d.warned = False

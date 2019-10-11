@@ -301,6 +301,14 @@ cdef class lin2(object):
     def angle(self):
         return self.m_buf[3]
 
+    @property
+    def cos_angle(self):
+        return self.m_buf[4]
+
+    @property
+    def sin_angle(self):
+        return self.m_buf[5]
+
     @angle.setter
     def angle(self, angle):
         if isinstance(angle, (float, int)):
