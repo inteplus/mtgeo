@@ -35,7 +35,7 @@ class aff2(aff):
         -----
         For speed reasons, no checking is involved.
         '''
-        return aff2(offset=mat[:2,2], linear=lin2.from_matrix(mat[:2,:2]))
+        return aff2(offset=mat[:2, 2], linear=lin2.from_matrix(mat[:2, :2]))
 
     # ----- base adaptation -----
 
@@ -46,7 +46,8 @@ class aff2(aff):
 
     @bias.setter
     def bias(self, bias):
-        raise TypeError("Bias vector is read-only. Use self.offset vector instead.")
+        raise TypeError(
+            "Bias vector is read-only. Use self.offset vector instead.")
 
     @property
     def bias_dim(self):
@@ -64,17 +65,17 @@ class aff2(aff):
 
     @property
     def weight_shape(self):
-        return (2,2)
+        return (2, 2)
     weight_shape.__doc__ = aff.weight_shape.__doc__
 
     # ----- data encapsulation -----
 
     @property
-    def offset(self):  
+    def offset(self):
         return self.__offset
 
     @offset.setter
-    def offset(self, offset):  
+    def offset(self, offset):
         if len(offset.shape) != 1 or offset.shape[0] != 2:
             raise ValueError(
                 "Offset is not a 2D vector, shape {}.".format(offset.shape))
@@ -94,12 +95,12 @@ class aff2(aff):
     # ----- derived properties -----
 
     @property
-    def matrix(self):  
-        a = _np.empty((3,3))
-        a[:2,:2] = self.linear.matrix
-        a[:2,2] = self.offset
-        a[2,:2] = 0
-        a[2,2] = 1
+    def matrix(self):
+        a = _np.empty((3, 3))
+        a[:2, :2] = self.linear.matrix
+        a[:2, 2] = self.offset
+        a[2, :2] = 0
+        a[2, 2] = 1
         return a
     matrix.__doc__ = aff.matrix.__doc__
 
@@ -131,32 +132,49 @@ class aff2(aff):
         return aff2(offset=invOffset, linear=invLinear)
     __invert__.__doc__ = aff.__invert__.__doc__
 
+
 # ----- useful 2D transformations -----
 
-def fliplr2d(width):
-    '''Returns a fliplr for a given width.'''
+
+def swapAxes2d():
+    '''Returns the affine transformation that swaps the x-axis with the y-axis.'''
+    return aff2(linear=lin2.from_matrix(_np.array([[0, 1], [1, 0]])))
+
+
+def flipLR2d(width):
+    '''Returns a left-right flip for a given width.'''
     return aff2.from_matrix(_np.array([
         [-1, 0, width],
-        [ 0, 1, 0]]))
+        [0, 1, 0]]))
 
-def flipud2d(height):
-    '''Returns a flipud for a given height.'''
+
+def flipUD2d(height):
+    '''Returns a up-down flip for a given height.'''
     return aff2.from_matrix(_np.array([
         [1,  0, 0],
         [0, -1, height]]))
 
-def shear2d(theta):
-    '''Returns the shearing. Theta is a scalar.'''
-    return aff2(linear=lin2(shear=theta))
+
+def shearX2d(h):
+    '''Returns the shearing along the x-axis.'''
+    return aff2(linear=lin2(shear=h))
+
+
+def shearY2d(h):
+    '''Returns the shearing along the y-axis.'''
+    return aff2(linear=lin2.from_matrix(_np.array([[1, 0], [h, 1]])))
+
 
 def originate2d(tfm, x, y):
     '''Tweaks a 2D affine transformation so that it acts as if it originates at (x,y) instead of (0,0).'''
     return aff2(offset=_np.array((x, y))).conjugate(tfm)
 
+
 def rotate2d(theta, x, y):
     '''Returns the rotation about a reference point (x,y). Theta is in radian.'''
     return originate2d(aff2(angle=theta), x, y)
 
-def translate2d(x,y):
+
+def translate2d(x, y):
     '''Returns the translation.'''
-    return aff2(offset=_np.array([x,y]))
+    return aff2(offset=_np.array([x, y]))
