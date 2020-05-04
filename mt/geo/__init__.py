@@ -1,4 +1,4 @@
-import basemt.pyximportcpp as pyximport; pyximport.install(language_level=3)
+import mt.base.pyximportcpp as pyximport; pyximport.install(language_level=3)
 #from .interval import interval
 from .rect import rect
 from .affine_transformation import *

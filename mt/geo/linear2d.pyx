@@ -181,7 +181,7 @@ cdef class lin2(object):
 
     >>> import numpy as np
     >>> import math as m
-    >>> import geomt.linear2d as gl
+    >>> import mt.geo.linear2d as gl
     >>> a = gl.lin2()
     >>> a
     lin2(scale=[1. 1.], shear=0.0, angle=0.0)
