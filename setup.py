@@ -19,4 +19,9 @@ setup(
         'cython',
         'basemt>=0.3.0',
     ],
+    url='https://github.com/inteplus/geomt',
+    project_urls={
+        'Documentation': 'https://geomt.readthedocs.io/en/stable/',
+        'Source Code': 'https://github.com/inteplus/geomt',
+    }
 )
