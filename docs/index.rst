@@ -10,6 +10,7 @@ Welcome to geomt's documentation!
    :maxdepth: 2
    :caption: Contents:
 	     
+   install
    autoapi/mt/geo/index
    autoapi/geomt/index
 
