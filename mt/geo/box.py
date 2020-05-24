@@ -8,6 +8,25 @@ class box(object):
     An axis-aligned n-dimensional box/hyperrectangle is defined as the set of points of the hypercube [-1,1]^n transformed by a dilatation.
 
     Note that is is a many-to-one representation. For each box, there are up to 2^n dilatations that map the hypbercube [-1,1]^n to it.
+
+    Attributes
+    ----------
+    dlt_tfm : dlt
+        the dilatation equivalent, which can be get/set
+    dim : int
+        number of dimensions
+    minus_pt : point
+        the (-1,)^n point after being transformed by the dilatation
+    plus_pt : point
+        the (+1,)^n point after being transformed by the dilatation
+    min_coords : point
+        minimum coordinates
+    max_coords : point
+        maximum coordinates
+    center_pt : point
+        center point
+    size : size/point
+        box size
     '''
 
     # ----- data encapsulation -----
