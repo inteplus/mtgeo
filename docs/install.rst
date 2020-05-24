@@ -8,5 +8,5 @@ Install via pip::
 Build from source::
 
     git clone https://github.com/inteplus/geomt.git
-    cd basemt
+    cd geomt
     python3 setup.py install
