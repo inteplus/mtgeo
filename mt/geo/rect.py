@@ -70,3 +70,7 @@ class rect(box):
     def union(self, other):
         res = super(rect, self).union(other)
         return rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
+
+    def move(self, offset):
+        '''Moves the rect by a given offset vector.'''
+        return rect(self.min_x + offset[0], self.min_y + offset[1], self.max_x + offset[0], self.max_y + offset[1], force_valid=self.force_valid)
