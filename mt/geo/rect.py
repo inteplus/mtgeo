@@ -73,4 +73,4 @@ class rect(box):
 
     def move(self, offset):
         '''Moves the rect by a given offset vector.'''
-        return rect(self.min_x + offset[0], self.min_y + offset[1], self.max_x + offset[0], self.max_y + offset[1], force_valid=self.force_valid)
+        return rect(self.min_x + offset[0], self.min_y + offset[1], self.max_x + offset[0], self.max_y + offset[1])
