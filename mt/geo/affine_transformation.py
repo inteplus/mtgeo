@@ -128,6 +128,23 @@ class aff(object):
                 "Input shape {} is not ({},).".format(x.shape, self.dim))
         return _np.dot(self.weight, x)+self.bias
 
+    def transform_points(self, X):
+        '''Transforms a list of points.
+        
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (N,D)
+            transforms N points. D is the dimensionality of the transformation
+
+        Returns
+        -------
+        X2 : numpy.ndarray of shape (N,D)
+            transformed N points, where `X2 = np.dot(X, self.weight^T) + self.bias`
+        '''
+        if len(X.shape) != 2 or X.shape[1] != self.dim:
+            raise ValueErro("Input shape {} is not (N,{}).".format(X.shape, self.dim))
+        return _np.dot(X, self.weight.T) + self.bias
+
     def __rshift__(self, x):
         '''right shift = inverted Lie action'''
         return (~self) << x
