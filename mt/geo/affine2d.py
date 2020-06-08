@@ -178,3 +178,30 @@ def rotate2d(theta, x, y):
 def translate2d(x, y):
     '''Returns the translation.'''
     return aff2(offset=_np.array([x, y]))
+
+
+def scale2d(scale_x=1, scale_y=None):
+    '''Returns the scaling.'''
+    if scale_y is None:
+        scale_y = scale_x
+    return aff2(linear=lin2(scale=[scale_x, scale_y]))
+
+
+def crop2d(tl, br=None):
+    '''Transforms an axis-aligned rectangle into [(0,0),(1,1)].
+
+    Parameters
+    ----------
+    tl : 2d point (x,y)
+        coordinates to be mapped to (0,0) if `br` is specified. If `br` is not specified, then the transformation is 2d scaling. In other words, (0,0) is mapped to (0,0) and tl is mapped to (1,1).
+    br : 2d point (x,y), optional
+        If specified, coordinates to be mapped to (1,1).
+
+    Returns
+    -------
+    aff2
+        A transformation that maps points in [(0,0),(1,1)] to the crop given by `tl` and `br`.
+    '''
+    if br is None:
+        return scale2d(1.0/tl[0], 1.0/tl[1])
+    return aff2(offset=_np.array([-tl[0]/(br[0]-tl[0]), -tl[1]/(br[1]-tl[1])]), linear=lin2(scale=[1.0/(br[0]-tl[0]), 1.0/(br[1]-tl[1])]))

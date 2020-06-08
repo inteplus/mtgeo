@@ -121,17 +121,23 @@ class dlt(aff):
 
 # ----- useful 2D transformations -----
 
+
+from mt.base import logger # for warning
+
 def scale2d(scale_x=1, scale_y=None):
     '''Returns the scaling.'''
+    logger.warn_func_move('mt.geo.dilatation.scale2d', 'mt.geo.affine2d.scale2d')
     if scale_y is None:
         scale_y = scale_x
     return dlt(offset=_np.zeros(2), scale=_np.array([scale_x,scale_y]))
 
 def flipx2d(width):
     '''Returns the transformation representing the horizontal flip of an image.'''
+    logger.warn_func_move('mt.geo.dilatation.flipx2d', 'mt.geo.affine2d.flipLR2d')
     return dlt(offset=_np.array([width,0]), scale=_np.array([-1,1]))
 
 def flipy2d(height):
     '''Returns the transformation representing the vertical flip of an image.'''
+    logger.warn_func_move('mt.geo.dilatation.flipy2d', 'mt.geo.affine2d.flipUD2d')
     return dlt(offset=_np.array([0,height]), scale=_np.array([1,-1]))
 
