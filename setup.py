@@ -4,7 +4,7 @@ from setuptools import setup, find_packages, find_namespace_packages
 from mt.geo.version import version
 
 setup(
-    name='geomt',
+    name='mtgeo',
     version=version,
     description="The most fundamental geometric modules in Python for Minh-Tri Pham",
     author=["Minh-Tri Pham"],
@@ -21,7 +21,7 @@ setup(
     ],
     url='https://github.com/inteplus/geomt',
     project_urls={
-        'Documentation': 'https://geomt.readthedocs.io/en/stable/',
+        'Documentation': 'https://mtdoc.readthedocs.io/en/latest/mt.geo/mt.geo.html',
         'Source Code': 'https://github.com/inteplus/geomt',
     }
 )

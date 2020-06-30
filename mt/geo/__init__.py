@@ -7,5 +7,6 @@ from .isometry import *
 from .dilatation import *
 from .similarity2d import *
 from .ellipse import ellipse
+from .linear2d import lin2
 
 # TODO: doctest for each of the classes above
