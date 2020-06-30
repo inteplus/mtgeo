@@ -4,6 +4,10 @@ import math as _m
 
 from .affine_transformation import aff
 
+
+__all__ = ['dliso']
+
+
 class dliso(aff):
     '''Dilated isometry = Isometry followed by a uniform scaling.
 

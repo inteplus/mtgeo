@@ -4,6 +4,8 @@ import numpy as _np
 
 from .box import box
 
+__all__ = ['rect']
+
 class rect(box):
     '''A 2D rectangle,
 

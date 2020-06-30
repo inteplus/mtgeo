@@ -7,6 +7,9 @@ from libcpp cimport bool
 from libc.math cimport fabs, hypot, atan2, sin, cos, M_PI, M_PI_2
 
 
+__all__ = ['feq', 'radian_range', 'ssr2mat', 'mat2ssr', 'rss2mat', 'mat2rss', 'lin2']
+
+
 cpdef bool feq(double a, double b, double eps=1e-06):
     '''Checks if two scalars are nearly equal.'''
     return fabs(a-b) < eps

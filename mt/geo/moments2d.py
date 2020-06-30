@@ -4,6 +4,10 @@ import numpy as _np
 import math as _m
 import sys as _sys
 
+
+__all__ = ['EPSILON', 'moments2d']
+
+
 EPSILON = _m.sqrt(_sys.float_info.epsilon)
 
 class moments2d(object):

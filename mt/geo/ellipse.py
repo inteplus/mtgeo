@@ -7,6 +7,9 @@ from .rect import rect
 from .moments2d import EPSILON, moments2d
 
 
+__all__ = ['ellipse']
+
+
 class ellipse(object):
     '''Ellipse, defined as an affine transform the unit circle x^2+y^2=1.
 

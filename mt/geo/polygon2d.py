@@ -8,6 +8,9 @@ import math as _m
 from .moments2d import EPSILON, moments2d
 
 
+__all__ = ['trapezium_integral', 'signed_area', 'moment_x', 'moment_y', 'moment_xy', 'moment_xx', 'moment_yy', 'to_moments2d']
+
+
 def trapezium_integral(poly, func):
     '''Applies the Shoelace algorithm to integrate a function over the interior of a polygon. Shoelace algorithm views the polygon as a sum of trapeziums.
 

@@ -2,6 +2,9 @@ import numpy as _np
 import numpy.linalg as _nl
 
 
+__all__ = ['aff']
+
+
 class aff(object):
     '''Affine transformation in n-dim space.
 

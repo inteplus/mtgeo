@@ -2,6 +2,8 @@ import numpy as _np
 
 from mt.geo.dilatation import dlt
 
+__all__ = ['box']
+
 class box(object):
     '''Axis-aligned n-dimensional hyperrectangle.
 

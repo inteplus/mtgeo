@@ -3,6 +3,10 @@
 import math as _m
 import numpy as _np
 
+
+__all__ = ['ISQRT2', 'approx_oct']
+
+
 ISQRT2 = 1/_m.sqrt(2)
 
 # octagon to approximate a circle originating at (0,0) with radius 1

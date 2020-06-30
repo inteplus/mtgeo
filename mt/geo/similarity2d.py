@@ -3,6 +3,10 @@ import math as _m
 
 from .dilated_isometry import dliso
 
+
+__all__ = ['sim2']
+
+
 class sim2(dliso):
     '''Similarity (angle-preserving) transformation in 2D.
 

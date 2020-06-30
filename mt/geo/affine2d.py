@@ -5,6 +5,9 @@ from .affine_transformation import aff
 from .linear2d import lin2
 
 
+__all__ = ['aff2', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d']
+
+
 class aff2(aff):
     '''Affine transformation in 2D.
 
