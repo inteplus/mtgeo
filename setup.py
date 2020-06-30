@@ -17,7 +17,7 @@ setup(
     install_requires=[
         'numpy',
         'cython',
-        'basemt>=0.3.6',
+        'mtbase>=0.4.0',
     ],
     url='https://github.com/inteplus/geomt',
     project_urls={
