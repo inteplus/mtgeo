@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 
-from setuptools import setup, find_packages, find_namespace_packages
+from setuptools import setup, Extension, find_packages, find_namespace_packages
+from Cython.Build import cythonize
 from mt.geo.version import version
+
+extensions = [
+    Extension(
+        name="mt.geo.linear2d",
+        sources=["mt/geo/linear2d.pyx"],
+    )
+]
 
 setup(
     name='mtgeo',
@@ -9,6 +17,7 @@ setup(
     description="The most fundamental geometric modules in Python for Minh-Tri Pham",
     author=["Minh-Tri Pham"],
     packages=find_packages() + find_namespace_packages(include=['mt.*']),
+    ext_modules=cythonize(extensions),
     package_data={
         'mt.geo': ['*.pyx'],
     },
@@ -16,12 +25,11 @@ setup(
     zip_safe=False,
     install_requires=[
         'numpy',
-        'cython',
         'mtbase>=0.4.0',
     ],
-    url='https://github.com/inteplus/geomt',
+    url='https://github.com/inteplus/mtgeo',
     project_urls={
         'Documentation': 'https://mtdoc.readthedocs.io/en/latest/mt.geo/mt.geo.html',
-        'Source Code': 'https://github.com/inteplus/geomt',
+        'Source Code': 'https://github.com/inteplus/mtgeo',
     }
 )
