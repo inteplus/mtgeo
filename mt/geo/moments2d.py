@@ -56,7 +56,7 @@ class moments2d(object):
     def cov(self):
         '''Returns the covariance matrix.'''
         if self._cov is None:
-            self._cov = _np.eye(2) if abs(self.m0) < EPSILON else (self.m2/self.m0) - _np.dot(self.mean, self.mean.T)
+            self._cov = _np.eye(2) if abs(self.m0) < EPSILON else (self.m2/self.m0) - _np.outer(self.mean, self.mean)
         return self._cov
 
     @staticmethod
