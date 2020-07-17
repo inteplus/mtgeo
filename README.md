@@ -1,5 +1,10 @@
 The most fundamental geometric modules in Python for Minh-Tri Pham.
 
+Documentation
+-------------
+
+Checkout [mtdoc](https://mtdoc.readthedocs.io/).
+
 Testing
 -------
 
