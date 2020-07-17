@@ -59,6 +59,10 @@ class moments2d(object):
             self._cov = _np.eye(2) if abs(self.m0) < EPSILON else (self.m2/self.m0) - _np.outer(self.mean, self.mean)
         return self._cov
 
+    def negate(self):
+        '''Returns a new instance where all the moments are negated.'''
+        return moments2d(-self.m0, -self.m1, -self.m2)
+
     @staticmethod
     def from_pointset(arr):
         '''Constructs a moments2d object from a set of points.
