@@ -19,47 +19,58 @@ class rect(box):
     
     @property
     def min_x(self):
+        '''lowest x-coordinate.'''
         return self.min_coords[0]
 
     @property
     def min_y(self):
+        '''lowest x-coodinate.'''
         return self.min_coords[1]
 
     @property
     def max_x(self):
+        '''highest x-coordinate.'''
         return self.max_coords[0]
 
     @property
     def max_y(self):
+        '''highest y-coordinate.'''
         return self.max_coords[1]
 
     @property
     def x(self):
+        '''left, same as min_x.'''
         return self.min_x
 
     @property
     def y(self):
+        '''top, same as min_y.'''
         return self.min_y
 
     @property
     def w(self):
+        '''width'''
         return self.max_x - self.min_x
 
     @property
     def h(self):
+        '''height'''
         return self.max_y - self.min_y
 
     @property
     def cx(self):
+        '''Center x-coordinate.'''
         return (self.min_x + self.max_x)/2
 
     @property
     def cy(self):
+        '''Center y-coordinate.'''
         return (self.min_y + self.max_y)/2
 
     @property
     def area(self):
-        return self.w*self.h
+        '''Absolute area.'''
+        return abs(self.w*self.h)
 
     
     # ----- moments -----
@@ -108,6 +119,8 @@ class rect(box):
     def from_moments2d(obj):
         '''Returns a rectangle that best approximates the moments2d instance.
 
+        The function returns a rectangle such that its mean is the same as the mean of the instance, and its x-variance and y-variance are the same as those of the instance. The correlation is ignored.
+
         Parameters
         ----------
         obj : moments2d
@@ -122,8 +135,9 @@ class rect(box):
         cov = obj.cov
 
         # w = half width, h = half height
-        hw3 = cov[0][0]*obj.m0*0.75
-        wh3 = cov[1][1]*obj.m0*0.75
+        size = abs(obj.m0)
+        hw3 = cov[0][0]*size*0.75 # should be >= 0
+        wh3 = cov[1][1]*size*0.75 # should be >= 0
         wh = _m.sqrt(_m.sqrt(wh3*hw3))
         h = _m.sqrt(wh3/wh)
         w = _m.sqrt(hw3/wh)
