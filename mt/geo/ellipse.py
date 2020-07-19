@@ -76,21 +76,32 @@ class ellipse(object):
     # ----- moments2d -----
 
     def to_moments2d(self):
-        '''Returns a moments2d capturing the pdf representing the interior of the ellipse.'''
+        '''Returns a moments2d capturing the pdf representing the interior of the ellipse.
+
+        Notes
+        -----
+        The method has not been implemented yet.
+        '''
         # MT-TODO
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def from_moments2d(mom):
         '''Creates an ellipse whose moments match with the given moments.
 
-        :Parameters:
-            mom : moments2d
-                a collection of moments up to 2nd order in 2D
+        Parameters
+        ----------
+        mom : moments2d
+            a collection of moments up to 2nd order in 2D
 
-        :Returns:
-            retval : ellipse
-                an ellipse whose interior generates moments that match with the given collection of moments
+        Returns
+        -------
+        ellipse
+            an ellipse whose interior generates moments that match with the given collection of moments
+
+        Notes
+        -----
+        The method has not been implemented yet.
         '''
         # MT-TODO
-        return None
+        raise NotImplementedError
