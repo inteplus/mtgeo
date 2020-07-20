@@ -1,23 +1,34 @@
-'''The base class to represent a geometry object.'''
+'''The base class to represent a geometric object.'''
 
 
-class GeometryObject(object):
-    '''A geometry object which lives in a d-dimensional Euclidean space.
+__all__ = ['GeometricObject', 'TwoD', 'ThreeD']
 
-    A GeometryObject is a geometry object which lives in a d-dimensional Euclidean space. It can be a point, a point set, a polygon, a circle, a sphere, a parallelogram, a paralleloid, etc. This class represents the base class, in which the only property available is `ndim`, telling the number of dimensions. Other than that, the class is expected to have a static function called `convertible(obj)` which tells whether a given (probably geometry) object is convertible to it, and a static function called `from(obj)` to convert the object to an instance of the class.
+
+class GeometricObject(object):
+    '''A geometric object which lives in a d-dimensional Euclidean space.
+
+    A GeometricObject is a geometric object which lives in a d-dimensional Euclidean space. It can be a point, a point set, a polygon, a circle, a sphere, a parallelogram, a paralleloid, etc. This class represents the base class, in which the only property available is `ndim`, telling the number of dimensions. The user needs to implement `ndim`, or use some mixin classes like `TwoD` or `ThreeD`.
     '''
+    
+    # ----- properties -----
+    
+    @property
+    def ndim(self):
+        '''Returns the number of dimensions in which the geometric object lives.'''
+        raise NotImplementedError
+
+
+class TwoD(object):
+    '''Mixin to assert that the geometric object lives in 2D Euclidean space.'''
 
     @property
     def ndim(self):
-        '''Returns the number of dimensions in which the geometry object lives.'''
-        raise NotImplementedError
-    
-    @staticmethod
-    def convertible(obj):
-        '''Checks whether an object is convertible into an instance of the class.'''
-        raise NotImplementedError
+        return 2
 
-    @staticmethod
-    def from(obj):
-        '''Converts an object into an instance of the class.'''
-        raise NotImplementedError
+
+class ThreeD(object):
+    '''Mixin to assert that the geometric object lives in 3D Euclidean space.'''
+
+    @property
+    def ndim(self):
+        return 3
