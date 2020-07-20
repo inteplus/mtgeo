@@ -127,4 +127,3 @@ def moments_from_pointlist(pl):
 _bc.register_cast(PointList, Moments, moments_from_pointlist)
 _bc.register_cast(PointList2d, Moments2d, moments_from_pointlist)
 _bc.register_cast(PointList3d, Moments3d, moments_from_pointlist)
-_bc.register_cast(Polygon, Moments2d, moments_from_pointlist)

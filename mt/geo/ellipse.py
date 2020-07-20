@@ -2,15 +2,20 @@
 
 import numpy as _np
 import numpy.linalg as _nl
+
+from mt.base.cast import register_cast
+
 from .affine_transformation import aff
 from .rect import rect
-from .moments2d import EPSILON, moments2d
+from .moments import EPSILON, Moments2d
+from .approx import register_approx
+from .object import GeometricObject, TwoD
 
 
-__all__ = ['ellipse']
+__all__ = ['ellipse', 'Ellipse']
 
 
-class ellipse(object):
+class Ellipse(TwoD, GeometricObject):
     '''Ellipse, defined as an affine transform the unit circle x^2+y^2=1.
 
     Note that this representation is not unique, the same ellipse can be represented by an infinite number of affine transforms of the unit circle.
@@ -28,7 +33,7 @@ class ellipse(object):
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
-        return "ellipse(aff_tfm={})".format(self.aff_tfm)
+        return "Ellipse(aff_tfm={})".format(self.aff_tfm)
 
     @property
     def f0(self):
@@ -44,7 +49,7 @@ class ellipse(object):
 
     def transform(self, aff_tfm):
         '''Affine-transforms the ellipse. The resultant ellipse has affine transformation `aff_tfm*self.aff_tfm`.'''
-        return ellipse(aff_tfm*self.aff_tfm)
+        return Ellipse(aff_tfm*self.aff_tfm)
 
     # ----- bounding rect -----
 
@@ -71,37 +76,18 @@ class ellipse(object):
         '''Returns an axis-aligned ellipse bounded by the given axis-aligned rectangle x.'''
         if not isinstance(x, rect):
             raise ValueError("Input type a `rect`, '{}' given.".format(x.__class__))
-        return ellipse(aff(weight=_np.array([[x.w/2,0],[0,x.h/2]]), bias=x.center_pt))
+        return Ellipse(aff(weight=_np.array([[x.w/2,0],[0,x.h/2]]), bias=x.center_pt))
 
-    # ----- moments2d -----
 
-    def to_moments2d(self):
-        '''Returns a moments2d capturing the pdf representing the interior of the ellipse.
+ellipse = Ellipse # for now
 
-        Notes
-        -----
-        The method has not been implemented yet.
-        '''
-        # MT-TODO
-        raise NotImplementedError
 
-    @staticmethod
-    def from_moments2d(mom):
-        '''Creates an ellipse whose moments match with the given moments.
+def cast_ellipse_to_moments(obj):
+    raise NotImplementedError # MT-TODO
+register_cast(Ellipse, Moments2d, cast_ellipse_to_moments)
 
-        Parameters
-        ----------
-        mom : moments2d
-            a collection of moments up to 2nd order in 2D
 
-        Returns
-        -------
-        ellipse
-            an ellipse whose interior generates moments that match with the given collection of moments
-
-        Notes
-        -----
-        The method has not been implemented yet.
-        '''
-        # MT-TODO
-        raise NotImplementedError
+def approx_moments_to_ellipse(obj):
+    '''Approximates a Moments2d instance with an Ellipse that has the same mean and covariance as the mean and covariance of the instance.'''
+    raise NotImplementedError # MT-TODO
+register_approx(Moments2d, Ellipse, approx_moments_to_ellipse)

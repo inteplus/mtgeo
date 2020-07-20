@@ -51,6 +51,7 @@ def trapezium_integral(poly, func):
     .. [2] exterior algebra
     '''
     retval = 0
+    poly = poly.points
     N = len(poly)
     if N <= 2:
         return 0
@@ -234,5 +235,5 @@ def to_moments2d(poly):
     m1 = [moment_x(poly), moment_y(poly)]
     mxy = moment_xy(poly)
     m2 = [[moment_xx(poly), mxy], [mxy, moment_yy(poly)]]
-    return moments2d(m0, m1, m2)
+    return Moments2d(m0, m1, m2)
 _bc.register_cast(Polygon, Moments2d, to_moments2d)

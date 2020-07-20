@@ -3,8 +3,12 @@
 import math as _m
 import numpy as _np
 
+from mt.base import logger
+from mt.base.cast import *
+
 from .box import box
-from .moments2d import EPSILON, moments2d
+from .moments import EPSILON, Moments2d
+from .approx import *
 
 __all__ = ['rect']
 
@@ -108,7 +112,11 @@ class rect(box):
 
     @property
     def to_moments2d(self):
-        '''Computes all moments, up to 2nd-order of the rectangle's interior.'''
+        '''Computes all moments, up to 2nd-order of the rectangle's interior.
+
+        This function is being deprecated. Please use mt.base.cast.cast() to cast an object of type rect to type Moments2d instead.'''
+        logger.warn_func_move('mt.geo.rect.to_moments2d', 'mt.base.cast.cast(r:rect, mt.geo.moments.Moments2d)')
+        from .moments2d import moments2d
         m0 = self.signed_area
         m1 = [self.moment_x, self.moment_y]
         mxy = self.moment_xy
@@ -121,6 +129,8 @@ class rect(box):
 
         The function returns a rectangle such that its mean is the same as the mean of the instance, and its x-variance and y-variance are the same as those of the instance. The correlation is ignored.
 
+        This function is being deprecated. Please use mt.geo.approx.approx() to approximate an object of type Moments2d to type rect instead.
+
         Parameters
         ----------
         obj : moments2d
@@ -131,6 +141,7 @@ class rect(box):
         rect
             the output rectangle
         '''
+        logger.warn_func_move('mt.geo.rect.from_moments2d', 'mt.geo.approx.approx(obj:mt.geo.moments.Moments2d, mt.geo.rect.rect)')
         cx, cy = obj.mean
         cov = obj.cov
 
@@ -164,3 +175,28 @@ class rect(box):
     def move(self, offset):
         '''Moves the rect by a given offset vector.'''
         return rect(self.min_x + offset[0], self.min_y + offset[1], self.max_x + offset[0], self.max_y + offset[1])
+
+
+def cast_rect_to_moments(obj):
+    m0 = obj.signed_area
+    m1 = [obj.moment_x, obj.moment_y]
+    mxy = obj.moment_xy
+    m2 = [[obj.moment_xx, mxy], [mxy, obj.moment_yy]]
+    return Moments2d(m0, m1, m2)
+register_cast(rect, Moments2d, cast_rect_to_moments)
+
+
+def approx_moments_to_rect(obj):
+    '''Approximates a Moments2d instance with a rect such that the mean aligns with the rect's center, and the covariance matrix of the instance is closest to the moment convariance matrix of the rect.'''
+    cx, cy = obj.mean
+    cov = obj.cov
+
+    # w = half width, h = half height
+    size = abs(obj.m0)
+    hw3 = cov[0][0]*size*0.75 # should be >= 0
+    wh3 = cov[1][1]*size*0.75 # should be >= 0
+    wh = _m.sqrt(_m.sqrt(wh3*hw3))
+    h = _m.sqrt(wh3/wh)
+    w = _m.sqrt(hw3/wh)
+    return rect(cx-w, cy-h, cx+w, cy+h)
+register_approx(Moments2d, rect, approx_moments_to_rect)
