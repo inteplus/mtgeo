@@ -5,6 +5,10 @@ A polygon is represented as a collection of 2D points in either clockwise or cou
 
 import numpy as _np
 import math as _m
+
+from mt.base import logger
+logger.warn_module_move('mt.geo.polygon2d', 'mt.geo.polygon')
+
 from .moments2d import EPSILON, moments2d
 
 

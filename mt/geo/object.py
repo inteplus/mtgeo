@@ -23,6 +23,7 @@ class TwoD(object):
 
     @property
     def ndim(self):
+        '''the dimensionality, which is 2'''
         return 2
 
 
@@ -31,4 +32,5 @@ class ThreeD(object):
 
     @property
     def ndim(self):
+        '''the dimensionality, which is 3'''
         return 3
