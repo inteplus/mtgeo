@@ -9,10 +9,11 @@ from mt.base.cast import *
 from .box import box
 from .moments import EPSILON, Moments2d
 from .approx import *
+from .object import TwoD
 
 __all__ = ['rect']
 
-class rect(box):
+class rect(TwoD, box):
     '''A 2D rectangle,
 
     Note we do not care if the rectangle is open or partially closed or closed.'''

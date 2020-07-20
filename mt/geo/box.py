@@ -1,10 +1,11 @@
 import numpy as _np
 
-from mt.geo.dilatation import dlt
+from .dilatation import dlt
+from .object import GeometricObject
 
 __all__ = ['box']
 
-class box(object):
+class box(GeometricObject):
     '''Axis-aligned n-dimensional hyperrectangle.
 
     An axis-aligned n-dimensional box/hyperrectangle is defined as the set of points of the hypercube [-1,1]^n transformed by a dilatation.
@@ -45,7 +46,13 @@ class box(object):
     # ----- derived properties -----
 
     @property
+    def ndim(self):
+        '''The dimensionality'''
+        return self.dim
+
+    @property
     def dim(self):
+        '''The dimensionality'''
         return self.dlt_tfm.dim
 
     @property

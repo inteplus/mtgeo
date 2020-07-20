@@ -25,7 +25,7 @@ class PointList(GeometricObject):
     check : bool
         Whether or not to check if the shape is valid
 
-    Properties
+    Attributes
     ----------
     points : `numpy.ndarray(shape=(N,D))`
         The list of points in numpy.

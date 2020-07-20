@@ -19,7 +19,7 @@ class Polygon(PointList2d):
     check : bool
         Whether or not to check if the shape is valid
 
-    Properties
+    Attributes
     ----------
     points : `numpy.ndarray(shape=(N,2))`
         The list of 2D vertices in numpy.
