@@ -18,40 +18,39 @@ EPSILON = _m.sqrt(_sys.float_info.epsilon)
 
 
 class Moments(GeometricObject):
-    '''Raw moments up to 2nd order of points living in the same Euclidean space.'''
+    '''Raw moments up to 2nd order of points living in the same Euclidean space.
+
+    Parameters
+    ----------
+    m0 : scalar
+        0th-order raw moment
+    m1 : numpy 1d array of length D, where D is the `ndim` of the class
+        1st-order raw moment
+    m2 : numpy DxD matrix
+        2nd-order raw moment
+
+    Examples
+    --------
+    >>> import mt.geo.polygon as gp
+    >>> poly = gp.Polygon([[0,0],[0,1],[1,2],[1,0]])
+    >>> import mt.geo.moments as gm
+    >>> from mt.base.cast import cast
+    >>> m = cast(poly, gm.Moments2d)
+    >>> m.m0
+    4.0
+    >>> m.m1
+    array([2, 3])
+    >>> m.m2
+    array([[2, 2],
+           [2, 5]])
+    >>> m.mean
+    array([0.5 , 0.75])
+    >>> m.cov
+    array([[0.25  , 0.125 ],
+           [0.125 , 0.6875]])
+    '''
 
     def __init__(self, m0, m1, m2):
-        '''Initialises the object.
-
-        Parameters
-        ----------
-        m0 : scalar
-            0th-order raw moment
-        m1 : numpy 1d array of length D, where D is the `ndim` of the class
-            1st-order raw moment
-        m2 : numpy DxD matrix
-            2nd-order raw moment
-
-        Examples
-        --------
-        >>> import mt.geo.polygon as gp
-        >>> poly = gp.Polygon([[0,0],[0,1],[1,2],[1,0]])
-        >>> import mt.geo.moments as gm
-        >>> from mt.base.cast import cast
-        >>> m = cast(poly, gm.Moments2d)
-        >>> m.m0
-        4.0
-        >>> m.m1
-        array([2, 3])
-        >>> m.m2
-        array([[2, 2],
-               [2, 5]])
-        >>> m.mean
-        array([0.5 , 0.75])
-        >>> m.cov
-        array([[0.25  , 0.125 ],
-               [0.125 , 0.6875]])
-        '''
         self._m0 = _np.float(m0)
         self._m1 = _np.array(m1)
         self._m2 = _np.array(m2)

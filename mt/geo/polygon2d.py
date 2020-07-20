@@ -7,7 +7,7 @@ import numpy as _np
 import math as _m
 
 from mt.base import logger
-logger.warn_module_move('mt.geo.polygon2d', 'mt.geo.polygon')
+logger.warn_module_move('mt.geo.polygon2d', ['mt.geo.polygon', 'mt.geo.polygon_integral'])
 
 from .moments2d import EPSILON, moments2d
 
