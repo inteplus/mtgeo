@@ -4,6 +4,9 @@ import numpy as _np
 import math as _m
 import sys as _sys
 
+from mt.base import logger
+logger.warn_module_move('mt.geo.moments2d', 'mt.geo.moments')
+
 
 __all__ = ['EPSILON', 'moments2d']
 

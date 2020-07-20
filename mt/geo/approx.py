@@ -34,9 +34,7 @@ def approximable(obj, dst_type):
     key = (type(obj), dst_type)
     if key in _approximable_registry:
         return _approximable_registry[key](obj)
-    if key in _approx_registry:
-        return True
-    raise NotImplementedError("Approximable function to approx from type {} to type {} not found.".format(key[0], key[1]))
+    return key in _approx_registry
 
 
 def approx(obj, dst_type):
