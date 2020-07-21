@@ -1,14 +1,15 @@
 import numpy as _np
 import math as _m
 
-from .affine_transformation import aff
+from .object import TwoD
+from .affine_transformation import AffineTransformer
 from .linear2d import lin2
 
 
-__all__ = ['aff2', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d']
+__all__ = ['AffineTransformer2d', 'aff2', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d']
 
 
-class aff2(aff):
+class AffineTransformer2d(TwoD, AffineTransformer):
     '''Affine transformation in 2D.
 
     The 2D affine transformation defined here consists of a linear/weight part and an offset/bias part.
@@ -38,14 +39,32 @@ class aff2(aff):
         -----
         For speed reasons, no checking is involved.
         '''
-        return aff2(offset=mat[:2, 2], linear=lin2.from_matrix(mat[:2, :2]))
+        return AffineTransformer2d(offset=mat[:2, 2], linear=lin2.from_matrix(mat[:2, :2]))
 
     # ----- base adaptation -----
 
     @property
+    def ndim(self):
+        return 2
+
+    def multiply(self, other):
+        if not isinstance(other, aff2):
+            return super(aff2, self).__mul__(other)
+        return AffineTransformer2d(
+            offset=(self.linear << other.offset) + self.offset,
+            linear=self.linear*other.linear)
+    multiply.__doc__ = AffineTransformer.multiply.__doc__
+
+    def invert(self):
+        invLinear = ~self.linear
+        invOffset = invLinear << (-self.offset)
+        return AffineTransformer2d(offset=invOffset, linear=invLinear)
+    invert.__doc__ = AffineTransformer.invert.__doc__
+
+    @property
     def bias(self):
         return self.__offset
-    bias.__doc__ = aff.bias.__doc__
+    bias.__doc__ = AffineTransformer.bias.__doc__
 
     @bias.setter
     def bias(self, bias):
@@ -55,12 +74,12 @@ class aff2(aff):
     @property
     def bias_dim(self):
         return 2
-    bias_dim.__doc__ = aff.bias_dim.__doc__
+    bias_dim.__doc__ = AffineTransformer.bias_dim.__doc__
 
     @property
     def weight(self):
         return self.linear.matrix
-    weight.__doc__ = aff.weight.__doc__
+    weight.__doc__ = AffineTransformer.weight.__doc__
 
     @weight.setter
     def weight(self, weight):
@@ -69,7 +88,7 @@ class aff2(aff):
     @property
     def weight_shape(self):
         return (2, 2)
-    weight_shape.__doc__ = aff.weight_shape.__doc__
+    weight_shape.__doc__ = AffineTransformer.weight_shape.__doc__
 
     # ----- data encapsulation -----
 
@@ -105,12 +124,12 @@ class aff2(aff):
         a[2, :2] = 0
         a[2, 2] = 1
         return a
-    matrix.__doc__ = aff.matrix.__doc__
+    matrix.__doc__ = AffineTransformer.matrix.__doc__
 
     @property
     def det(self):
         return self.linear.det
-    det.__doc__ = aff.det.__doc__
+    det.__doc__ = AffineTransformer.det.__doc__
 
     # ----- methods -----
 
@@ -119,21 +138,13 @@ class aff2(aff):
         self.linear = linear
 
     def __repr__(self):
-        return "aff2(offset={}, linear={})".format(self.offset, self.linear)
+        return "AffineTransformer2d(offset={}, linear={})".format(self.offset, self.linear)
 
-    def __mul__(self, other):
-        if not isinstance(other, aff2):
-            return super(aff2, self).__mul__(other)
-        return aff2(
-            offset=(self.linear << other.offset) + self.offset,
-            linear=self.linear*other.linear)
-    __mul__.__doc__ = aff.__mul__.__doc__
 
-    def __invert__(self):
-        invLinear = ~self.linear
-        invOffset = invLinear << (-self.offset)
-        return aff2(offset=invOffset, linear=invLinear)
-    __invert__.__doc__ = aff.__invert__.__doc__
+aff2 = AffineTransformer2d # for backward compatibility
+
+
+# MT-TODO: write a cast function to convert aff to aff2
 
 
 # ----- useful 2D transformations -----
@@ -141,7 +152,7 @@ class aff2(aff):
 
 def swapAxes2d():
     '''Returns the affine transformation that swaps the x-axis with the y-axis.'''
-    return aff2(linear=lin2.from_matrix(_np.array([[0, 1], [1, 0]])))
+    return AffineTransformer2d(linear=lin2.from_matrix(_np.array([[0, 1], [1, 0]])))
 
 
 def flipLR2d(width):
@@ -160,34 +171,34 @@ def flipUD2d(height):
 
 def shearX2d(h):
     '''Returns the shearing along the x-axis.'''
-    return aff2(linear=lin2(shear=h))
+    return AffineTransformer2d(linear=lin2(shear=h))
 
 
 def shearY2d(h):
     '''Returns the shearing along the y-axis.'''
-    return aff2(linear=lin2.from_matrix(_np.array([[1, 0], [h, 1]])))
+    return AffineTransformer2d(linear=lin2.from_matrix(_np.array([[1, 0], [h, 1]])))
 
 
 def originate2d(tfm, x, y):
     '''Tweaks a 2D affine transformation so that it acts as if it originates at (x,y) instead of (0,0).'''
-    return aff2(offset=_np.array((x, y))).conjugate(tfm)
+    return AffineTransformer2d(offset=_np.array((x, y))).conjugate(tfm)
 
 
 def rotate2d(theta, x, y):
     '''Returns the rotation about a reference point (x,y). Theta is in radian.'''
-    return originate2d(aff2(angle=theta), x, y)
+    return originate2d(AffineTransformer2d(angle=theta), x, y)
 
 
 def translate2d(x, y):
     '''Returns the translation.'''
-    return aff2(offset=_np.array([x, y]))
+    return AffineTransformer2d(offset=_np.array([x, y]))
 
 
 def scale2d(scale_x=1, scale_y=None):
     '''Returns the scaling.'''
     if scale_y is None:
         scale_y = scale_x
-    return aff2(linear=lin2(scale=[scale_x, scale_y]))
+    return AffineTransformer2d(linear=lin2(scale=[scale_x, scale_y]))
 
 
 def crop2d(tl, br=None):
@@ -207,4 +218,4 @@ def crop2d(tl, br=None):
     '''
     if br is None:
         return scale2d(1.0/tl[0], 1.0/tl[1])
-    return aff2(offset=_np.array([-tl[0]/(br[0]-tl[0]), -tl[1]/(br[1]-tl[1])]), linear=lin2(scale=[1.0/(br[0]-tl[0]), 1.0/(br[1]-tl[1])]))
+    return AffineTransformer2d(offset=_np.array([-tl[0]/(br[0]-tl[0]), -tl[1]/(br[1]-tl[1])]), linear=lin2(scale=[1.0/(br[0]-tl[0]), 1.0/(br[1]-tl[1])]))
