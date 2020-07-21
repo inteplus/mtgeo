@@ -6,7 +6,7 @@ from inspect import getmro
 from .object import GeometricObject
 
 
-__all__ = ['Transformer', 'transform', 'transformable', 'register_transform', 'register_transformable']
+__all__ = ['transform', 'transformable', 'register_transform', 'register_transformable', 'Transformer', 'InvertibleTransformer', 'LieTransformer']
 
 
 # map: (tfm_type, obj_type) -> transform function
