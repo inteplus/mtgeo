@@ -5,22 +5,23 @@ import numpy as _np
 import numpy.linalg as _nl
 
 from mt.base.casting import register_cast
+from mt.base.deprecated import deprecated_func
 
 from .affine2d import Aff2d, lin2
 from .rect import rect
 from .moments import EPSILON, Moments2d
 from .approximation import register_approx
-from .transformation import transform
+from .transformation import transform, register_transform
 from .object import GeometricObject, TwoD
 
 
-__all__ = ['ellipse', 'Ellipse', 'cast_ellipse_to_moments', 'approx_moments_to_ellipse']
+__all__ = ['ellipse', 'Ellipse', 'cast_ellipse_to_moments', 'approx_moments_to_ellipse', 'transform_Aff2_on_Ellipse']
 
 
 class Ellipse(TwoD, GeometricObject):
     '''Ellipse, defined as an affine transform the unit circle x^2+y^2=1.
 
-    If the unit circle is parameterised by `(cos(t), sin(t)) where t \in [0,2\pi)` then the ellipse is parameterised by `f0 + f1 cos(t) + f2 sin(t), where f0 is the bias vector, f1 and f2 are the first and second column of the weight matrix respectively, of the affine transformation. f1 and f2 are called first and second axes of the ellipse.
+    If the unit circle is parameterised by `(cos(t), sin(t))` where `t \in [0,2\pi)` then the ellipse is parameterised by `f0 + f1 cos(t) + f2 sin(t)`, where `f0` is the bias vector, `f1` and `f2` are the first and second column of the weight matrix respectively, of the affine transformation. `f1` and `f2` are called first and second axes of the ellipse.
 
     Note that this representation is not unique, the same ellipse can be represented by an infinite number of affine transforms of the unit circle. To make the representation unique, we further assert that when f1 and f2 are perpendicular (linearly independent), the ellipse is normalised, and use the normalised version as a unique representation. You can normalise either at initialisation time, or later by invoking member function `normalised`.
 
@@ -67,9 +68,9 @@ class Ellipse(TwoD, GeometricObject):
 
     def normalised(self):
         '''Returns an equivalent ellipse where f1 and f2 are perpendicular (linearly independent).'''
-        U, S, VT = _nl.svd(self.aff_tfm.weight, full_matrices=False)
-        return Ellipse(Aff2d(offset=self.aff_tfm.offset, linear=lin2.from_matrix(U @ _np.diag(S))))
+        return Ellipse(self.aff_tfm.offset, make_normalised=True)
 
+    @deprecated_func("0.3.8", "mt.geo.transformation.transform", "0.6.0", docstring_prefix="        ")
     def transform(self, aff_tfm):
         '''Affine-transforms the ellipse. The resultant ellipse has affine transformation `aff_tfm*self.aff_tfm`.'''
         if not isinstance(aff_tfm, Aff2d):
@@ -128,3 +129,22 @@ def approx_moments_to_ellipse(obj):
     aff_tfm = Aff2d(offset=obj.mean, linear=lin2.from_matrix(A))
     return Ellipse(aff_tfm)
 register_approx(Moments2d, Ellipse, approx_moments_to_ellipse)
+
+
+def transform_Aff2_on_Ellipse(afm_tfm, obj):
+    '''Affine-transforms an Ellipse. The resultant Ellipse has affine transformation `aff_tfm*obj.aff_tfm`.
+
+    Parameters
+    ----------
+    aff_tfm  : Aff2d
+        an 2D affine transformation
+    obj : Ellipse
+        an ellipse
+
+    Returns
+    -------
+    Ellipse
+        the affine-transformed ellipse
+    '''
+    return Ellipse(aff_tfm*obj.aff_tfm)
+register_transform(Aff2d, Ellipse, transform_Aff2_on_Ellipse)
