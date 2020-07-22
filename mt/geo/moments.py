@@ -20,6 +20,8 @@ EPSILON = _m.sqrt(_sys.float_info.epsilon)
 class Moments(GeometricObject):
     '''Raw moments up to 2nd order of points living in the same Euclidean space.
 
+    Overloadded operators are negation, multiplication with a scalar and true division with a scalar.
+
     Parameters
     ----------
     m0 : scalar
@@ -86,9 +88,20 @@ class Moments(GeometricObject):
             self._cov = _np.eye(self.ndim) if abs(self.m0) < EPSILON else (self.m2/self.m0) - _np.outer(self.mean, self.mean)
         return self._cov
 
-    def negate(self):
+    # ----- operators -----
+
+    def __neg__(self):
         '''Returns a new instance where all the moments are negated.'''
         return type(self)(-self.m0, -self.m1, -self.m2)
+        
+    def __mul__(self, scalar):
+        '''Returns a new instance where all the moments are multiplied by a scalar.'''
+        return type(self)(self.m0*scalar, self.m1*scalar, self.m2*scalar)
+        
+    def __truediv__(self, scalar):
+        '''Returns a new instance where all the moments are divided by a scalar.'''
+        return type(self)(self.m0/scalar, self.m1/scalar, self.m2/scalar)
+        
 
 
 class Moments2d(TwoD, Moments):

@@ -116,7 +116,7 @@ def register_transformable(src_type, dst_type, func):
 class Transformer(object):
     '''A mixin asserting that this is a class of transformers.
 
-    A transformer is an object capable of transforming geometric objects of certain types into other geometric objects. It is usually parametrised by a transformation matrix. The mixin assumes that the act of transforming an object using the inheriting class is conducted via calling the global `transform` function. The mixin overrides the left shift operator.
+    A transformer is an object capable of transforming geometric objects of certain types into other geometric objects. It is usually parametrised by a transformation matrix. The mixin assumes that the act of transforming an object using the inheriting class is conducted via calling the global `transform` function. The mixin overloads the left shift operator.
     '''
     
     # ----- operators -----
@@ -132,7 +132,7 @@ class Transformer(object):
 class InvertibleTransformer(Transformer):
     '''A mixin asserting that this is a class of invertible transformers. 
 
-    The mixin assumes that a function `self.invert()` to return the inverted transformer has been implemented. It further overrides the right shift operator and the inverse operator.
+    The mixin assumes that a function `self.invert()` to return the inverted transformer has been implemented. It further overloads the right shift operator and the inverse operator.
     '''
 
     # ----- abstract -----
@@ -153,7 +153,7 @@ class InvertibleTransformer(Transformer):
 class LieTransformer(InvertibleTransformer):
     '''A mixin asserting that this is a class of transformers living in a Lie group, supporting the associative multiplication operator and the inversion operator. 
 
-    Beside being an invertible transformer, the mixin additionally assumes that a function `self.multiply(other)` implementing the multiplication operator is available. It further overides some more operators and provides a conjugate function.
+    Beside being an invertible transformer, the mixin additionally assumes that a function `self.multiply(other)` implementing the multiplication operator is available. It further overloads the multiplication, true division and modular operators, and provides a conjugate function.
     '''
     
     # ----- abstract -----

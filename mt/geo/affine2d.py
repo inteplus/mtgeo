@@ -2,11 +2,13 @@ import numpy as _np
 import math as _m
 
 from .object import TwoD
+from .moments import Moments2d
+from .transformation import register_transform
 from .affine_transformation import Aff
 from .linear2d import lin2
 
 
-__all__ = ['Aff2d', 'aff2', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d']
+__all__ = ['Aff2d', 'aff2', 'transform_Aff2d_on_Moments2d', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d']
 
 
 class Aff2d(TwoD, Aff):
@@ -145,6 +147,33 @@ aff2 = Aff2d # for backward compatibility
 
 
 # MT-TODO: write a cast function to convert aff to aff2
+
+
+# ----- useful functions -----
+
+
+def transform_Aff2d_on_Moments2d(aff_tfm, moments):
+    '''Transform a Moments2d using a 2D affine transformation.
+
+    Parameters
+    ----------
+    aff_tfm : Aff2d
+        2D affine transformation
+    moments : Moments2d
+        2D moments
+
+    Returns
+    -------
+    Moments2d
+        affined-transformed 2D moments
+    '''
+    A = aff_tfm.weight
+    b = aff_tfm.bias
+    n0 = moments.m0
+    n1 = _np.dot(A, moments.m1) + b*n0
+    n2 = _np.dot(_np.dot(A, moments.m2), A.T) + _np.outer((n0*2)*_np.dot(A, moments.m1), b) + _np.outer((n0*n0)*b, b)
+    return Moments2d(n0, n1, n2)
+register_transform(Aff2d, Moments2d, transform_Aff2d_on_Moments2d)
 
 
 # ----- useful 2D transformations -----
