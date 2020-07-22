@@ -3,7 +3,7 @@
 import numpy as _np
 import numpy.linalg as _nl
 
-from mt.base.cast import register_cast
+from mt.base.casting import register_cast
 
 from .affine_transformation import aff
 from .rect import rect

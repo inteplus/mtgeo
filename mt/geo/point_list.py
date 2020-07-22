@@ -2,7 +2,7 @@
 
 
 import numpy as _np
-import mt.base.cast as _bc
+import mt.base.casting as _bc
 from .object import GeometricObject, TwoD, ThreeD
 
 

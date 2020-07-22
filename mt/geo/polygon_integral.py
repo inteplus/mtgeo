@@ -3,7 +3,7 @@
 A polygon is represented as a collection of 2D points in either clockwise or counter-clockwise order. It is stored in a numpy array of shape (N,2).
 '''
 
-import mt.base.cast as _bc
+import mt.base.casting as _bc
 
 from .moments import Moments2d
 from .polygon import Polygon

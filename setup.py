@@ -25,7 +25,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'numpy',
-        'mtbase>=0.4.4',
+        'mtbase>=0.4.6',
     ],
     url='https://github.com/inteplus/mtgeo',
     project_urls={

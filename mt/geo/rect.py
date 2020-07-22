@@ -4,7 +4,7 @@ import math as _m
 import numpy as _np
 
 from mt.base import logger
-from mt.base.cast import *
+from mt.base.casting import *
 
 from .box import box
 from .moments import EPSILON, Moments2d
@@ -115,8 +115,8 @@ class rect(TwoD, box):
     def to_moments2d(self):
         '''Computes all moments, up to 2nd-order of the rectangle's interior.
 
-        This function is being deprecated. Please use mt.base.cast.cast() to cast an object of type rect to type Moments2d instead.'''
-        logger.warn_func_move('mt.geo.rect.to_moments2d', 'mt.base.cast.cast(r:rect, mt.geo.moments.Moments2d)')
+        This function is being deprecated. Please use mt.base.casting.cast() to cast an object of type rect to type Moments2d instead.'''
+        logger.warn_func_move('mt.geo.rect.to_moments2d', 'mt.base.casting.cast(r:rect, mt.geo.moments.Moments2d)')
         from .moments2d import moments2d
         m0 = self.signed_area
         m1 = [self.moment_x, self.moment_y]

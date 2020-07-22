@@ -2,6 +2,7 @@ import numpy as _np
 import numpy.linalg as _nl
 
 from mt.base import logger
+from mt.base.deprecated import deprecated_func
 
 from .object import GeometricObject
 from .transform import LieTransformer, transform, register_transform
@@ -184,29 +185,15 @@ aff = Aff # for backward compatibility
 
 # ----- obsolete useful 2D transformations -----
 
+@deprecated_func("0.3.4", suggested_func="mt.geo.affine2d.shear2d", removed_version="0.5.0", docstring_prefix="    ") 
 def shear2d(theta):
-    '''Returns the shearing. Theta is in radian.
-
-    .. deprecated:: 0.3.5
-       Use :func:`mt.geo.affine2d.shear2d` instead.
-    '''
-    if not shear2d.warned:
-        print("mt.geo.affine_transformation.shear2d() is deprecated and mathematically incorrect. Use mt.geo.affine2d.shear2d() instead.")
-        shear2d.warned = True
+    '''Returns the shearing. Theta is in radian.'''
     return Aff(weight=_np.array([
         [1, -_np.sin(theta)],
         [0, _np.cos(theta)]]),
         bias=_np.zeros(2))
-shear2d.warned = False
 
+@deprecated_func("0.3.4", suggested_func="mt.geo.affine2d.originate2d", removed_version="0.5.0", docstring_prefix="    ") 
 def originate2d(tfm, x, y):
-    '''Tweaks an affine transformation so that it acts as if it originates at (x,y) instead of (0,0).
-
-    .. deprecated:: 0.3.5
-       Use :func:`mt.geo.affine2d.originate2d` instead.
-    '''
-    if not originate2d.warned:
-        print("mt.geo.affine_transformation.originate2d() is deprecated. Use mt.geo.affine2d.originate2d() instead.")
-        originate2d.warned = True
+    '''Tweaks an affine transformation so that it acts as if it originates at (x,y) instead of (0,0).'''
     return Aff(weight=_np.identity(2), bias=_np.array((x, y))).conjugate(tfm)
-originate2d.warned = False

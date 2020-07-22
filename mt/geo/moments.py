@@ -4,7 +4,7 @@ import numpy as _np
 import math as _m
 import sys as _sys
 
-import mt.base.cast as _bc
+import mt.base.casting as _bc
 
 from .object import GeometricObject, TwoD, ThreeD
 from .point_list import PointList, PointList2d, PointList3d
@@ -34,7 +34,7 @@ class Moments(GeometricObject):
     >>> import mt.geo.polygon as gp
     >>> poly = gp.Polygon([[0,0],[0,1],[1,2],[1,0]])
     >>> import mt.geo.moments as gm
-    >>> from mt.base.cast import cast
+    >>> from mt.base.casting import cast
     >>> m = cast(poly, gm.Moments2d)
     >>> m.m0
     4.0
