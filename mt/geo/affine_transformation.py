@@ -8,7 +8,7 @@ from .object import GeometricObject
 from .transform import LieTransformer, transform, register_transform
 
 
-__all__ = ['aff', 'Aff']
+__all__ = ['aff', 'Aff', 'shear2d', 'originate2d']
 
 
 class Aff(LieTransformer, GeometricObject):
@@ -185,7 +185,7 @@ aff = Aff # for backward compatibility
 
 # ----- obsolete useful 2D transformations -----
 
-@deprecated_func("0.3.4", suggested_func="mt.geo.affine2d.shear2d", removed_version="0.5.0", docstring_prefix="    ") 
+@deprecated_func("0.3.4", suggested_func="mt.geo.affine2d.shearX2d", removed_version="0.5.0", docstring_prefix="    ") 
 def shear2d(theta):
     '''Returns the shearing. Theta is in radian.'''
     return Aff(weight=_np.array([
