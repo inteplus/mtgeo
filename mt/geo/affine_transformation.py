@@ -7,17 +7,17 @@ from .object import GeometricObject
 from .transform import LieTransformer, transform, register_transform
 
 
-__all__ = ['aff', 'AffineTransformer']
+__all__ = ['aff', 'Aff']
 
 
-class AffineTransformer(LieTransformer, GeometricObject):
+class Aff(LieTransformer, GeometricObject):
     '''A transformer to perform affine transformations using the same transformation matrix in n-dim space.
 
     Examples
     --------
     >>> import numpy as _np
     >>> import mt.geo as _mg
-    >>> a = _mg.AffineTransformer(weight=_np.array([[1,-1],[-2,3]]), bias=_np.array([3,4]))
+    >>> a = _mg.Aff(weight=_np.array([[1,-1],[-2,3]]), bias=_np.array([3,4]))
     >>> a.bias
     array([3, 4])
     >>> a.weight
@@ -28,30 +28,30 @@ class AffineTransformer(LieTransformer, GeometricObject):
            [-2.,  3.,  4.],
            [ 0.,  0.,  1.]])
     >>> ~a
-    AffineTransformer(weight_diagonal=[3. 1.], bias=[-13. -10.])
+    Aff(weight_diagonal=[3. 1.], bias=[-13. -10.])
     >>> a*~a
-    AffineTransformer(weight_diagonal=[1. 1.], bias=[0. 0.])
+    Aff(weight_diagonal=[1. 1.], bias=[0. 0.])
     >>> ~a*a
-    AffineTransformer(weight_diagonal=[1. 1.], bias=[0. 0.])
+    Aff(weight_diagonal=[1. 1.], bias=[0. 0.])
     >>> a/a
-    AffineTransformer(weight_diagonal=[1. 1.], bias=[0. 0.])
+    Aff(weight_diagonal=[1. 1.], bias=[0. 0.])
     >>> a%a
-    AffineTransformer(weight_diagonal=[1. 1.], bias=[0. 0.])
+    Aff(weight_diagonal=[1. 1.], bias=[0. 0.])
     >>> a*a
-    AffineTransformer(weight_diagonal=[ 3 11], bias=[ 2 10])
+    Aff(weight_diagonal=[ 3 11], bias=[ 2 10])
     >>> a*a*a
-    AffineTransformer(weight_diagonal=[11 41], bias=[-5 30])
+    Aff(weight_diagonal=[11 41], bias=[-5 30])
     >>> (a*a)*a
-    AffineTransformer(weight_diagonal=[11 41], bias=[-5 30])
+    Aff(weight_diagonal=[11 41], bias=[-5 30])
     >>> a*(a*a)
-    AffineTransformer(weight_diagonal=[11 41], bias=[-5 30])
-    >>> b = _mg.AffineTransformer(weight=_np.array([[1,-1],[-3,2]]), bias=_np.array([2,1]))
+    Aff(weight_diagonal=[11 41], bias=[-5 30])
+    >>> b = _mg.Aff(weight=_np.array([[1,-1],[-3,2]]), bias=_np.array([2,1]))
     >>> a*b
-    AffineTransformer(weight_diagonal=[4 8], bias=[4 3])
+    Aff(weight_diagonal=[4 8], bias=[4 3])
     >>> b*a
-    AffineTransformer(weight_diagonal=[3 9], bias=[1 0])
+    Aff(weight_diagonal=[3 9], bias=[1 0])
     >>> a.conjugate(b)
-    AffineTransformer(weight_diagonal=[ 6. -3.], bias=[-18.  66.])
+    Aff(weight_diagonal=[ 6. -3.], bias=[-18.  66.])
     '''
 
     # ----- base adaptation -----
@@ -64,14 +64,14 @@ class AffineTransformer(LieTransformer, GeometricObject):
         '''Lie inverse'''
         invWeight = _nl.inv(
             self.weight)  # slow, and assuming weight matrix is invertible
-        return AffineTransformer(invWeight, _np.dot(invWeight, -self.bias))
+        return Aff(invWeight, _np.dot(invWeight, -self.bias))
 
     def multiply(self, other):
         '''a*b = Lie operator'''
         if not isinstance(other, aff):
             raise ValueError(
                 "Expecting 'other' to be an affine transformation, but {} received.".format(other.__class__))
-        return AffineTransformer(_np.dot(self.weight, other.weight), self << other.bias)
+        return Aff(_np.dot(self.weight, other.weight), self << other.bias)
 
     # ----- data encapsulation -----
 
@@ -145,7 +145,7 @@ class AffineTransformer(LieTransformer, GeometricObject):
             _ = self.dim  # just to check shapes
 
     def __repr__(self):
-        return "AffineTransformer(weight_diagonal={}, bias={})".format(self.weight.diagonal(), self.bias)
+        return "Aff(weight_diagonal={}, bias={})".format(self.weight.diagonal(), self.bias)
 
     def __lshift__(self, x):
         '''left shift = Lie action'''
@@ -176,10 +176,10 @@ class AffineTransformer(LieTransformer, GeometricObject):
         det = self.det
         return 1 if det > eps else -1 if det < -eps else 0
 
-aff = AffineTransformer # for backward compatibility
+aff = Aff # for backward compatibility
 
 
-# MT-TODO: register_transform the left shift operator and transform_points() function of AffineTransformer
+# MT-TODO: register_transform the left shift operator and transform_points() function of Aff
 
 
 # ----- obsolete useful 2D transformations -----
@@ -189,7 +189,7 @@ def shear2d(theta):
     if not shear2d.warned:
         print("mt.geo.affine_transformation.shear2d() is deprecated and mathematically incorrect. Use mt.geo.affine2d.shear2d() instead.")
         shear2d.warned = True
-    return AffineTransformer(weight=_np.array([
+    return Aff(weight=_np.array([
         [1, -_np.sin(theta)],
         [0, _np.cos(theta)]]),
         bias=_np.zeros(2))
@@ -200,5 +200,5 @@ def originate2d(tfm, x, y):
     if not originate2d.warned:
         print("mt.geo.affine_transformation.originate2d() is deprecated. Use mt.geo.affine2d.originate2d() instead.")
         originate2d.warned = True
-    return AffineTransformer(weight=_np.identity(2), bias=_np.array((x, y))).conjugate(tfm)
+    return Aff(weight=_np.identity(2), bias=_np.array((x, y))).conjugate(tfm)
 originate2d.warned = False
