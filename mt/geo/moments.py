@@ -11,7 +11,7 @@ from .point_list import PointList, PointList2d, PointList3d
 from .polygon import Polygon
 
 
-__all__ = ['EPSILON', 'Moments', 'Moments2d', 'Moments3d']
+__all__ = ['EPSILON', 'Moments', 'Moments2d', 'Moments3d', 'moments_from_pointlist']
 
 
 EPSILON = _m.sqrt(_sys.float_info.epsilon)
@@ -94,11 +94,17 @@ class Moments(GeometricObject):
 class Moments2d(TwoD, Moments):
     '''Raw moments up to 2nd order of points living in 2D. See Moments for more details.'''
     pass
+_bc.register_cast(Moments2d, Moments, lambda x: Moments(x.m0, x.m1, x.m2))
+_bc.register_cast(Moments, Moments2d, lambda x: Moments2d(x.m0, x.m1, x.m2))
+_bc.register_castable(Moments, Moments2d, lambda x: x.ndim==2)
 
 
 class Moments3d(ThreeD, Moments):
     '''Raw moments up to 2nd order of points living in 3D. See Moments for more details.'''
     pass
+_bc.register_cast(Moments3d, Moments, lambda x: Moments(x.m0, x.m1, x.m2))
+_bc.register_cast(Moments, Moments3d, lambda x: Moments3d(x.m0, x.m1, x.m2))
+_bc.register_castable(Moments, Moments3d, lambda x: x.ndim==3)
 
 
 def moments_from_pointlist(pl):

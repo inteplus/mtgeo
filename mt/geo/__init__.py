@@ -1,4 +1,5 @@
 from .approximation import approx, approximable
+from .transformation import transform, transformable
 
 from .rect import rect
 from .affine_transformation import *

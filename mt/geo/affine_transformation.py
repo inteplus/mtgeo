@@ -5,7 +5,7 @@ from mt.base import logger
 from mt.base.deprecated import deprecated_func
 
 from .object import GeometricObject
-from .transform import LieTransformer, transform, register_transform
+from .transformation import LieTransformer, transform, register_transform
 from .moments import Moments
 
 

@@ -45,6 +45,9 @@ class PointList2d(TwoD, PointList):
     pass
 _bc.register_castable(_np.ndarray, PointList2d, lambda x: castable_ndarray_PointList(x,2))
 _bc.register_cast(_np.ndarray, PointList2d, lambda x: PointList2d(x, check=False))
+_bc.register_cast(PointList2d, PointList, lambda x: PointList(x.points, check=False))
+_bc.register_cast(PointList, PointList2d, lambda x: PointList2d(x.points, check=False))
+_bc.register_castable(PointList, PointList2d, lambda x: x.ndim==2)
 
 
 class PointList3d(ThreeD, PointList):
@@ -52,3 +55,6 @@ class PointList3d(ThreeD, PointList):
     pass
 _bc.register_castable(_np.ndarray, PointList3d, lambda x: castable_ndarray_PointList(x, 3))
 _bc.register_cast(_np.ndarray, PointList3d, lambda x: PointList3d(x, check=False))
+_bc.register_cast(PointList3d, PointList, lambda x: PointList(x.points, check=False))
+_bc.register_cast(PointList, PointList3d, lambda x: PointList3d(x.points, check=False))
+_bc.register_castable(PointList, PointList3d, lambda x: x.ndim==3)
