@@ -1,4 +1,5 @@
-#from .interval import interval
+from .approximation import approx, approximable
+
 from .rect import rect
 from .affine_transformation import *
 from .dilated_isometry import *

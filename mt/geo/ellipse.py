@@ -8,11 +8,11 @@ from mt.base.casting import register_cast
 from .affine_transformation import aff
 from .rect import rect
 from .moments import EPSILON, Moments2d
-from .approx import register_approx
+from .approximation import register_approx
 from .object import GeometricObject, TwoD
 
 
-__all__ = ['ellipse', 'Ellipse']
+__all__ = ['ellipse', 'Ellipse', 'cast_ellipse_to_moments', 'approx_moments_to_ellipse']
 
 
 class Ellipse(TwoD, GeometricObject):

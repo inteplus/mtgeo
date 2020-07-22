@@ -3,15 +3,15 @@
 import math as _m
 import numpy as _np
 
-from mt.base import logger
+from mt.base.deprecated import deprecated_func
 from mt.base.casting import *
 
 from .box import box
 from .moments import EPSILON, Moments2d
-from .approx import *
+from .approximation import *
 from .object import TwoD
 
-__all__ = ['rect']
+__all__ = ['rect', 'cast_rect_to_moments', 'approx_moments_to_rect']
 
 class rect(TwoD, box):
     '''A 2D rectangle,
@@ -112,11 +112,9 @@ class rect(TwoD, box):
         return self.signed_area*(self.min_y*self.min_y+self.min_y*self.max_y+self.max_y*self.max_y)/3
 
     @property
+    @deprecated_func("0.3.5", suggested_func="mt.base.casting.cast", removed_version="0.5.0")
     def to_moments2d(self):
-        '''Computes all moments, up to 2nd-order of the rectangle's interior.
-
-        This function is being deprecated. Please use mt.base.casting.cast() to cast an object of type rect to type Moments2d instead.'''
-        logger.warn_func_move('mt.geo.rect.to_moments2d', 'mt.base.casting.cast(r:rect, mt.geo.moments.Moments2d)')
+        '''Computes all moments, up to 2nd-order of the rectangle's interior.'''
         from .moments2d import moments2d
         m0 = self.signed_area
         m1 = [self.moment_x, self.moment_y]
@@ -125,24 +123,22 @@ class rect(TwoD, box):
         return moments2d(m0, m1, m2)
 
     @staticmethod
+    @deprecated_func("0.3.5", suggested_func="mt.geo.approximation.approx", removed_version="0.5.0")
     def from_moments2d(obj):
         '''Returns a rectangle that best approximates the moments2d instance.
-
+        
         The function returns a rectangle such that its mean is the same as the mean of the instance, and its x-variance and y-variance are the same as those of the instance. The correlation is ignored.
-
-        This function is being deprecated. Please use mt.geo.approx.approx() to approximate an object of type Moments2d to type rect instead.
-
+        
         Parameters
         ----------
         obj : moments2d
             an instance containing moments of 2D points up to 2nd order
-
+        
         Returns
         -------
         rect
             the output rectangle
         '''
-        logger.warn_func_move('mt.geo.rect.from_moments2d', 'mt.geo.approx.approx(obj:mt.geo.moments.Moments2d, mt.geo.rect.rect)')
         cx, cy = obj.mean
         cov = obj.cov
 
