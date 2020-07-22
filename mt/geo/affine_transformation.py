@@ -6,9 +6,10 @@ from mt.base.deprecated import deprecated_func
 
 from .object import GeometricObject
 from .transform import LieTransformer, transform, register_transform
+from .moments import Moments
 
 
-__all__ = ['aff', 'Aff', 'shear2d', 'originate2d']
+__all__ = ['aff', 'Aff', 'transform_Aff_on_Moments', 'shear2d', 'originate2d']
 
 
 class Aff(LieTransformer, GeometricObject):
@@ -181,6 +182,33 @@ aff = Aff # for backward compatibility
 
 
 # MT-TODO: register_transform the left shift operator and transform_points() function of Aff
+
+
+# ----- useful functions -----
+
+
+def transform_Aff_on_Moments(aff_tfm, moments):
+    '''Transform the Moments using an affine transformation.
+
+    Parameters
+    ----------
+    aff_tfm : Aff
+        general affine transformation
+    moments : Moments
+        general moments
+
+    Returns
+    -------
+    Moments
+        affined-transformed moments
+    '''
+    A = aff_tfm.weight
+    b = aff_tfm.bias
+    n0 = moments.m0
+    n1 = _np.dot(A, moments.m1) + b*n0
+    n2 = _np.dot(_np.dot(A, moments.m2), A.T) + _np.outer((n0*2)*_np.dot(A, moments.m1), b) + _np.outer((n0*n0)*b, b)
+    return Moments(n0, n1, n2)
+register_transform(Aff, Moments, transform_Aff_on_Moments)
 
 
 # ----- obsolete useful 2D transformations -----
