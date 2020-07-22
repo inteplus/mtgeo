@@ -185,7 +185,11 @@ aff = Aff # for backward compatibility
 # ----- obsolete useful 2D transformations -----
 
 def shear2d(theta):
-    '''Returns the shearing. Theta is in radian.'''
+    '''Returns the shearing. Theta is in radian.
+
+    .. deprecated:: 0.3.5
+       Use :func:`mt.geo.affine2d.shear2d` instead.
+    '''
     if not shear2d.warned:
         print("mt.geo.affine_transformation.shear2d() is deprecated and mathematically incorrect. Use mt.geo.affine2d.shear2d() instead.")
         shear2d.warned = True
@@ -196,7 +200,11 @@ def shear2d(theta):
 shear2d.warned = False
 
 def originate2d(tfm, x, y):
-    '''Tweaks an affine transformation so that it acts as if it originates at (x,y) instead of (0,0).'''
+    '''Tweaks an affine transformation so that it acts as if it originates at (x,y) instead of (0,0).
+
+    .. deprecated:: 0.3.5
+       Use :func:`mt.geo.affine2d.originate2d` instead.
+    '''
     if not originate2d.warned:
         print("mt.geo.affine_transformation.originate2d() is deprecated. Use mt.geo.affine2d.originate2d() instead.")
         originate2d.warned = True
