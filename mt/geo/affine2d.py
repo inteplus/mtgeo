@@ -168,11 +168,15 @@ def transform_Aff2d_on_Moments2d(aff_tfm, moments):
         affined-transformed 2D moments
     '''
     A = aff_tfm.weight
-    b = aff_tfm.bias
-    n0 = moments.m0
-    n1 = _np.dot(A, moments.m1) + b*n0
-    n2 = _np.dot(_np.dot(A, moments.m2), A.T) + _np.outer((n0*2)*_np.dot(A, moments.m1), b) + _np.outer((n0*n0)*b, b)
-    return Moments2d(n0, n1, n2)
+    old_m0 = moments.m0
+    old_mean = moments.mean
+    old_cov = moments.cov
+    new_mean = A @ old_mean + aff_tfm.bias
+    new_cov = A @ old_cov @ A.T
+    new_m0 = old_m0*abs(aff_tfm.det)
+    new_m1 = new_m0*new_mean
+    new_m2 = new_m0*(_np.outer(new_mean, new_mean) + new_cov)
+    return Moments2d(new_m0, new_m1, new_m2)
 register_transform(Aff2d, Moments2d, transform_Aff2d_on_Moments2d)
 
 

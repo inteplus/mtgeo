@@ -20,16 +20,26 @@ __all__ = ['ellipse', 'Ellipse', 'cast_ellipse_to_moments', 'approx_moments_to_e
 class Ellipse(TwoD, GeometricObject):
     '''Ellipse, defined as an affine transform the unit circle x^2+y^2=1.
 
-    Note that this representation is not unique, the same ellipse can be represented by an infinite number of affine transforms of the unit circle.
-
     If the unit circle is parameterised by `(cos(t), sin(t)) where t \in [0,2\pi)` then the ellipse is parameterised by `f0 + f1 cos(t) + f2 sin(t), where f0 is the bias vector, f1 and f2 are the first and second column of the weight matrix respectively, of the affine transformation. f1 and f2 are called first and second axes of the ellipse.
+
+    Note that this representation is not unique, the same ellipse can be represented by an infinite number of affine transforms of the unit circle. To make the representation unique, we further assert that when f1 and f2 are perpendicular (linearly independent), the ellipse is normalised, and use the normalised version as a unique representation. You can normalise either at initialisation time, or later by invoking member function `normalised`.
+
+    Parameters
+    ----------
+    aff_tfm : Aff2d
+        an affine transformation
+    make_normalised : bool
+        whether or not to adjust the affine transformation to make a normalised representation of the ellipse
 
     '''
 
-    def __init__(self, aff_tfm):
+    def __init__(self, aff_tfm, make_normalised=True):
         '''Initialises an ellipse with an affine transformation.'''
         if not isinstance(aff_tfm, Aff2d):
             raise ValueError("Only an instance of class `Aff2d` is accepted.")
+        if make_normalised:
+            U, S, VT = _nl.svd(aff_tfm.weight, full_matrices=False)
+            aff_tfm = Aff2d(offset=aff_tfm.offset, linear=lin2.from_matrix(U @ _np.diag(S)))            
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
@@ -53,7 +63,12 @@ class Ellipse(TwoD, GeometricObject):
     @property
     def area(self):
         '''The absolute area of the ellipse's interior.'''
-        return _m.pi*_nl.norm(self.f0)*_nl.norm(self.f1)
+        return _m.pi*abs(self.aff_tfm.det)
+
+    def normalised(self):
+        '''Returns an equivalent ellipse where f1 and f2 are perpendicular (linearly independent).'''
+        U, S, VT = _nl.svd(self.aff_tfm.weight, full_matrices=False)
+        return Ellipse(Aff2d(offset=self.aff_tfm.offset, linear=lin2.from_matrix(U @ _np.diag(S))))
 
     def transform(self, aff_tfm):
         '''Affine-transforms the ellipse. The resultant ellipse has affine transformation `aff_tfm*self.aff_tfm`.'''
@@ -96,20 +111,20 @@ ellipse = Ellipse # for now
 
 
 def cast_ellipse_to_moments(obj):
-    # unit circle's moments
-    m0 = _m.pi
-    m1 = [0,0]
     a = _m.pi/4
-    m2 = [[a,0],[0,a]]
-    moments = Moments2d(m0, m1, m2)
-
-    # transform
-    scale = _nl.norm(obj.f0)*_nl.norm(obj.f1)
-    return transform(obj.aff_tfm, moments)*scale
+    moments = Moments2d(_m.pi, [0,0], [[a,0],[0,a]]) # unit circle's moments
+    return transform(obj.aff_tfm, moments) # transform
 register_cast(Ellipse, Moments2d, cast_ellipse_to_moments)
 
 
 def approx_moments_to_ellipse(obj):
-    '''Approximates a Moments2d instance with an Ellipse that has the same mean and covariance as the mean and covariance of the instance.'''
-    raise NotImplementedError # MT-TODO
+    '''Approximates a Moments2d instance with a normalised Ellipse that has the same mean and covariance as the mean and covariance of the instance.'''
+    # A
+    AAT = obj.cov*4
+    w, v = _nl.eig(AAT)
+    A = v @ _np.diag(_np.sqrt(w))
+
+    # aff_tfm
+    aff_tfm = Aff2d(offset=obj.mean, linear=lin2.from_matrix(A))
+    return Ellipse(aff_tfm)
 register_approx(Moments2d, Ellipse, approx_moments_to_ellipse)
