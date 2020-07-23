@@ -3,7 +3,7 @@ import numpy as _np
 import mt.base.casting as _bc
 from mt.base.deprecated import deprecated_func
 
-from .transformation import register_transform
+from .transformation import register_transform, register_transformable
 from .point_list import PointList
 from .moments import Moments
 from .affine_transformation import Aff
@@ -136,15 +136,12 @@ _bc.register_castable(Aff, Dlt, lambda x: _np.count_nonzero(x.weight - _np.diag(
 # ----- transform functions -----
 
 
-# MT-TODO: make transform function of Aff, Dlt Aff2d on nd arrays as if transforming single points
-
-
 def transform_Dlt_on_Moments(dlt_tfm, moments):
     '''Transform the Moments using an affine transformation.
 
     Parameters
     ----------
-    dlt_tfm : Aff
+    dlt_tfm : Dlt
         general dilatation
     moments : Moments
         general moments
@@ -168,12 +165,32 @@ def transform_Dlt_on_Moments(dlt_tfm, moments):
 register_transform(Dlt, Moments, transform_Dlt_on_Moments)
 
 
+def transform_Dlt_on_ndarray(dlt_tfm, point_array):
+    '''Transform an array of points using a dilatation.
+
+    Parameters
+    ----------
+    dlt_tfm : Dlt
+        general dilatation
+    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of the transformation
+        a point array
+
+    Returns
+    -------
+    numpy.ndarray
+        affine-transformed point array
+    '''
+    return point_array * aff_tfm.scale + aff_tfm.offset
+register_transform(Dlt, _np.ndarray, transform_Dlt_on_ndarray)
+register_transformable(Dlt, _np.ndarray, lambda x, y: x.ndim() == y.shape[-1])
+
+
 def transform_Dlt_on_PointList(dlt_tfm, point_list):
     '''Transform a point list using an affine transformation.
 
     Parameters
     ----------
-    dlt_tfm : Aff
+    dlt_tfm : Dlt
         general dilatation
     point_list : PointList
         a point list

@@ -93,7 +93,7 @@ def register_transform(tfm_type, obj_type, func):
     _transform_registry[key] = func
 
 
-def register_transformable(src_type, dst_type, func):
+def register_transformable(tfm_type, obj_type, func):
     '''Registers a function to check if we can transform an object of a given type using a transformer of another given type.
 
     Parameters
@@ -103,7 +103,7 @@ def register_transformable(src_type, dst_type, func):
     obj_type : type
         type or class of the object to transform from
     func : function
-        transformable function `f(obj) -> bool` to register
+        transformable function `f(tfm_type, obj) -> bool` to register
     '''
 
     key = (tfm_type, obj_type)

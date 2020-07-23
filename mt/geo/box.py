@@ -45,7 +45,7 @@ class box(GeometricObject):
 
     # ----- derived properties -----
 
-    @property
+    @classmethod
     def ndim(self):
         '''The dimensionality'''
         return self.dim

@@ -5,7 +5,7 @@ from mt.base import logger
 from mt.base.deprecated import deprecated_func
 
 from .object import GeometricObject
-from .transformation import LieTransformer, transform, register_transform
+from .transformation import LieTransformer, transform, register_transform, register_transformable
 from .point_list import PointList
 from .moments import Moments
 
@@ -205,6 +205,26 @@ def transform_Aff_on_Moments(aff_tfm, moments):
     new_m2 = new_m0*(_np.outer(new_mean, new_mean) + new_cov)
     return Moments(new_m0, new_m1, new_m2)
 register_transform(Aff, Moments, transform_Aff_on_Moments)
+
+
+def transform_Aff_on_ndarray(aff_tfm, point_array):
+    '''Transform an array of points using an affine transformation.
+
+    Parameters
+    ----------
+    aff_tfm : Aff
+        general affine transformation
+    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of the transformation
+        a point array
+
+    Returns
+    -------
+    numpy.ndarray
+        affine-transformed point array
+    '''
+    return point_array @ aff_tfm.weight.T + aff_tfm.bias
+register_transform(Aff, _np.ndarray, transform_Aff_on_ndarray)
+register_transformable(Aff, _np.ndarray, lambda x, y: x.ndim() == y.shape[-1])
 
 
 def transform_Aff_on_PointList(aff_tfm, point_list):

@@ -4,7 +4,7 @@ import math as _m
 import mt.base.casting as _bc
 
 from .object import TwoD
-from .transformation import register_transform
+from .transformation import register_transform, register_transformable
 from .moments import Moments2d
 from .point_list import PointList2d
 from .polygon import Polygon
@@ -49,8 +49,8 @@ class Aff2d(TwoD, Aff):
 
     # ----- base adaptation -----
 
-    @property
-    def ndim(self):
+    @classmethod
+    def ndim(self): # reimplementation to enforce constantness
         return 2
 
     def multiply(self, other):
@@ -155,7 +155,7 @@ aff2 = Aff2d # for backward compatibility
 
 _bc.register_cast(Aff2d, Aff, lambda x: Aff(weights=x.weight, bias=x.offset, check_shapes=False))
 _bc.register_cast(Aff, Aff2d, lambda x: Aff2d(offset=x.bias, linear=lin2.from_matrix(x.weight)))
-_bc.register_castable(Aff, Aff2d, lambda x: x.ndim==2)
+_bc.register_castable(Aff, Aff2d, lambda x: x.ndim()==2)
 
 
 # ----- transform functions -----
@@ -187,6 +187,26 @@ def transform_Aff2d_on_Moments2d(aff_tfm, moments):
     new_m2 = new_m0*(_np.outer(new_mean, new_mean) + new_cov)
     return Moments2d(new_m0, new_m1, new_m2)
 register_transform(Aff2d, Moments2d, transform_Aff2d_on_Moments2d)
+
+
+def transform_Aff2d_on_ndarray(aff_tfm, point_array):
+    '''Transform an array of 2D points using a 2D affine transformation.
+
+    Parameters
+    ----------
+    aff_tfm : Aff
+        a 2D affine transformation
+    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of the transformation
+        an array of 2D points
+
+    Returns
+    -------
+    numpy.ndarray
+        affine-transformed point array
+    '''
+    return point_array @ aff_tfm.weight.T + aff_tfm.bias
+register_transform(Aff2d, _np.ndarray, transform_Aff2d_on_ndarray)
+register_transformable(Aff2d, _np.ndarray, lambda x, y: y.shape[-1] == 2)
 
 
 def transform_Aff2d_on_PointList2d(aff_tfm, point_list):
