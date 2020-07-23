@@ -9,7 +9,7 @@ from .moments import Moments2d
 from .point_list import PointList2d
 from .polygon import Polygon
 from .affine_transformation import Aff
-from .linear2d import lin2
+from .linear2d import Lin2d
 
 
 __all__ = ['Aff2d', 'aff2', 'transform_Aff2d_on_Moments2d', 'transform_Aff2d_on_PointList2d', 'transform_Aff2d_on_Polygon', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d']
@@ -45,7 +45,7 @@ class Aff2d(TwoD, Aff):
         -----
         For speed reasons, no checking is involved.
         '''
-        return Aff2d(offset=mat[:2, 2], linear=lin2.from_matrix(mat[:2, :2]))
+        return Aff2d(offset=mat[:2, 2], linear=Lin2d.from_matrix(mat[:2, :2]))
 
     # ----- base adaptation -----
 
@@ -115,9 +115,9 @@ class Aff2d(TwoD, Aff):
 
     @linear.setter
     def linear(self, linear):
-        if not isinstance(linear, lin2):
+        if not isinstance(linear, Lin2d):
             raise ValueError(
-                "Expected a lin2 instance. Received a '{}' instance.".format(linear.__class__))
+                "Expected a Lin2d instance. Received a '{}' instance.".format(linear.__class__))
         self.__linear = linear
 
     # ----- derived properties -----
@@ -139,7 +139,7 @@ class Aff2d(TwoD, Aff):
 
     # ----- methods -----
 
-    def __init__(self, offset=_np.zeros(2), linear=lin2()):
+    def __init__(self, offset=_np.zeros(2), linear=Lin2d()):
         self.offset = offset
         self.linear = linear
 
@@ -154,7 +154,7 @@ aff2 = Aff2d # for backward compatibility
 
 
 _bc.register_cast(Aff2d, Aff, lambda x: Aff(weights=x.weight, bias=x.offset, check_shapes=False))
-_bc.register_cast(Aff, Aff2d, lambda x: Aff2d(offset=x.bias, linear=lin2.from_matrix(x.weight)))
+_bc.register_cast(Aff, Aff2d, lambda x: Aff2d(offset=x.bias, linear=Lin2d.from_matrix(x.weight)))
 _bc.register_castable(Aff, Aff2d, lambda x: x.ndim==2)
 
 
@@ -243,7 +243,7 @@ def transform_Aff2d_on_Polygon(aff_tfm, poly):
     Polygon
         affine-transformed polygon
     '''
-    return Polygon(point_list.points @ aff_tfm.weight.T + aff_tfm.bias, check=False)
+    return Polygon(poly.points @ aff_tfm.weight.T + aff_tfm.bias, check=False)
 register_transform(Aff2d, Polygon, transform_Aff2d_on_Polygon)
 
 
@@ -252,7 +252,7 @@ register_transform(Aff2d, Polygon, transform_Aff2d_on_Polygon)
 
 def swapAxes2d():
     '''Returns the affine transformation that swaps the x-axis with the y-axis.'''
-    return Aff2d(linear=lin2.from_matrix(_np.array([[0, 1], [1, 0]])))
+    return Aff2d(linear=Lin2d.from_matrix(_np.array([[0, 1], [1, 0]])))
 
 
 def flipLR2d(width):
@@ -271,12 +271,12 @@ def flipUD2d(height):
 
 def shearX2d(h):
     '''Returns the shearing along the x-axis.'''
-    return Aff2d(linear=lin2(shear=h))
+    return Aff2d(linear=Lin2d(shear=h))
 
 
 def shearY2d(h):
     '''Returns the shearing along the y-axis.'''
-    return Aff2d(linear=lin2.from_matrix(_np.array([[1, 0], [h, 1]])))
+    return Aff2d(linear=Lin2d.from_matrix(_np.array([[1, 0], [h, 1]])))
 
 
 def originate2d(tfm, x, y):
@@ -298,7 +298,7 @@ def scale2d(scale_x=1, scale_y=None):
     '''Returns the scaling.'''
     if scale_y is None:
         scale_y = scale_x
-    return Aff2d(linear=lin2(scale=[scale_x, scale_y]))
+    return Aff2d(linear=Lin2d(scale=[scale_x, scale_y]))
 
 
 def crop2d(tl, br=None):
@@ -318,4 +318,4 @@ def crop2d(tl, br=None):
     '''
     if br is None:
         return scale2d(1.0/tl[0], 1.0/tl[1])
-    return Aff2d(offset=_np.array([-tl[0]/(br[0]-tl[0]), -tl[1]/(br[1]-tl[1])]), linear=lin2(scale=[1.0/(br[0]-tl[0]), 1.0/(br[1]-tl[1])]))
+    return Aff2d(offset=_np.array([-tl[0]/(br[0]-tl[0]), -tl[1]/(br[1]-tl[1])]), linear=Lin2d(scale=[1.0/(br[0]-tl[0]), 1.0/(br[1]-tl[1])]))

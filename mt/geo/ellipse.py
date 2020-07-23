@@ -7,7 +7,7 @@ import numpy.linalg as _nl
 from mt.base.casting import register_cast
 from mt.base.deprecated import deprecated_func
 
-from .affine2d import Aff2d, lin2
+from .affine2d import Aff2d, Lin2d
 from .rect import rect
 from .moments import EPSILON, Moments2d
 from .approximation import register_approx
@@ -35,10 +35,10 @@ class Ellipse(TwoD, GeometricObject):
     Examples
     --------
     >>> import numpy as np
-    >>> from mt.geo.ellipse import Aff2d, Ellipse, lin2
-    >>> a = Aff2d(offset=np.array([2,3]), linear=lin2(scale=np.array([0.3,7]), shear=0.3, angle=0.3))
+    >>> from mt.geo.ellipse import Aff2d, Ellipse, Lin2d
+    >>> a = Aff2d(offset=np.array([2,3]), linear=Lin2d(scale=np.array([0.3,7]), shear=0.3, angle=0.3))
     >>> Ellipse(a)
-    >>> Ellipse(aff_tfm=Aff2d(offset=[2 3], linear=lin2(scale=[-0.3  7. ], shear=-0.30000000000000787, angle=-1.5702443840777238)))
+    >>> Ellipse(aff_tfm=Aff2d(offset=[2 3], linear=Lin2d(scale=[-0.3  7. ], shear=-0.30000000000000787, angle=-1.5702443840777238)))
     '''
 
     def __init__(self, aff_tfm, make_normalised=True):
@@ -47,7 +47,7 @@ class Ellipse(TwoD, GeometricObject):
             raise ValueError("Only an instance of class `Aff2d` is accepted.")
         if make_normalised:
             U, S, VT = _nl.svd(aff_tfm.weight, full_matrices=False)
-            aff_tfm = Aff2d(offset=aff_tfm.offset, linear=lin2.from_matrix(U @ _np.diag(S)))            
+            aff_tfm = Aff2d(offset=aff_tfm.offset, linear=Lin2d.from_matrix(U @ _np.diag(S)))            
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
@@ -112,13 +112,13 @@ class Ellipse(TwoD, GeometricObject):
         '''Returns an axis-aligned ellipse bounded by the given axis-aligned rectangle x.'''
         if not isinstance(x, rect):
             raise ValueError("Input type a `rect`, '{}' given.".format(x.__class__))
-        return Ellipse(Aff2d(linear=lin2(scale=[x.w/2, x.h/2]), offset=x.center_pt))
+        return Ellipse(Aff2d(linear=Lin2d(scale=[x.w/2, x.h/2]), offset=x.center_pt))
 
 
 ellipse = Ellipse # for now
 
 
-# MT-TODO: register_transform ellipse with affine transformation, upgrade lin2 to Lin2d and then update all usage of lin2
+# MT-TODO: register_transform ellipse with affine transformation
 
 
 def cast_ellipse_to_moments(obj):
@@ -136,7 +136,7 @@ def approx_moments_to_ellipse(obj):
     A = v @ _np.diag(_np.sqrt(w))
 
     # aff_tfm
-    aff_tfm = Aff2d(offset=obj.mean, linear=lin2.from_matrix(A))
+    aff_tfm = Aff2d(offset=obj.mean, linear=Lin2d.from_matrix(A))
     return Ellipse(aff_tfm)
 register_approx(Moments2d, Ellipse, approx_moments_to_ellipse)
 

@@ -138,6 +138,7 @@ class InvertibleTransformer(Transformer):
     # ----- abstract -----
     
     def invert(self):
+        '''Inverses the transformer'''
         raise NotImplementedError("You must implement the function {}.invert().".format(type(self)))
 
     # ----- operators -----
@@ -159,6 +160,7 @@ class LieTransformer(InvertibleTransformer):
     # ----- abstract -----
     
     def multiply(self, other):
+        '''Multiplies the transformer with another transformer.'''
         raise NotImplementedError("You must implement the function {}.multiply().".format(type(self)))
 
     # ----- operators -----

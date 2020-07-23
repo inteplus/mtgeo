@@ -6,8 +6,14 @@ import numpy as _np
 from libcpp cimport bool
 from libc.math cimport fabs, hypot, atan2, sin, cos, M_PI, M_PI_2
 
+from .object import TwoD, GeometricObject
+from .transformation import LieTransformer, register_transform, register_transformable
+from .moments import Moments2d
+from .point_list import PointList2d
+from .polygon import Polygon
 
-__all__ = ['feq', 'radian_range', 'ssr2mat', 'mat2ssr', 'rss2mat', 'mat2rss', 'lin2']
+
+__all__ = ['feq', 'radian_range', 'ssr2mat', 'mat2ssr', 'rss2mat', 'mat2rss', 'Lin2d', 'lin2', 'transform_Lin2d_on_Moments2d', 'transform_Lin2d_on_PointList2d', 'transform_Lin2d_on_Polygon']
 
 
 cpdef bool feq(double a, double b, double eps=1e-06):
@@ -164,77 +170,7 @@ cpdef void mat2rss(double[:] i, double[:] o):
     o[5] = sr
 
 
-cdef class lin2(object):
-    '''Linear transformation in 2D.
-
-    The 2D linear transformation in this class is parametrised as the following::
-
-        lin2(sx, sy, h, r) = scale2d(sx,sy) shear2d(h) rotate2d(r)
-
-    where `sx != 0` and `sy > 0`, `scale2d(sx,sy) = [[sx, 0], [0, sy]]`, `shear2d(h) = [[1, h], [0, 1]]` and `rotate2d(r) = [[cr, -sr], [sr, cr]]` with `cr = cos(r)` and `sr = sin(r)`. We call this parametrisation as the `ssr` parametrisation.
-
-    There is a reverse parametrisation::
-
-        lin2_reverse(sx, sy, h, r) = rotate2d(r) shear2d(h) scale2d(sx,sy)
-
-    with the same conditions, which we call the `rss` parametrisation. If `lin2(sx,sy,h,r) = lin2_reverse(sx',sy',h'r')` then inv(lin2(sx,sy,h,r)) = lin2(1/sx',1/sy',-h',-r')`.
-
-    Examples
-    --------
-
-    >>> import numpy as np
-    >>> import math as m
-    >>> import mt.geo.linear2d as gl
-    >>> a = gl.lin2()
-    >>> a
-    lin2(scale=[1. 1.], shear=0.0, angle=0.0)
-    >>> ~a
-    lin2(scale=[1. 1.], shear=0.0, angle=0.0)
-    >>> a = gl.lin2(shear=1)
-    >>> a
-    lin2(scale=[1. 1.], shear=1.0, angle=0.0)
-    >>> a*a
-    lin2(scale=[1. 1.], shear=2.0, angle=0.0)
-    >>> a/a
-    lin2(scale=[1. 1.], shear=0.0, angle=0.0)
-    >>> a%a
-    lin2(scale=[1. 1.], shear=0.0, angle=0.0)
-    >>> ~a
-    lin2(scale=[1. 1.], shear=-1.0, angle=-0.0)
-    >>> a = gl.lin2(scale=[-3,1])
-    >>> a
-    lin2(scale=[-3.  1.], shear=0.0, angle=0.0)
-    >>> ~a
-    lin2(scale=[-0.33333333  1.        ], shear=0.0, angle=0.0)
-    >>> a*a
-    lin2(scale=[9. 1.], shear=0.0, angle=0.0)
-    >>> ~a/a
-    lin2(scale=[0.11111111 1.        ], shear=0.0, angle=0.0)
-    >>> a = gl.lin2(angle=m.pi/6)
-    >>> a
-    lin2(scale=[1. 1.], shear=0.0, angle=0.5235987755982988)
-    >>> a.matrix
-    array([[ 0.8660254, -0.5      ],
-           [ 0.5      ,  0.8660254]])
-    >>> a*a
-    lin2(scale=[1. 1.], shear=0.0, angle=1.0471975511965976)
-    >>> (a*a).matrix
-    array([[ 0.5      , -0.8660254],
-           [ 0.8660254,  0.5      ]])
-    >>> a = gl.lin2(scale=[-2,3], shear=4, angle=1)
-    >>> a
-    lin2(scale=[-2.  3.], shear=4.0, angle=1.0)
-    >>> a.matrix
-    array([[-7.81237249, -2.63947648],
-           [ 2.52441295,  1.62090692]])
-    >>> a/a*a
-    lin2(scale=[-2.  3.], shear=3.9999999999999982, angle=0.9999999999999998)
-
-
-    References
-    ----------
-    .. [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not really, cheeky MT is trying to advertise his paper!)
-    '''
+cdef class Lin2dBase(object):
 
     # ----- C/C++ vars -----
 
@@ -244,7 +180,7 @@ cdef class lin2(object):
 
     @staticmethod
     def from_matrix(mat):
-        '''Obtains a lin2 instance from a non-singular transformation matrix.
+        '''Obtains a Lin2d instance from a non-singular transformation matrix.
 
         Parameters
         ----------
@@ -253,7 +189,7 @@ cdef class lin2(object):
 
         Returns
         -------
-        lin2
+        Lin2d
             An instance representing the transformation
 
         Notes
@@ -263,7 +199,17 @@ cdef class lin2(object):
         cdef double[4] i = [mat[0,0], mat[0,1], mat[1,0], mat[1,1]]
         cdef double[6] o
         mat2ssr(i,o)
-        return lin2(scale=[o[0], o[1]], shear=o[2], angle=[o[3], o[4], o[5]])
+        return Lin2d(scale=[o[0], o[1]], shear=o[2], angle=[o[3], o[4], o[5]])
+
+    # ----- base adaptation -----
+
+    def invert(self):
+        '''Inverses the transformer'''
+        cdef double[4] m
+        cdef double[6] rss
+        ssr2mat(self.m_buf, m)
+        mat2rss(m, rss)
+        return Lin2d(scale=[1/rss[0], 1/rss[1]], shear=-rss[2], angle=[-rss[3], rss[4], -rss[5]])
 
     # ----- data encapsulation -----
 
@@ -344,39 +290,184 @@ cdef class lin2(object):
         self.shear = shear
         self.angle = angle
 
+
+class Lin2d(TwoD, GeometricObject, LieTransformer, Lin2dBase):
+    '''Linear transformation in 2D.
+
+    The 2D linear transformation in this class is parametrised as the following::
+
+        Lin2d(sx, sy, h, r) = scale2d(sx,sy) shear2d(h) rotate2d(r)
+
+    where `sx != 0` and `sy > 0`, `scale2d(sx,sy) = [[sx, 0], [0, sy]]`, `shear2d(h) = [[1, h], [0, 1]]` and `rotate2d(r) = [[cr, -sr], [sr, cr]]` with `cr = cos(r)` and `sr = sin(r)`. We call this parametrisation as the `ssr` parametrisation.
+
+    There is a reverse parametrisation::
+
+        Lin2d_reverse(sx, sy, h, r) = rotate2d(r) shear2d(h) scale2d(sx,sy)
+
+    with the same conditions, which we call the `rss` parametrisation. If `Lin2d(sx,sy,h,r) = Lin2d_reverse(sx',sy',h'r')` then inv(Lin2d(sx,sy,h,r)) = Lin2d(1/sx',1/sy',-h',-r')`.
+
+    Examples
+    --------
+
+    >>> import numpy as np
+    >>> import math as m
+    >>> import mt.geo.linear2d as gl
+    >>> a = gl.Lin2d()
+    >>> a
+    Lin2d(scale=[1. 1.], shear=0.0, angle=0.0)
+    >>> ~a
+    Lin2d(scale=[1. 1.], shear=0.0, angle=0.0)
+    >>> a = gl.Lin2d(shear=1)
+    >>> a
+    Lin2d(scale=[1. 1.], shear=1.0, angle=0.0)
+    >>> a*a
+    Lin2d(scale=[1. 1.], shear=2.0, angle=0.0)
+    >>> a/a
+    Lin2d(scale=[1. 1.], shear=0.0, angle=0.0)
+    >>> a%a
+    Lin2d(scale=[1. 1.], shear=0.0, angle=0.0)
+    >>> ~a
+    Lin2d(scale=[1. 1.], shear=-1.0, angle=-0.0)
+    >>> a = gl.Lin2d(scale=[-3,1])
+    >>> a
+    Lin2d(scale=[-3.  1.], shear=0.0, angle=0.0)
+    >>> ~a
+    Lin2d(scale=[-0.33333333  1.        ], shear=0.0, angle=0.0)
+    >>> a*a
+    Lin2d(scale=[9. 1.], shear=0.0, angle=0.0)
+    >>> ~a/a
+    Lin2d(scale=[0.11111111 1.        ], shear=0.0, angle=0.0)
+    >>> a = gl.Lin2d(angle=m.pi/6)
+    >>> a
+    Lin2d(scale=[1. 1.], shear=0.0, angle=0.5235987755982988)
+    >>> a.matrix
+    array([[ 0.8660254, -0.5      ],
+           [ 0.5      ,  0.8660254]])
+    >>> a*a
+    Lin2d(scale=[1. 1.], shear=0.0, angle=1.0471975511965976)
+    >>> (a*a).matrix
+    array([[ 0.5      , -0.8660254],
+           [ 0.8660254,  0.5      ]])
+    >>> a = gl.Lin2d(scale=[-2,3], shear=4, angle=1)
+    >>> a
+    Lin2d(scale=[-2.  3.], shear=4.0, angle=1.0)
+    >>> a.matrix
+    array([[-7.81237249, -2.63947648],
+           [ 2.52441295,  1.62090692]])
+    >>> a/a*a
+    Lin2d(scale=[-2.  3.], shear=3.9999999999999982, angle=0.9999999999999998)
+
+
+    References
+    ----------
+    .. [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not really, cheeky MT is trying to advertise his paper!)
+    '''
+
+    # ----- base adaptation -----
+
+    def invert(self):
+        return Lin2dBase.invert(self)
+    invert.__doc__ = LieTransformer.invert.__doc__
+
+    def multiply(self, other):
+        return Lin2d.from_matrix(_np.dot(self.matrix, other.matrix))
+    multiply.__doc__ = LieTransformer.multiply.__doc__
+
+    # ----- methods -----
+
     def __repr__(self):
-        return "lin2(scale={}, shear={}, angle={})".format(self.scale, self.shear, self.angle)
+        return "Lin2d(scale={}, shear={}, angle={})".format(self.scale, self.shear, self.angle)
 
-    def __lshift__(self, x):
-        '''left shift = Lie action'''
-        if x.shape != (2,):
-            raise ValueError("Input shape {} is not (2,).".format(x.shape))
-        return _np.dot(self.matrix, x)
 
-    def __rshift__(self, x):
-        '''right shift = inverted Lie action'''
-        return (~self) << x
+lin2 = Lin2d # for backward compatibility
 
-    def __mul__(self, other):
-        '''a*b = Lie operator'''
-        return lin2.from_matrix(_np.dot(self.matrix, other.matrix))
 
-    def __invert__(self):
-        '''Lie inverse'''
-        cdef double[4] m
-        cdef double[6] rss
-        ssr2mat(self.m_buf, m)
-        mat2rss(m, rss)
-        return lin2(scale=[1/rss[0], 1/rss[1]], shear=-rss[2], angle=[-rss[3], rss[4], -rss[5]])
+# ----- transform functions -----
 
-    def __truediv__(self, other):
-        '''a/b = a*(~b)'''
-        return self*(~other)
 
-    def __mod__(self, other):
-        '''a%b = (~a)*b'''
-        return (~self)*other
+def transform_Lin2d_on_Moments2d(lin_tfm, moments):
+    '''Transform a Moments2d using a 2D linear transformation.
 
-    def conjugate(self, other):
-        '''Conjugate: `self.conjugate(other) = self*other*self^{-1}`'''
-        return self*(other/self)
+    Parameters
+    ----------
+    lin_tfm : Lin2d
+        2D linear transformation
+    moments : Moments2d
+        2D moments
+
+    Returns
+    -------
+    Moments2d
+        linear-transformed 2D moments
+    '''
+    A = lin_tfm.matrix
+    old_m0 = moments.m0
+    old_mean = moments.mean
+    old_cov = moments.cov
+    new_mean = A @ old_mean
+    new_cov = A @ old_cov @ A.T
+    new_m0 = old_m0*abs(lin_tfm.det)
+    new_m1 = new_m0*new_mean
+    new_m2 = new_m0*(_np.outer(new_mean, new_mean) + new_cov)
+    return Moments2d(new_m0, new_m1, new_m2)
+register_transform(Lin2d, Moments2d, transform_Lin2d_on_Moments2d)
+
+
+def transform_Lin2d_on_ndarray(lin_tfm, point_array):
+    '''Transform an array of 2D points using a 2D linear transformation.
+
+    Parameters
+    ----------
+    lin_tfm : Aff
+        a 2D linear transformation
+    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of the transformation
+        an array of 2D points
+
+    Returns
+    -------
+    numpy.ndarray
+        linear-transformed point array
+    '''
+    return point_array @ lin_tfm.matrix.T
+register_transform(Lin2d, _np.ndarray, transform_Lin2d_on_ndarray)
+register_transformable(Lin2d, _np.ndarray, lambda x, y: y.shape[-1] == 2)
+
+
+def transform_Lin2d_on_PointList2d(lin_tfm, point_list):
+    '''Transform a 2D point list using a 2D linear transformation.
+
+    Parameters
+    ----------
+    lin_tfm : Lin2d
+        a 2D linear transformation
+    point_list : PointList2d
+        a 2D point list
+
+    Returns
+    -------
+    PointList2d
+        linear-transformed point list
+    '''
+    return PointList2d(point_list.points @ lin_tfm.matrix.T, check=False)
+register_transform(Lin2d, PointList2d, transform_Lin2d_on_PointList2d)
+
+
+def transform_Lin2d_on_Polygon(lin_tfm, poly):
+    '''Transform a polygon using a 2D linear transformation.
+
+    Parameters
+    ----------
+    lin_tfm : Lin2d
+        a 2D linear transformation
+    poly : Polygon
+        a 2D polygon
+
+    Returns
+    -------
+    Polygon
+        linear-transformed polygon
+    '''
+    return Polygon(poly.points @ lin_tfm.matrix.T, check=False)
+register_transform(Lin2d, Polygon, transform_Lin2d_on_Polygon)
+
+
