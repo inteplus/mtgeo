@@ -32,6 +32,13 @@ class Ellipse(TwoD, GeometricObject):
     make_normalised : bool
         whether or not to adjust the affine transformation to make a normalised representation of the ellipse
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mt.geo.ellipse import Aff2d, Ellipse, lin2
+    >>> a = Aff2d(offset=np.array([2,3]), linear=lin2(scale=np.array([0.3,7]), shear=0.3, angle=0.3))
+    >>> Ellipse(a)
+    >>> Ellipse(aff_tfm=Aff2d(offset=[2 3], linear=lin2(scale=[-0.3  7. ], shear=-0.30000000000000787, angle=-1.5702443840777238)))
     '''
 
     def __init__(self, aff_tfm, make_normalised=True):
@@ -109,6 +116,9 @@ class Ellipse(TwoD, GeometricObject):
 
 
 ellipse = Ellipse # for now
+
+
+# MT-TODO: register_transform ellipse with affine transformation, upgrade lin2 to Lin2d and then update all usage of lin2
 
 
 def cast_ellipse_to_moments(obj):
