@@ -112,7 +112,7 @@ class rect(TwoD, box):
         return self.signed_area*(self.min_y*self.min_y+self.min_y*self.max_y+self.max_y*self.max_y)/3
 
     @property
-    @deprecated_func("0.3.5", suggested_func="mt.base.casting.cast", removed_version="0.5.0")
+    @deprecated_func("0.3.5", suggested_func=["mt.base.casting.cast", "mt.geo.rect.cast_rect_to_moments"], removed_version="0.5.0")
     def to_moments2d(self):
         '''Computes all moments, up to 2nd-order of the rectangle's interior.'''
         from .moments2d import moments2d
@@ -123,7 +123,7 @@ class rect(TwoD, box):
         return moments2d(m0, m1, m2)
 
     @staticmethod
-    @deprecated_func("0.3.5", suggested_func="mt.geo.approximation.approx", removed_version="0.5.0")
+    @deprecated_func("0.3.5", suggested_func=["mt.geo.approximation.approx", "mt.geo.rect.approx_moments_to_rect"], removed_version="0.5.0")
     def from_moments2d(obj):
         '''Returns a rectangle that best approximates the moments2d instance.
         
