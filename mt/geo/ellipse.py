@@ -15,7 +15,7 @@ from .transformation import transform, register_transform
 from .object import GeometricObject, TwoD
 
 
-__all__ = ['ellipse', 'Ellipse', 'cast_ellipse_to_moments', 'approx_moments_to_ellipse', 'transform_Aff2_on_Ellipse']
+__all__ = ['ellipse', 'Ellipse', 'cast_ellipse_to_moments', 'approx_moments_to_ellipse', 'transform_Aff2d_on_Ellipse']
 
 
 class Ellipse(TwoD, GeometricObject):
