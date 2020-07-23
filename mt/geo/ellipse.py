@@ -38,7 +38,7 @@ class Ellipse(TwoD, GeometricObject):
     >>> from mt.geo.ellipse import Aff2d, Ellipse, Lin2d
     >>> a = Aff2d(offset=np.array([2,3]), linear=Lin2d(scale=np.array([0.3,7]), shear=0.3, angle=0.3))
     >>> Ellipse(a)
-    >>> Ellipse(aff_tfm=Aff2d(offset=[2 3], linear=Lin2d(scale=[-0.3  7. ], shear=-0.30000000000000787, angle=-1.5702443840777238)))
+    Ellipse(aff_tfm=Aff2d(offset=[2 3], linear=Lin2d(scale=[-0.3  7. ], shear=-0.30000000000000787, angle=-1.5702443840777238)))
     '''
 
     def __init__(self, aff_tfm, make_normalised=True):
