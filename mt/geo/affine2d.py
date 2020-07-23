@@ -1,14 +1,18 @@
 import numpy as _np
 import math as _m
 
+import mt.base.casting as _bc
+
 from .object import TwoD
-from .moments import Moments2d
 from .transformation import register_transform
+from .moments import Moments2d
+from .point_list import PointList2d
+from .polygon import Polygon
 from .affine_transformation import Aff
 from .linear2d import lin2
 
 
-__all__ = ['Aff2d', 'aff2', 'transform_Aff2d_on_Moments2d', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d']
+__all__ = ['Aff2d', 'aff2', 'transform_Aff2d_on_Moments2d', 'transform_Aff2d_on_PointList2d', 'transform_Aff2d_on_Polygon', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d']
 
 
 class Aff2d(TwoD, Aff):
@@ -146,10 +150,15 @@ class Aff2d(TwoD, Aff):
 aff2 = Aff2d # for backward compatibility
 
 
-# MT-TODO: write a cast function to convert aff to aff2
+# ----- casting -----
 
 
-# ----- useful functions -----
+_bc.register_cast(Aff2d, Aff, lambda x: Aff(weights=x.weight, bias=x.offset, check_shapes=False))
+_bc.register_cast(Aff, Aff2d, lambda x: Aff2d(offset=x.bias, linear=lin2.from_matrix(x.weight)))
+_bc.register_castable(Aff, Aff2d, lambda x: x.ndim==2)
+
+
+# ----- transform functions -----
 
 
 def transform_Aff2d_on_Moments2d(aff_tfm, moments):
@@ -178,6 +187,44 @@ def transform_Aff2d_on_Moments2d(aff_tfm, moments):
     new_m2 = new_m0*(_np.outer(new_mean, new_mean) + new_cov)
     return Moments2d(new_m0, new_m1, new_m2)
 register_transform(Aff2d, Moments2d, transform_Aff2d_on_Moments2d)
+
+
+def transform_Aff2d_on_PointList2d(aff_tfm, point_list):
+    '''Transform a 2D point list using a 2D affine transformation.
+
+    Parameters
+    ----------
+    aff_tfm : Aff2d
+        a 2D affine transformation
+    point_list : PointList2d
+        a 2D point list
+
+    Returns
+    -------
+    PointList2d
+        affine-transformed point list
+    '''
+    return PointList2d(point_list.points @ aff_tfm.weight.T + aff_tfm.bias, check=False)
+register_transform(Aff2d, PointList2d, transform_Aff2d_on_PointList2d)
+
+
+def transform_Aff2d_on_Polygon(aff_tfm, poly):
+    '''Transform a polygon using a 2D affine transformation.
+
+    Parameters
+    ----------
+    aff_tfm : Aff2d
+        a 2D affine transformation
+    poly : Polygon
+        a 2D polygon
+
+    Returns
+    -------
+    Polygon
+        affine-transformed polygon
+    '''
+    return Polygon(point_list.points @ aff_tfm.weight.T + aff_tfm.bias, check=False)
+register_transform(Aff2d, Polygon, transform_Aff2d_on_Polygon)
 
 
 # ----- useful 2D transformations -----

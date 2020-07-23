@@ -6,10 +6,11 @@ from mt.base.deprecated import deprecated_func
 
 from .object import GeometricObject
 from .transformation import LieTransformer, transform, register_transform
+from .point_list import PointList
 from .moments import Moments
 
 
-__all__ = ['aff', 'Aff', 'transform_Aff_on_Moments', 'shear2d', 'originate2d']
+__all__ = ['aff', 'Aff', 'transform_Aff_on_Moments', 'transform_Aff_on_PointList', 'shear2d', 'originate2d']
 
 
 class Aff(LieTransformer, GeometricObject):
@@ -149,13 +150,7 @@ class Aff(LieTransformer, GeometricObject):
     def __repr__(self):
         return "Aff(weight_diagonal={}, bias={})".format(self.weight.diagonal(), self.bias)
 
-    def __lshift__(self, x):
-        '''left shift = Lie action'''
-        if x.shape != (self.dim,):
-            raise ValueError(
-                "Input shape {} is not ({},).".format(x.shape, self.dim))
-        return _np.dot(self.weight, x)+self.bias
-
+    @deprecated_func("0.3.8", suggested_func="mt.geo.transformation.transform", removed_version="0.6.0", docstring_prefix="        ")
     def transform_points(self, X):
         '''Transforms a list of points.
         
@@ -167,7 +162,7 @@ class Aff(LieTransformer, GeometricObject):
         Returns
         -------
         X2 : numpy.ndarray of shape (N,D)
-            transformed N points, where `X2 = np.dot(X, self.weight^T) + self.bias`
+            transformed N points, where `X2 = X @ self.weight.T + self.bias`
         '''
         if len(X.shape) != 2 or X.shape[1] != self.dim:
             raise ValueErro("Input shape {} is not (N,{}).".format(X.shape, self.dim))
@@ -181,10 +176,7 @@ class Aff(LieTransformer, GeometricObject):
 aff = Aff # for backward compatibility
 
 
-# MT-TODO: register_transform the left shift operator and transform_points() function of Aff
-
-
-# ----- useful functions -----
+# ----- transform functions -----
 
 
 def transform_Aff_on_Moments(aff_tfm, moments):
@@ -213,6 +205,25 @@ def transform_Aff_on_Moments(aff_tfm, moments):
     new_m2 = new_m0*(_np.outer(new_mean, new_mean) + new_cov)
     return Moments(new_m0, new_m1, new_m2)
 register_transform(Aff, Moments, transform_Aff_on_Moments)
+
+
+def transform_Aff_on_PointList(aff_tfm, point_list):
+    '''Transform a point list using an affine transformation.
+
+    Parameters
+    ----------
+    aff_tfm : Aff
+        general affine transformation
+    point_list : PointList
+        a point list
+
+    Returns
+    -------
+    PointList
+        affine-transformed point list
+    '''
+    return PointList(point_list.points @ aff_tfm.weight.T + aff_tfm.bias, check=False)
+register_transform(Aff, PointList, transform_Aff_on_PointList)
 
 
 # ----- obsolete useful 2D transformations -----
