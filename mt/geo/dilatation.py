@@ -112,12 +112,6 @@ class Dlt(Aff):
     def __repr__(self):
         return "Dlt(offset={}, scale={})".format(self.offset, self.scale)
 
-    def __lshift__(self, x):
-        if x.shape != (self.dim,):
-            raise ValueError("Shapes of input {} and offset {} do not match.".format(x.shape, self.offset.shape))
-        return x*self.scale+self.offset
-    __lshift__.__doc__ = Aff.__lshift__.__doc__
-
     def multiply(self, other):
         if not isinstance(other, dlt):
             return super(dlt, self).multiply(other)
@@ -140,6 +134,9 @@ _bc.register_castable(Aff, Dlt, lambda x: _np.count_nonzero(x.weight - _np.diag(
 
 
 # ----- transform functions -----
+
+
+# MT-TODO: make transform function of Aff, Dlt Aff2d on nd arrays as if transforming single points
 
 
 def transform_Dlt_on_Moments(dlt_tfm, moments):
@@ -168,7 +165,7 @@ def transform_Dlt_on_Moments(dlt_tfm, moments):
     new_m1 = new_m0*new_mean
     new_m2 = new_m0*(_np.outer(new_mean, new_mean) + new_cov)
     return Moments(new_m0, new_m1, new_m2)
-register_transform(Aff, Moments, transform_Dlt_on_Moments)
+register_transform(Dlt, Moments, transform_Dlt_on_Moments)
 
 
 def transform_Dlt_on_PointList(dlt_tfm, point_list):
@@ -187,7 +184,7 @@ def transform_Dlt_on_PointList(dlt_tfm, point_list):
         affine-transformed point list
     '''
     return PointList(point_list.points * aff_tfm.scale + aff_tfm.offset, check=False)
-register_transform(Aff, PointList, transform_Dlt_on_PointList)
+register_transform(Dlt, PointList, transform_Dlt_on_PointList)
 
 
 # ----- useful 2D transformations -----

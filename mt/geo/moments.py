@@ -59,6 +59,9 @@ class Moments(GeometricObject):
         self._mean = None
         self._cov = None
 
+    def __repr__(self):
+        return "Moments(ndim={}, m0={}, mean={})".format(self.ndim, self.m0, self.mean)
+
     @property
     def m0(self):
         '''0th-order moment'''
@@ -106,7 +109,9 @@ class Moments(GeometricObject):
 
 class Moments2d(TwoD, Moments):
     '''Raw moments up to 2nd order of points living in 2D. See Moments for more details.'''
-    pass
+
+    def __repr__(self):
+        return "Moments2d(m0={}, mean={}, cov={})".format(self.ndim, self.m0, self.mean.tolist(), self.cov.tolist())
 _bc.register_cast(Moments2d, Moments, lambda x: Moments(x.m0, x.m1, x.m2))
 _bc.register_cast(Moments, Moments2d, lambda x: Moments2d(x.m0, x.m1, x.m2))
 _bc.register_castable(Moments, Moments2d, lambda x: x.ndim==2)
@@ -114,7 +119,9 @@ _bc.register_castable(Moments, Moments2d, lambda x: x.ndim==2)
 
 class Moments3d(ThreeD, Moments):
     '''Raw moments up to 2nd order of points living in 3D. See Moments for more details.'''
-    pass
+
+    def __repr__(self):
+        return "Moments3d(m0={}, mean={}, cov={})".format(self.ndim, self.m0, self.mean.tolist(), self.cov.tolist())
 _bc.register_cast(Moments3d, Moments, lambda x: Moments(x.m0, x.m1, x.m2))
 _bc.register_cast(Moments, Moments3d, lambda x: Moments3d(x.m0, x.m1, x.m2))
 _bc.register_castable(Moments, Moments3d, lambda x: x.ndim==3)
