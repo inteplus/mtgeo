@@ -77,7 +77,7 @@ class Ellipse(TwoD, GeometricObject):
         '''Returns an equivalent ellipse where f1 and f2 are perpendicular (linearly independent).'''
         return Ellipse(self.aff_tfm.offset, make_normalised=True)
 
-    @deprecated_func("0.3.8", "mt.geo.transformation.transform", "0.6.0", docstring_prefix="        ")
+    @deprecated_func("0.3.8", suggested_func=["mt.geo.transformation.transform", "mt.geo.ellipse.transform_Aff2d_on_Ellipse"], removed_version="0.6.0", docstring_prefix="        ")
     def transform(self, aff_tfm):
         '''Affine-transforms the ellipse. The resultant ellipse has affine transformation `aff_tfm*self.aff_tfm`.'''
         if not isinstance(aff_tfm, Aff2d):
@@ -118,8 +118,7 @@ class Ellipse(TwoD, GeometricObject):
 ellipse = Ellipse # for now
 
 
-# MT-TODO: register_transform ellipse with affine transformation
-
+# ----- casting -----
 
 def cast_ellipse_to_moments(obj):
     a = _m.pi/4
@@ -141,7 +140,10 @@ def approx_moments_to_ellipse(obj):
 register_approx(Moments2d, Ellipse, approx_moments_to_ellipse)
 
 
-def transform_Aff2_on_Ellipse(afm_tfm, obj):
+# ----- transform functions -----
+
+
+def transform_Aff2d_on_Ellipse(afm_tfm, obj):
     '''Affine-transforms an Ellipse. The resultant Ellipse has affine transformation `aff_tfm*obj.aff_tfm`.
 
     Parameters
@@ -157,4 +159,4 @@ def transform_Aff2_on_Ellipse(afm_tfm, obj):
         the affine-transformed ellipse
     '''
     return Ellipse(aff_tfm*obj.aff_tfm)
-register_transform(Aff2d, Ellipse, transform_Aff2_on_Ellipse)
+register_transform(Aff2d, Ellipse, transform_Aff2d_on_Ellipse)
