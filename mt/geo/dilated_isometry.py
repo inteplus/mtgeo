@@ -2,13 +2,13 @@ import numpy as _np
 import numpy.linalg as _nl
 import math as _m
 
-from .affine_transformation import aff
+from .affine_transformation import Aff
 
 
-__all__ = ['dliso']
+__all__ = ['dliso', 'Dliso']
 
 
-class dliso(aff):
+class Dliso(Aff):
     '''Dilated isometry = Isometry followed by a uniform scaling.
 
     An isometry is a (Euclidean-)metric-preserving transformation. In other words, it is an affine transformation but the linear part is a unitary matrix.
@@ -22,7 +22,7 @@ class dliso(aff):
     @property
     def bias(self):
         return self.__offset
-    bias.__doc__ = aff.bias.__doc__
+    bias.__doc__ = Aff.bias.__doc__
 
     @bias.setter
     def bias(self, bias):
@@ -33,12 +33,12 @@ class dliso(aff):
     @property
     def bias_dim(self):
         return self.__offset.shape[0]
-    bias_dim.__doc__ = aff.bias_dim.__doc__
+    bias_dim.__doc__ = Aff.bias_dim.__doc__
 
     @property
     def weight(self):
         return self.linear
-    weight.__doc__ = aff.weight.__doc__
+    weight.__doc__ = Aff.weight.__doc__
 
     @weight.setter
     def weight(self, weight):
@@ -47,7 +47,7 @@ class dliso(aff):
     @property
     def weight_shape(self):
         return self.__unitary.shape
-    weight_shape.__doc__ = aff.weight_shape.__doc__
+    weight_shape.__doc__ = Aff.weight_shape.__doc__
 
     # ----- data encapsulation -----
 
@@ -99,19 +99,25 @@ class dliso(aff):
         self.unitary = unitary
 
     def __repr__(self):
-        return "dliso(offset={}, scale={}, unitary_diagonal={})".format(self.offset, self.scale, self.unitary.diagonal())
+        return "Dliso(offset={}, scale={}, unitary_diagonal={})".format(self.offset, self.scale, self.unitary.diagonal())
 
     def __mul__(self, other):
-        if not isinstance(other, dliso):
-            return super(dliso, self).__mul__(other)
-        return dliso(self << other.offset,
+        if not isinstance(other, Dliso):
+            return super(Dliso, self).__mul__(other)
+        return Dliso(self << other.offset,
             self.scale*other.scale,
             _np.dot(self.unitary, other.unitary)
             )
-    __mul__.__doc__ = aff.__mul__.__doc__
+    __mul__.__doc__ = Aff.__mul__.__doc__
 
     def __invert__(self):
         invScale = 1/self.scale
         invUnitary = _nl.inv(self.unitary) # slow, and assuming the unitary matrix is invertible
-        return dliso(_np.dot(invUnitary, -self.offset*invScale), invScale, invUnitary)
-    __invert__.__doc__ = aff.__invert__.__doc__
+        return Dliso(_np.dot(invUnitary, -self.offset*invScale), invScale, invUnitary)
+    __invert__.__doc__ = Aff.__invert__.__doc__
+
+
+dliso = Dliso
+
+
+# MT-TODO: make this like Aff
