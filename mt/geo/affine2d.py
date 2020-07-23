@@ -49,7 +49,7 @@ class Aff2d(TwoD, Aff):
 
     # ----- base adaptation -----
 
-    @classmethod
+    @property
     def ndim(self): # reimplementation to enforce constantness
         return 2
 
@@ -155,7 +155,7 @@ aff2 = Aff2d # for backward compatibility
 
 _bc.register_cast(Aff2d, Aff, lambda x: Aff(weights=x.weight, bias=x.offset, check_shapes=False))
 _bc.register_cast(Aff, Aff2d, lambda x: Aff2d(offset=x.bias, linear=lin2.from_matrix(x.weight)))
-_bc.register_castable(Aff, Aff2d, lambda x: x.ndim()==2)
+_bc.register_castable(Aff, Aff2d, lambda x: x.ndim==2)
 
 
 # ----- transform functions -----

@@ -224,7 +224,7 @@ def transform_Aff_on_ndarray(aff_tfm, point_array):
     '''
     return point_array @ aff_tfm.weight.T + aff_tfm.bias
 register_transform(Aff, _np.ndarray, transform_Aff_on_ndarray)
-register_transformable(Aff, _np.ndarray, lambda x, y: x.ndim() == y.shape[-1])
+register_transformable(Aff, _np.ndarray, lambda x, y: x.ndim == y.shape[-1])
 
 
 def transform_Aff_on_PointList(aff_tfm, point_list):

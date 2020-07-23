@@ -60,7 +60,7 @@ class Moments(GeometricObject):
         self._cov = None
 
     def __repr__(self):
-        return "Moments(ndim={}, m0={}, mean={})".format(self.ndim(), self.m0, self.mean)
+        return "Moments(ndim={}, m0={}, mean={})".format(self.ndim, self.m0, self.mean)
 
     @property
     def m0(self):
@@ -81,17 +81,21 @@ class Moments(GeometricObject):
     def mean(self):
         '''Returns the mean vector.'''
         if self._mean is None:
-            self._mean = _np.zeros(self.ndim()) if abs(self.m0) < EPSILON else self.m1/self.m0
+            self._mean = _np.zeros(self.ndim) if abs(self.m0) < EPSILON else self.m1/self.m0
         return self._mean
 
     @property
     def cov(self):
         '''Returns the covariance matrix.'''
         if self._cov is None:
-            self._cov = _np.eye(self.ndim()) if abs(self.m0) < EPSILON else (self.m2/self.m0) - _np.outer(self.mean, self.mean)
+            self._cov = _np.eye(self.ndim) if abs(self.m0) < EPSILON else (self.m2/self.m0) - _np.outer(self.mean, self.mean)
         return self._cov
 
     # ----- operators -----
+
+    @property
+    def ndim(self):
+        return len(self.m1)
 
     def __neg__(self):
         '''Returns a new instance where all the moments are negated.'''
@@ -108,23 +112,31 @@ class Moments(GeometricObject):
 
 
 class Moments2d(TwoD, Moments):
-    '''Raw moments up to 2nd order of points living in 2D. See Moments for more details.'''
+    '''Raw moments up to 2nd order of points living in 2D. See Moments for more details.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mt.geo.moments import Moments2d
+    >>> gm.Moments2d(10, np.array([2,3]), np.array([[1,2],[3,4]]))
+    Moments2d(m0=10.0, mean=[0.2 0.3], cov=[[0.06, 0.14], [0.24, 0.31000000000000005]])
+    '''
 
     def __repr__(self):
-        return "Moments2d(m0={}, mean={}, cov={})".format(self.ndim(), self.m0, self.mean.tolist(), self.cov.tolist())
+        return "Moments2d(m0={}, mean={}, cov={})".format(self.m0, self.mean, self.cov.tolist())
 _bc.register_cast(Moments2d, Moments, lambda x: Moments(x.m0, x.m1, x.m2))
 _bc.register_cast(Moments, Moments2d, lambda x: Moments2d(x.m0, x.m1, x.m2))
-_bc.register_castable(Moments, Moments2d, lambda x: x.ndim()==2)
+_bc.register_castable(Moments, Moments2d, lambda x: x.ndim==2)
 
 
 class Moments3d(ThreeD, Moments):
     '''Raw moments up to 2nd order of points living in 3D. See Moments for more details.'''
 
     def __repr__(self):
-        return "Moments3d(m0={}, mean={}, cov={})".format(self.ndim(), self.m0, self.mean.tolist(), self.cov.tolist())
+        return "Moments3d(m0={}, mean={}, cov={})".format(self.m0, self.mean, self.cov.tolist())
 _bc.register_cast(Moments3d, Moments, lambda x: Moments(x.m0, x.m1, x.m2))
 _bc.register_cast(Moments, Moments3d, lambda x: Moments3d(x.m0, x.m1, x.m2))
-_bc.register_castable(Moments, Moments3d, lambda x: x.ndim()==3)
+_bc.register_castable(Moments, Moments3d, lambda x: x.ndim==3)
 
 
 def moments_from_pointlist(pl):

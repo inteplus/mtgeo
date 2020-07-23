@@ -16,31 +16,32 @@ _transformable_registry = {}
 # map: (tfm_type, obj_type) -> transformable function
 
 
-def transformable(tfm_type, obj):
-    '''Checks if an object can be transformed using a transformer of a given type.
+def transformable(tfm, obj):
+    '''Checks if an object can be transformed using a transformer.
 
     Parameters
     ----------
-    tfm_type : type
-        type or class of the transformer
+    tfm : Transformer
+        a transformer
     obj : object
         object to transform from
 
     Returns
     -------
     bool
-        whether or not the object is transformable using a transformer of type `tfm_type`
+        whether or not the object is transformable using the transformer
 
     Raises
     ------
     NotImplementedError
         if the transformable function has not been registered using functions `register_transformable` or `register_transform`
     '''
+    tfm_type = type(tfm)
     obj_type = type(obj)
     for cur_type in getmro(tfm_type): # go through every base class, in method resolution order
         key = (cur_type, obj_type)
         if key in _transformable_registry:
-            return _transformable_registry[key](obj)
+            return _transformable_registry[key](tfm, obj)
         if key in _transform_registry:
             return True
     return False
@@ -123,10 +124,9 @@ class Transformer(object):
     
     def __lshift__(self, obj):
         '''Transforms an object or raise a ValueError if the object is not transformable by the transformer.'''
-        tfm_type = type(self)
-        if not transformable(tfm_type, obj):
-            raise ValueError("Object {} cannot by transformed by transformer type {}".format(obj, tfm_type))
-        return transform(tfm_type, obj)
+        if not transformable(self, obj):
+            raise ValueError("Object {} cannot by transformed by transformer type {}".format(obj, type(self)))
+        return transform(self, obj)
 
 
 class InvertibleTransformer(Transformer):

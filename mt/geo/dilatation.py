@@ -17,8 +17,8 @@ class Dlt(Aff):
 
     :Examples:
     >>> import numpy as _np
-    >>> import mt.geo as _mg
-    >>> a = _mg.Dlt(offset=_np.array([1,2]), scale=_np.array([3,4]))
+    >>> from mt.geo.dilatation import Dlt
+    >>> a = Dlt(offset=_np.array([1,2]), scale=_np.array([3,4]))
     >>> ~a
     Dlt(offset=[-0.33333333 -0.5       ], scale=[0.33333333 0.25      ])
     >>> a*~a
@@ -41,6 +41,10 @@ class Dlt(Aff):
     '''
 
     # ----- base adaptation -----
+
+    @property
+    def ndim(self):
+        return self.bias_dim
 
     @property
     def bias(self):
@@ -180,9 +184,9 @@ def transform_Dlt_on_ndarray(dlt_tfm, point_array):
     numpy.ndarray
         affine-transformed point array
     '''
-    return point_array * aff_tfm.scale + aff_tfm.offset
+    return point_array * dlt_tfm.scale + dlt_tfm.offset
 register_transform(Dlt, _np.ndarray, transform_Dlt_on_ndarray)
-register_transformable(Dlt, _np.ndarray, lambda x, y: x.ndim() == y.shape[-1])
+register_transformable(Dlt, _np.ndarray, lambda x, y: x.ndim == y.shape[-1])
 
 
 def transform_Dlt_on_PointList(dlt_tfm, point_list):

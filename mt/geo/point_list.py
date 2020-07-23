@@ -33,10 +33,10 @@ class PointList(GeometricObject):
 
     def __init__(self, point_list, check=True):
         points = point_list if isinstance(point_list, _np.ndarray) else _np.array(point_list)
-        if check and not castable_ndarray_PointList(points, self.ndim()):
-            raise ValueError("Point list in {}D not in the right shape: {}".format(self.ndim(), points.shape))
+        if check and not castable_ndarray_PointList(points, self.ndim):
+            raise ValueError("Point list in {}D not in the right shape: {}".format(self.ndim, points.shape))
         if points.size == 0:
-            points = points.reshape((0,self.ndim()))
+            points = points.reshape((0,self.ndim))
         self.points = points
 
 
@@ -47,7 +47,7 @@ _bc.register_castable(_np.ndarray, PointList2d, lambda x: castable_ndarray_Point
 _bc.register_cast(_np.ndarray, PointList2d, lambda x: PointList2d(x, check=False))
 _bc.register_cast(PointList2d, PointList, lambda x: PointList(x.points, check=False))
 _bc.register_cast(PointList, PointList2d, lambda x: PointList2d(x.points, check=False))
-_bc.register_castable(PointList, PointList2d, lambda x: x.ndim()==2)
+_bc.register_castable(PointList, PointList2d, lambda x: x.ndim==2)
 
 
 class PointList3d(ThreeD, PointList):
@@ -57,4 +57,4 @@ _bc.register_castable(_np.ndarray, PointList3d, lambda x: castable_ndarray_Point
 _bc.register_cast(_np.ndarray, PointList3d, lambda x: PointList3d(x, check=False))
 _bc.register_cast(PointList3d, PointList, lambda x: PointList(x.points, check=False))
 _bc.register_cast(PointList, PointList3d, lambda x: PointList3d(x.points, check=False))
-_bc.register_castable(PointList, PointList3d, lambda x: x.ndim()==3)
+_bc.register_castable(PointList, PointList3d, lambda x: x.ndim==3)
