@@ -1,20 +1,23 @@
 import numpy as _np
 import math as _m
 
-from .dilated_isometry import dliso
+import mt.base.casting as _bc
+
+from .dilated_isometry import Dliso
+from .affine2d import Aff2d, Lin2d
 
 
-__all__ = ['sim2']
+__all__ = ['Sim2d', 'sim2']
 
 
-class sim2(dliso):
+class Sim2d(Dliso):
     '''Similarity (angle-preserving) transformation in 2D.
 
-    Consider the following family of 2D transformations: y = sim2(offset, scale, angle, on)(x) = Translate(offset)*UniformScale(scale)*Rotate(angle)*ReflectX(on)(x), where 'x' is a vector of coordinates in 2D, 'on' is a boolean, ReflectX is the reflection through the X axis (the axis of the first dimension), 'angle' is an angle in radian, Rotate is the 2D rotation, 'scale' is a positive scalar, UniformScale is uniform scaling, 'offset' is a vector of 2D coordinates and Translate is the translation.
+    Consider the following family of 2D transformations: y = Sim2d(offset, scale, angle, on)(x) = Translate(offset)*UniformScale(scale)*Rotate(angle)*ReflectX(on)(x), where 'x' is a vector of coordinates in 2D, 'on' is a boolean, ReflectX is the reflection through the X axis (the axis of the first dimension), 'angle' is an angle in radian, Rotate is the 2D rotation, 'scale' is a positive scalar, UniformScale is uniform scaling, 'offset' is a vector of 2D coordinates and Translate is the translation.
 
     This family forms a Lie group of 2 disconnected components, those without reflection and those with reflection. The Lie group multiplication and inverse operators are derived as below:
-      - multiplication: sim2(offset_x, scale_x, angle_x, on_x)*sim2(offset_y, scale_y, angle_y, on_y) = sim2(offset_x + UniformScale(scale_x)*Rotate(angle_x)*ReflectX(on_x)(offset_y), scale_x*scale_y, angle_x + (-1)^{on_x} angle_y, on_x xor on_y)
-      - inverse: ~sim2(offset, scale, angle, on) = sim2(-linear(scale, angle, on) offset, 1/scale, -(-1)^{on} angle, on)
+      - multiplication: Sim2d(offset_x, scale_x, angle_x, on_x)*Sim2d(offset_y, scale_y, angle_y, on_y) = Sim2d(offset_x + UniformScale(scale_x)*Rotate(angle_x)*ReflectX(on_x)(offset_y), scale_x*scale_y, angle_x + (-1)^{on_x} angle_y, on_x xor on_y)
+      - inverse: ~Sim2d(offset, scale, angle, on) = Sim2d(-linear(scale, angle, on) offset, 1/scale, -(-1)^{on} angle, on)
 
     References:
         [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not really, cheeky MT is trying to advertise his paper!)
@@ -34,11 +37,11 @@ class sim2(dliso):
     @property
     def bias_dim(self):
         return 2
-    bias_dim.__doc__ = dliso.bias_dim.__doc__
+    bias_dim.__doc__ = Dliso.bias_dim.__doc__
 
     @property
     def unitary(self):
-        return sim2.get_linear(self.angle, self.on)
+        return Sim2d.get_linear(self.angle, self.on)
 
     @unitary.setter
     def unitary(self, unitary):
@@ -70,8 +73,8 @@ class sim2(dliso):
 
     @property
     def linear(self):
-        return sim2.get_linear(self.angle, self.on, self.scale)
-    linear.__doc__ = dliso.linear.__doc__
+        return Sim2d.get_linear(self.angle, self.on, self.scale)
+    linear.__doc__ = Dliso.linear.__doc__
 
     # ----- methods -----
 
@@ -82,21 +85,33 @@ class sim2(dliso):
         self.on = on
 
     def __repr__(self):
-        return "sim2(offset={}, scale={}, angle={}, on={})".format(self.offset, self.scale, self.angle, self.on)
+        return "Sim2d(offset={}, scale={}, angle={}, on={})".format(self.offset, self.scale, self.angle, self.on)
 
-    def __mul__(self, other):
-        if not isinstance(other, sim2):
-            return super(sim2, self).__mul__(other)
-        return sim2(self << other.offset,
+    # ----- base adaptation -----
+
+    def multiply(self, other):
+        if not isinstance(other, Sim2d):
+            return super(Sim2d, self).__mul__(other)
+        return Sim2d(self << other.offset,
             self.scale*other.scale,
             self.angle-other.angle if self.on else self.angle+other.angle,
             not self.on != (not other.on) # fastest xor
             )
-    __mul__.__doc__ = dliso.__mul__.__doc__
+    multiply.__doc__ = Dliso.multiply.__doc__
 
-    def __invert__(self):
+    def invert(self):
         invScale = 1/self.scale
         invAngle = self.angle if self.on else -self.angle
-        mat = sim2.get_linear(invAngle, self.on, invScale)
-        return sim2(_np.dot(mat, -self.offset), invScale, invAngle, self.on)
-    __invert__.__doc__ = dliso.__invert__.__doc__
+        mat = Sim2d.get_linear(invAngle, self.on, invScale)
+        return Sim2d(_np.dot(mat, -self.offset), invScale, invAngle, self.on)
+    invert.__doc__ = Dliso.invert.__doc__
+
+
+sim2 = Sim2d # backward compatibility
+
+
+# ----- casting -----
+
+
+_bc.register_cast(Sim2d, Dliso, lambda x: Dliso(offset=x.offset, scale=x.scale, unitary=x.unitary))
+_bc.register_cast(Sim2d, Aff2d, lambda x: Aff2d(offset=x.offset, linear=Lin2d.from_matrix(x.linear)))

@@ -2,10 +2,12 @@ import numpy as _np
 import numpy.linalg as _nl
 import math as _m
 
+import mt.base.casting as _bc
+
 from .affine_transformation import Aff
 
 
-__all__ = ['dliso', 'Dliso']
+__all__ = ['dliso', 'Dliso', 'cast_Aff_to_Dliso', 'castable_Aff_to_Dliso']
 
 
 class Dliso(Aff):
@@ -101,23 +103,40 @@ class Dliso(Aff):
     def __repr__(self):
         return "Dliso(offset={}, scale={}, unitary_diagonal={})".format(self.offset, self.scale, self.unitary.diagonal())
 
-    def __mul__(self, other):
+    # ----- base adaptation -----
+
+    def multiply(self, other):
         if not isinstance(other, Dliso):
-            return super(Dliso, self).__mul__(other)
+            return super(Dliso, self).multiply(other)
         return Dliso(self << other.offset,
             self.scale*other.scale,
             _np.dot(self.unitary, other.unitary)
             )
-    __mul__.__doc__ = Aff.__mul__.__doc__
+    multiply.__doc__ = Aff.multiply.__doc__
 
-    def __invert__(self):
+    def invert(self):
         invScale = 1/self.scale
         invUnitary = _nl.inv(self.unitary) # slow, and assuming the unitary matrix is invertible
         return Dliso(_np.dot(invUnitary, -self.offset*invScale), invScale, invUnitary)
-    __invert__.__doc__ = Aff.__invert__.__doc__
+    invert.__doc__ = Aff.invert.__doc__
 
 
-dliso = Dliso
+dliso = Dliso # backward compatibility
 
 
-# MT-TODO: make this like Aff
+# ----- casting -----
+
+
+def cast_Aff_to_Dliso(obj):
+    '''Casts an Aff instance to Dliso.'''
+    raise NotImplementedError("Implement me!")
+
+
+def castable_Aff_to_Dliso(obj):
+    '''Checks if we can cast an Aff instance to Dliso.'''
+    raise NotImplementedError("Implement me!")
+
+
+_bc.register_cast(Dliso, Aff, lambda x: Aff(weights=x.weight, bias=x.offset, check_shapes=False))
+_bc.register_cast(Aff, Dliso, cast_Aff_to_Dliso)
+_bc.register_castable(Aff, Dliso, castable_Aff_to_Dliso)
