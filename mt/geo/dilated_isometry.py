@@ -121,7 +121,13 @@ class Dliso(Aff):
     invert.__doc__ = Aff.invert.__doc__
 
 
-dliso = Dliso # backward compatibility
+class dliso(Dliso):
+
+    __doc__ = Dliso.__doc__
+
+    @deprecated_func("0.4.3", suggested_func='mt.geo.dilated_isometry.Dliso.__init__', removed_version="0.6.0")
+    def __init__(self, *args, **kwargs):
+        super(dliso, self).__init__(*args, **kwargs)
 
 
 # ----- casting -----

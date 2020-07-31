@@ -2,6 +2,7 @@ import numpy as _np
 import math as _m
 
 import mt.base.casting as _bc
+from mt.base.deprecated import deprecated_func
 
 from .dilated_isometry import Dliso
 from .affine2d import Aff2d, Lin2d
@@ -107,7 +108,13 @@ class Sim2d(Dliso):
     invert.__doc__ = Dliso.invert.__doc__
 
 
-sim2 = Sim2d # backward compatibility
+class sim2(Sim2d):
+
+    __doc__ = Sim2d.__doc__
+
+    @deprecated_func("0.4.3", suggested_func='mt.geo.similarity2d.Sim2d.__init__', removed_version="0.6.0")
+    def __init__(self, *args, **kwargs):
+        super(sim2, self).__init__(*args, **kwargs)
 
 
 # ----- casting -----

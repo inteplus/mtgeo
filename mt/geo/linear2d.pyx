@@ -6,6 +6,8 @@ import numpy as _np
 from libcpp cimport bool
 from libc.math cimport fabs, hypot, atan2, sin, cos, M_PI, M_PI_2
 
+from mt.base.deprecated import deprecated_func
+
 from .object import TwoD, GeometricObject
 from .transformation import LieTransformer, register_transform, register_transformable
 from .moments import Moments2d
@@ -379,7 +381,13 @@ class Lin2d(TwoD, GeometricObject, LieTransformer, Lin2dBase):
         return "Lin2d(scale={}, shear={}, angle={})".format(self.scale, self.shear, self.angle)
 
 
-lin2 = Lin2d # for backward compatibility
+class lin2(Lin2d):
+
+    __doc__ = Lin2d.__doc__
+
+    @deprecated_func("0.4.2", suggested_func='mt.geo.linear2d.Lin2d.__init__', removed_version="0.6.0")
+    def __init__(self, *args, **kwargs):
+        super(lin2, self).__init__(*args, **kwargs)
 
 
 # ----- transform functions -----

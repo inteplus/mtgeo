@@ -11,7 +11,9 @@ from .moments import EPSILON, Moments2d
 from .approximation import *
 from .object import TwoD
 
+
 __all__ = ['rect', 'Rect', 'cast_Rect_to_Moments2d', 'approx_Moments2d_to_Rect']
+
 
 class Rect(TwoD, Box):
     '''A 2D rectangle,
@@ -178,13 +180,16 @@ class rect(Rect):
 
     __doc__ = Rect.__doc__
 
-    @deprecated_func("0.4.2", suggested_func='mt.geo.rect.Rect.__init__', removed_version="0.6.0")
+    @deprecated_func("0.4.3", suggested_func='mt.geo.rect.Rect.__init__', removed_version="0.6.0")
     def __init__(self, *args, **kwargs):
         super(rect, self).__init__(*args, **kwargs)
 
 
 # ----- casting -----
         
+
+register_cast(Rect, Box, lambda x: Box(x.dlt_tfm))
+
 
 def cast_Rect_to_Moments2d(obj):
     m0 = obj.signed_area

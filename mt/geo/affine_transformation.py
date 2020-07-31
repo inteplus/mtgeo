@@ -173,7 +173,14 @@ class Aff(LieTransformer, GeometricObject):
         det = self.det
         return 1 if det > eps else -1 if det < -eps else 0
 
-aff = Aff # for backward compatibility
+
+class aff(Aff):
+
+    __doc__ = Aff.__doc__
+
+    @deprecated_func("0.4.3", suggested_func='mt.geo.affine_transformation.Aff.__init__', removed_version="0.6.0")
+    def __init__(self, *args, **kwargs):
+        super(aff, self).__init__(*args, **kwargs)
 
 
 # ----- transform functions -----

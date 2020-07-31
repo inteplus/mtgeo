@@ -59,7 +59,13 @@ class Iso(Dliso):
     invert.__doc__ = Dliso.invert.__doc__
 
 
-iso = Iso # backward compatibility
+class iso(Iso):
+
+    __doc__ = Iso.__doc__
+
+    @deprecated_func("0.4.3", suggested_func='mt.geo.isometry.Iso.__init__', removed_version="0.6.0")
+    def __init__(self, *args, **kwargs):
+        super(iso, self).__init__(*args, **kwargs)
 
 
 # ----- casting -----

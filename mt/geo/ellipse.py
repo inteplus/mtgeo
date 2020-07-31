@@ -118,7 +118,13 @@ class Ellipse(TwoD, GeometricObject):
         return Ellipse(Aff2d(linear=Lin2d(scale=[x.w/2, x.h/2]), offset=x.center_pt))
 
 
-ellipse = Ellipse # for now
+class ellipse(Ellipse):
+
+    __doc__ = Ellipse.__doc__
+
+    @deprecated_func("0.4.2", suggested_func='mt.geo.ellipse.Ellipse.__init__', removed_version="0.6.0")
+    def __init__(self, *args, **kwargs):
+        super(ellipse, self).__init__(*args, **kwargs)
 
 
 # ----- casting -----
