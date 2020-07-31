@@ -15,7 +15,8 @@ __all__ = ['dlt', 'Dlt', 'scale2d', 'flipx2d', 'flipy2d']
 class Dlt(Aff):
     '''Dilatation (scaling and translation) in n-dim space. Here, scaling is per dimension, not uniform scaling.
 
-    :Examples:
+    Examples
+    --------
     >>> import numpy as _np
     >>> from mt.geo.dilatation import Dlt
     >>> a = Dlt(offset=_np.array([1,2]), scale=_np.array([3,4]))
@@ -223,15 +224,15 @@ def scale2d(scale_x=1, scale_y=None):
     '''Returns the scaling.'''
     if scale_y is None:
         scale_y = scale_x
-    return dlt(offset=_np.zeros(2), scale=_np.array([scale_x,scale_y]))
+    return Dlt(offset=_np.zeros(2), scale=_np.array([scale_x,scale_y]))
 
 @deprecated_func("0.3.5", suggested_func=["mt.geo.dilatation.flipx2d", "mt.geo.affine2d.flipLR2d"], removed_version="0.5.0")
 def flipx2d(width):
     '''Returns the transformation representing the horizontal flip of an image.'''
-    return dlt(offset=_np.array([width,0]), scale=_np.array([-1,1]))
+    return Dlt(offset=_np.array([width,0]), scale=_np.array([-1,1]))
 
 @deprecated_func("0.3.5", suggested_func=["mt.geo.dilatation.flipy2d", "mt.geo.affine2d.flipUD2d"], removed_version="0.5.0")
 def flipy2d(height):
     '''Returns the transformation representing the vertical flip of an image.'''
-    return dlt(offset=_np.array([0,height]), scale=_np.array([1,-1]))
+    return Dlt(offset=_np.array([0,height]), scale=_np.array([1,-1]))
 
