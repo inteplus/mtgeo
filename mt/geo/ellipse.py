@@ -16,7 +16,7 @@ from .transformation import transform, register_transform
 from .object import GeometricObject, TwoD
 
 
-__all__ = ['ellipse', 'Ellipse', 'cast_Ellipse_to_Moments2d', 'approx_Moments2d_to_Ellipse', 'transform_Aff2d_on_Ellipse']
+__all__ = ['ellipse', 'Ellipse', 'cast_Ellipse_to_Moments2d', 'approx_Moments2d_to_Ellipse', 'upper_bound_Ellipse_to_Rect', 'lower_bound_Rect_to_Ellipse', 'transform_Aff2d_on_Ellipse']
 
 
 class Ellipse(TwoD, GeometricObject):
@@ -24,7 +24,7 @@ class Ellipse(TwoD, GeometricObject):
 
     If the unit circle is parameterised by `(cos(t), sin(t))` where `t \in [0,2\pi)` then the ellipse is parameterised by `f0 + f1 cos(t) + f2 sin(t)`, where `f0` is the bias vector, `f1` and `f2` are the first and second column of the weight matrix respectively, of the affine transformation. `f1` and `f2` are called first and second axes of the ellipse.
 
-    Note that this representation is not unique, the same ellipse can be represented by an infinite number of affine transforms of the unit circle. To make the representation unique, we further assert that when f1 and f2 are perpendicular (linearly independent), the ellipse is normalised, and use the normalised version as a unique representation. You can normalise either at initialisation time, or later by invoking member function `normalised`.
+    Note that this representation is not unique, the same ellipse can be represented by an infinite number of affine transforms of the unit circle. To make the representation more useful, we further assert that when f1 and f2 are perpendicular (linearly independent), the ellipse is normalised. In other words, the weight matrix is a unitary matrix multiplied by a diagonal matrix. After normalisation there is only a finite number of ways to represent the same ellipse. You can normalise either at initialisation time, or later by invoking member function `normalised`.
 
     Parameters
     ----------
@@ -40,6 +40,14 @@ class Ellipse(TwoD, GeometricObject):
     >>> a = Aff2d(offset=np.array([2,3]), linear=Lin2d(scale=np.array([0.3,7]), shear=0.3, angle=0.3))
     >>> Ellipse(a)
     Ellipse(aff_tfm=Aff2d(offset=[2 3], linear=Lin2d(scale=[-0.3  7. ], shear=-0.30000000000000787, angle=-1.5702443840777238)))
+
+    Notes
+    -----
+    Ellipse follows the convention of Ellipsoid closely.
+
+    See Also
+    --------
+    mt.geo.ellipsoid.Ellipsoid
     '''
 
     def __init__(self, aff_tfm, make_normalised=True):
@@ -76,7 +84,7 @@ class Ellipse(TwoD, GeometricObject):
 
     def normalised(self):
         '''Returns an equivalent ellipse where f1 and f2 are perpendicular (linearly independent).'''
-        return Ellipse(self.aff_tfm.offset, make_normalised=True)
+        return Ellipse(self.aff_tfm, make_normalised=True)
 
     @deprecated_func("0.3.8", suggested_func=["mt.geo.transformation.transform", "mt.geo.ellipse.transform_Aff2d_on_Ellipse"], removed_version="0.6.0", docstring_prefix="        ")
     def transform(self, aff_tfm):
@@ -154,7 +162,7 @@ register_approx(Moments2d, Ellipse, approx_Moments2d_to_Ellipse)
 
 
 def upper_bound_Ellipse_to_Rect(obj):
-    '''Returns a bounding rectangle of the ellipse.
+    '''Returns a bounding axis-aligned rectangle of the ellipse.
 
     Parameters
     ----------
@@ -196,7 +204,7 @@ register_lower_bound(Rect, Ellipse, lower_bound_Rect_to_Ellipse)
 # ----- transform functions -----
 
 
-def transform_Aff2d_on_Ellipse(afm_tfm, obj):
+def transform_Aff2d_on_Ellipse(aff_tfm, obj):
     '''Affine-transforms an Ellipse. The resultant Ellipse has affine transformation `aff_tfm*obj.aff_tfm`.
 
     Parameters
