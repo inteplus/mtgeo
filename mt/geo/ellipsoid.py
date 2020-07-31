@@ -45,6 +45,14 @@ class Ellipsoid(GeometricObject):
            [0., 0., 1.]])
     '''
 
+    # ----- base adaptation -----
+
+
+    @property
+    def dim(self):
+        return self.aff_tfm.bias
+    
+
     def __init__(self, aff_tfm, make_normalised=True):
         '''Initialises an ellipsoid with an affine transformation.'''
         if not isinstance(aff_tfm, Aff):
