@@ -1,142 +1,215 @@
+'''A 3D box.'''
+
+import math as _m
 import numpy as _np
 
 from mt.base.deprecated import deprecated_func
-from .dilatation import Dlt
-from .object import ThreeD
+from mt.base.casting import *
+
 from .box import Box
+from .moments import EPSILON, Moments3d
+from .approximation import *
+from .object import ThreeD
 
-__all__ = ['Box3d']
 
-class Box3d(Box):
-    '''Axis-aligned 3D box.
+__all__ = ['Box3d', 'cast_Box_to_Box3d', 'cast_Box3d_to_Moments3d', 'approx_Moments3d_to_Box3d']
 
-    An axis-aligned 3D box is defined as the set of points of the cube `[-1,1]^3` transformed by a dilatation.
 
-    Note that is is a many-to-one representation. For each box, there are up to 8 dilatations that map the cube `[-1,1]^3` to it.
+class Box3d(ThreeD, Box):
+    '''A 3D box.
 
-    # MT-TODO: continue from here, make it like Rect, with x, y, z coordinates
+    Note we do not care if the box is open or partially closed or closed.'''
 
-    Parameters
-    ----------
-    min_coords : 1d array or Dlt
-        array of minimum coordinate values for all the dimensions, or the dilatation if self. In case of the latter, the `max_coords` argument is ignored.
-    max_coords : 1d array
-        array of maximum coordinate values for all the dimensions. If it is None, then `min_coords` represents `max_coords` and the minimum coordinate values are assumed 0.
-    force_valid : bool
-        whether or not to sort out `min_coords` and `max_coords` to make the the minus point meet the min_coords and the plus point meet the max_coords.
-
-    Attributes
-    ----------
-    dlt_tfm : Dlt
-        the dilatation equivalent, which can be get/set
-    dim : int
-        number of dimensions
-    minus_pt : point
-        the (-1,)^n point after being transformed by the dilatation
-    plus_pt : point
-        the (+1,)^n point after being transformed by the dilatation
-    min_coords : point
-        minimum coordinates
-    max_coords : point
-        maximum coordinates
-    center_pt : point
-        center point
-    size : size/point
-        box size
-    '''
-
-    # ----- data encapsulation -----
-
-    @property
-    def dlt_tfm(self):
-        '''the dilatation'''
-        return self.__dlt_tfm
-
-    @dlt_tfm.setter
-    def dlt_tfm(self, dlt_tfm):
-        self.__dlt_tfm = dlt_tfm
-
+    
     # ----- derived properties -----
 
-    @classmethod
-    def ndim(self):
-        '''The dimensionality'''
-        return self.dim
+    
+    @property
+    def min_x(self):
+        '''lowest x-coordinate.'''
+        return self.min_coords[0]
 
     @property
-    def dim(self):
-        '''The dimensionality'''
-        return self.dlt_tfm.dim
+    def min_y(self):
+        '''lowest y-coodinate.'''
+        return self.min_coords[1]
 
     @property
-    def minus_pt(self):
-        '''The (-1,)^n point after being transformed by the dilatation.'''
-        return self.dlt_tfm.offset - self.dlt_tfm.scale
+    def min_z(self):
+        '''lowest z-coodinate.'''
+        return self.min_coords[2]
 
     @property
-    def plus_pt(self):
-        '''The (+1,)^n point after being transformed by the dilatation.'''
-        return self.dlt_tfm.offset + self.dlt_tfm.scale
+    def max_x(self):
+        '''highest x-coordinate.'''
+        return self.max_coords[0]
 
     @property
-    def min_coords(self):
-        '''minimum coordinates'''
-        return _np.minimum(self.minus_pt, self.plus_pt)
+    def max_y(self):
+        '''highest y-coordinate.'''
+        return self.max_coords[1]
 
     @property
-    def max_coords(self):
-        '''maximum coordinates'''
-        return _np.maximum(self.minus_pt, self.plus_pt)
+    def max_z(self):
+        '''highest z-coordinate.'''
+        return self.max_coords[2]
 
     @property
-    def center_pt(self):
-        '''center point'''
-        return self.dlt_tfm.offset
+    def x(self):
+        '''left, same as min_x.'''
+        return self.min_x
 
     @property
-    def size(self):
-        '''box size'''
-        return _np.abs(self.dlt_tfm.scale*2)
+    def y(self):
+        '''top, same as min_y.'''
+        return self.min_y
 
+    @property
+    def z(self):
+        '''top, same as min_z.'''
+        return self.min_z
+
+    @property
+    def lx(self):
+        '''length in x-axis'''
+        return self.max_x - self.min_x
+
+    @property
+    def ly(self):
+        '''length in y-axis'''
+        return self.max_y - self.min_y
+
+    @property
+    def lz(self):
+        '''length in z-axis'''
+        return self.max_z - self.min_z
+
+    @property
+    def cx(self):
+        '''Center x-coordinate.'''
+        return (self.min_x + self.max_x)/2
+
+    @property
+    def cy(self):
+        '''Center y-coordinate.'''
+        return (self.min_y + self.max_y)/2
+
+    @property
+    def cz(self):
+        '''Center z-coordinate.'''
+        return (self.min_z + self.max_z)/2
+
+    @property
+    def volume(self):
+        '''Absolute volume.'''
+        return abs(self.signed_volume)
+
+    
+    # ----- moments -----
+
+
+    @property
+    def signed_volume(self):
+        '''Returns the signed volume of the box.'''
+        return (self.max_coords-self.min_coords).prod()
+
+    @property
+    def moment_x(self):
+        '''Returns the integral of x over the box's interior.'''
+        return self.signed_volume*self.cx
+
+    @property
+    def moment_y(self):
+        '''Returns the integral of y over the box's interior.'''
+        return self.signed_volume*self.cy
+
+    @property
+    def moment_z(self):
+        '''Returns the integral of z over the box's interior.'''
+        return self.signed_volume*self.cz
+
+    @property
+    def moment_xy(self):
+        '''Returns the integral of x*y over the box's interior.'''
+        return self.moment_x*self.cy
+
+    @property
+    def moment_yz(self):
+        '''Returns the integral of y*z over the box's interior.'''
+        return self.moment_y*self.cz
+
+    @property
+    def moment_zx(self):
+        '''Returns the integral of z*x over the box's interior.'''
+        return self.moment_z*self.cx
+
+    @property
+    def moment_xx(self):
+        '''Returns the integral of x*x over the box's interior.'''
+        return self.signed_volume*(self.min_x*self.min_x+self.min_x*self.max_x+self.max_x*self.max_x)/3
+
+    @property
+    def moment_yy(self):
+        '''Returns the integral of y*y over the box's interior.'''
+        return self.signed_volume*(self.min_y*self.min_y+self.min_y*self.max_y+self.max_y*self.max_y)/3
+
+    @property
+    def moment_zz(self):
+        '''Returns the integral of z*z over the box's interior.'''
+        return self.signed_volume*(self.min_z*self.min_z+self.min_z*self.max_z+self.max_z*self.max_z)/3
+
+    
     # ----- methods -----
 
-    def __init__(self, min_coords, max_coords=None, force_valid=False):
-        if isinstance(min_coords, Dlt):
-            self.dlt_tfm = min_coords
-        else:
-            if max_coords is None:
-                max_coords = min_coords
-                min_coords = _np.zeros(dim)
-            self.dlt_tfm = Dlt(offset=(max_coords + min_coords)/2, scale=(max_coords-min_coords)/2)
-
-        if force_valid:
-            min_coords = self.min_coords
-            max_coords = self.max_coords
-            self.dlt_tfm = Dlt(offset=(max_coords + min_coords)/2, scale=(max_coords-min_coords)/2)
+    
+    def __init__(self, min_x, min_y, min_z, max_x, max_y, max_z, force_valid=False):
+        super(Box3d, self).__init__(_np.array([min_x, min_y, min_z]), _np.array([max_x, max_y, max_z]), force_valid = force_valid)
 
     def __repr__(self):
-        return "Box({})".format(self.dlt_tfm)
-
-    def is_valid(self):
-        return (self.dlt_tfm.scale >= 0).all()
-
-    def validated(self):
-        '''Returns a validated version of the box.'''
-        min_coords = self.min_coords
-        max_coords = self.max_coords
-        return Box(Dlt(offset=(max_coords + min_coords)/2, scale=max_coords-min_coords))
+        return "Box3d(x={}, y={}, z={}, lx={}, ly={}, lz={})".format(self.x, self.y, self.z, self.lx, self.ly, self.lz)
 
     def intersect(self, other):
-        return Box(_np.maximum(self.min_coords, other.min_coords), _np.minimum(self.max_coords, other.max_coords))
+        res = super(Box3d, self).intersect(other)
+        return Box3d(res.min_coords[0], res.min_coords[1], res.min_coords[2], res.max_coords[0], res.max_coords[1], res.max_coords[2])
 
     def union(self, other):
-        return Box(_np.minimum(self.min_coords, other.min_coords), _np.maximum(self.max_coords, other.max_coords))
+        res = super(Box3d, self).union(other)
+        return Box3d(res.min_coords[0], res.min_coords[1], res.min_coords[2], res.max_coords[0], res.max_coords[1], res.max_coords[2])
+
+    def move(self, offset):
+        '''Moves the Box3d by a given offset vector.'''
+        return Box3d(self.min_x + offset[0], self.min_y + offset[1], self.min_z + offset[2], self.max_x + offset[0], self.max_y + offset[1], self.max_z + offset[2])
 
 
-class box(Box):
+# ----- casting -----
+        
 
-    __doc__ = Box.__doc__
+register_cast(Box3d, Box, lambda x: Box(x.dlt_tfm))
+register_castable(Box, Box3d, lambda x: x.dim==3)
 
-    @deprecated_func("0.4.2", suggested_func='mt.geo.box.Box.__init__', removed_version="0.6.0")
-    def __init__(self, *args, **kwargs):
-        super(box, self).__init__(*args, **kwargs)
+def cast_Box_to_Box3d(x):
+    '''Casts a Box to a Box3d.'''
+    min_coords = x.min_coords
+    max_coords = x.max_coords
+    return Box3d(min_coords[0], min_coords[1], min_coords[2], max_coords[0], max_coords[1], max_coords[2])
+register_cast(Box, Box3d, cast_Box_to_Box3d)
+
+
+def cast_Box3d_to_Moments3d(obj):
+    m0 = obj.signed_volume
+    m1 = [obj.moment_x, obj.moment_y]
+    mxy = obj.moment_xy
+    myz = obj.moment_yz
+    mzx = obj.moment_zx
+    m2 = [[obj.moment_xx, mxy, mzx], [mxy, obj.moment_yy, myz], [mzx, myz, obj.moment_zz]]
+    return Moments3d(m0, m1, m2)
+register_cast(Box3d, Moments3d, cast_Box3d_to_Moments3d)
+
+
+# ----- approximation -----
+
+
+def approx_Moments3d_to_Box3d(obj):
+    '''Approximates a Moments3d instance with a box such that the mean aligns with the box's center, and the covariance matrix of the instance is closest to the moment convariance matrix of the box.'''
+    raise NotImplementedError("I don't know if the coefficients are correct. Need to figure out.")
+register_approx(Moments3d, Box3d, approx_Moments3d_to_Box3d)
