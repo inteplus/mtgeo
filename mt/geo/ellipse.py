@@ -8,14 +8,15 @@ from mt.base.casting import register_cast
 from mt.base.deprecated import deprecated_func
 
 from .affine2d import Aff2d, Lin2d
-from .rect import rect
+from .rect import Rect
 from .moments import EPSILON, Moments2d
+from .bounding import register_upper_bound, register_lower_bound
 from .approximation import register_approx
 from .transformation import transform, register_transform
 from .object import GeometricObject, TwoD
 
 
-__all__ = ['ellipse', 'Ellipse', 'cast_ellipse_to_moments', 'approx_moments_to_ellipse', 'transform_Aff2d_on_Ellipse']
+__all__ = ['ellipse', 'Ellipse', 'cast_Ellipse_to_Moments2d', 'approx_Moments2d_to_Ellipse', 'transform_Aff2d_on_Ellipse']
 
 
 class Ellipse(TwoD, GeometricObject):
@@ -86,6 +87,7 @@ class Ellipse(TwoD, GeometricObject):
 
     # ----- bounding rect -----
 
+    @deprecated_func("0.4.3", suggested_func=["mt.geo.bounding.upper_bound", "mt.geo.ellipse.upper_bound_Ellipse_to_Rect"], removed_version="0.6.0", docstring_prefix="        ")
     def to_bounding_rect(self, rotated=False):
         '''Returns a bounding rectangle of the ellipse.
 
@@ -105,13 +107,14 @@ class Ellipse(TwoD, GeometricObject):
         mx = _nl.norm(weight[0])
         my = _nl.norm(weight[1])
         cx, cy = self.aff_tfm.bias
-        return rect(cx-mx, cy-my, cx+mx, cy+my)
+        return Rect(cx-mx, cy-my, cx+mx, cy+my)
 
     @staticmethod
+    @deprecated_func("0.4.3", suggested_func=["mt.geo.bounding.lower_bound", "mt.geo.ellipse.lower_bound_Rect_to_Ellipse"], removed_version="0.6.0", docstring_prefix="        ")
     def from_bounding_rect(x):
         '''Returns an axis-aligned ellipse bounded by the given axis-aligned rectangle x.'''
-        if not isinstance(x, rect):
-            raise ValueError("Input type a `rect`, '{}' given.".format(x.__class__))
+        if not isinstance(x, Rect):
+            raise ValueError("Input type must be a `Rect`, '{}' given.".format(x.__class__))
         return Ellipse(Aff2d(linear=Lin2d(scale=[x.w/2, x.h/2]), offset=x.center_pt))
 
 
@@ -120,14 +123,15 @@ ellipse = Ellipse # for now
 
 # ----- casting -----
 
-def cast_ellipse_to_moments(obj):
+def cast_Ellipse_to_Moments2d(obj):
+    '''Extracts Moments2d from an Ellipse instance.'''
     a = _m.pi/4
     moments = Moments2d(_m.pi, [0,0], [[a,0],[0,a]]) # unit circle's moments
     return transform(obj.aff_tfm, moments) # transform
-register_cast(Ellipse, Moments2d, cast_ellipse_to_moments)
+register_cast(Ellipse, Moments2d, cast_Ellipse_to_Moments2d)
 
 
-def approx_moments_to_ellipse(obj):
+def approx_Moments2d_to_Ellipse(obj):
     '''Approximates a Moments2d instance with a normalised Ellipse that has the same mean and covariance as the mean and covariance of the instance.'''
     # A
     AAT = obj.cov*4
@@ -137,7 +141,50 @@ def approx_moments_to_ellipse(obj):
     # aff_tfm
     aff_tfm = Aff2d(offset=obj.mean, linear=Lin2d.from_matrix(A))
     return Ellipse(aff_tfm)
-register_approx(Moments2d, Ellipse, approx_moments_to_ellipse)
+register_approx(Moments2d, Ellipse, approx_Moments2d_to_Ellipse)
+
+
+# ----- bounding -----
+
+
+def upper_bound_Ellipse_to_Rect(obj):
+    '''Returns a bounding rectangle of the ellipse.
+
+    Parameters
+    ----------
+    obj : Ellipse
+        the ellipse to be upper-bounded
+
+    Returns
+    -------
+    Rect
+        a bounding Rect of the ellipse
+    '''
+    weight = obj.aff_tfm.weight
+    mx = _nl.norm(weight[0])
+    my = _nl.norm(weight[1])
+    cx, cy = obj.aff_tfm.bias
+    return Rect(cx-mx, cy-my, cx+mx, cy+my)
+register_upper_bound(Ellipse, Rect, upper_bound_Ellipse_to_Rect)
+
+
+def lower_bound_Rect_to_Ellipse(x):
+    '''Returns an axis-aligned ellipse bounded by the given axis-aligned rectangle x.
+
+    Parameters
+    ----------
+    x : Rect
+        the rectangle from which the enclosed ellipse is computed
+
+    Returns
+    -------
+    Ellipse
+        the axis-aligned ellipse enclosed by the rectangle
+    '''
+    if not isinstance(x, Rect):
+        raise ValueError("Input type must be a `Rect`, '{}' given.".format(x.__class__))
+    return Ellipse(Aff2d(linear=Lin2d(scale=[x.w/2, x.h/2]), offset=x.center_pt))
+register_lower_bound(Rect, Ellipse, lower_bound_Rect_to_Ellipse)
 
 
 # ----- transform functions -----
