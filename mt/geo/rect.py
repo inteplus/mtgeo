@@ -6,14 +6,14 @@ import numpy as _np
 from mt.base.deprecated import deprecated_func
 from mt.base.casting import *
 
-from .box import box
+from .box import Box
 from .moments import EPSILON, Moments2d
 from .approximation import *
 from .object import TwoD
 
-__all__ = ['rect', 'cast_rect_to_moments', 'approx_moments_to_rect']
+__all__ = ['rect', 'Rect', 'cast_Rect_to_Moments2d', 'approx_Moments2d_to_Rect']
 
-class rect(TwoD, box):
+class Rect(TwoD, Box):
     '''A 2D rectangle,
 
     Note we do not care if the rectangle is open or partially closed or closed.'''
@@ -112,7 +112,7 @@ class rect(TwoD, box):
         return self.signed_area*(self.min_y*self.min_y+self.min_y*self.max_y+self.max_y*self.max_y)/3
 
     @property
-    @deprecated_func("0.3.5", suggested_func=["mt.base.casting.cast", "mt.geo.rect.cast_rect_to_moments"], removed_version="0.5.0")
+    @deprecated_func("0.3.5", suggested_func=["mt.base.casting.cast", "mt.geo.rect.cast_Rect_to_Moments2d"], removed_version="0.5.0")
     def to_moments2d(self):
         '''Computes all moments, up to 2nd-order of the rectangle's interior.'''
         from .moments2d import moments2d
@@ -123,7 +123,7 @@ class rect(TwoD, box):
         return moments2d(m0, m1, m2)
 
     @staticmethod
-    @deprecated_func("0.3.5", suggested_func=["mt.geo.approximation.approx", "mt.geo.rect.approx_moments_to_rect"], removed_version="0.5.0")
+    @deprecated_func("0.3.5", suggested_func=["mt.geo.approximation.approx", "mt.geo.rect.approx_Moments2d_to_Rect"], removed_version="0.5.0")
     def from_moments2d(obj):
         '''Returns a rectangle that best approximates the moments2d instance.
         
@@ -136,7 +136,7 @@ class rect(TwoD, box):
         
         Returns
         -------
-        rect
+        Rect
             the output rectangle
         '''
         cx, cy = obj.mean
@@ -149,41 +149,56 @@ class rect(TwoD, box):
         wh = _m.sqrt(_m.sqrt(wh3*hw3))
         h = _m.sqrt(wh3/wh)
         w = _m.sqrt(hw3/wh)
-        return rect(cx-w, cy-h, cx+w, cy+h)
+        return Rect(cx-w, cy-h, cx+w, cy+h)
 
 
     # ----- methods -----
 
     
     def __init__(self, min_x, min_y, max_x, max_y, force_valid=False):
-        super(rect, self).__init__(_np.array([min_x, min_y]), _np.array([max_x, max_y]), force_valid = force_valid)
+        super(Rect, self).__init__(_np.array([min_x, min_y]), _np.array([max_x, max_y]), force_valid = force_valid)
 
     def __repr__(self):
-        return "rect(x={}, y={}, w={}, h={})".format(self.x, self.y, self.w, self.h)
+        return "Rect(x={}, y={}, w={}, h={})".format(self.x, self.y, self.w, self.h)
 
     def intersect(self, other):
-        res = super(rect, self).intersect(other)
-        return rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
+        res = super(Rect, self).intersect(other)
+        return Rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
 
     def union(self, other):
-        res = super(rect, self).union(other)
-        return rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
+        res = super(Rect, self).union(other)
+        return Rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
 
     def move(self, offset):
-        '''Moves the rect by a given offset vector.'''
-        return rect(self.min_x + offset[0], self.min_y + offset[1], self.max_x + offset[0], self.max_y + offset[1])
+        '''Moves the Rect by a given offset vector.'''
+        return Rect(self.min_x + offset[0], self.min_y + offset[1], self.max_x + offset[0], self.max_y + offset[1])
 
 
-def cast_rect_to_moments(obj):
+class rect(Rect):
+
+    __doc__ = Rect.__doc__
+
+    @deprecated_func("0.4.2", suggested_func='mt.geo.rect.Rect.__init__', removed_version="0.6.0")
+    def __init__(self, *args, **kwargs):
+        super(rect, self).__init__(*args, **kwargs)
+
+
+# ----- casting -----
+        
+
+def cast_Rect_to_Moments2d(obj):
     m0 = obj.signed_area
     m1 = [obj.moment_x, obj.moment_y]
     mxy = obj.moment_xy
     m2 = [[obj.moment_xx, mxy], [mxy, obj.moment_yy]]
     return Moments2d(m0, m1, m2)
-register_cast(rect, Moments2d, cast_rect_to_moments)
+register_cast(Rect, Moments2d, cast_Rect_to_Moments2d)
 
 
-def approx_moments_to_rect(obj):
+# ----- approximation -----
+        
+
+def approx_Moments2d_to_Rect(obj):
     '''Approximates a Moments2d instance with a rect such that the mean aligns with the rect's center, and the covariance matrix of the instance is closest to the moment convariance matrix of the rect.'''
     cx, cy = obj.mean
     cov = obj.cov
@@ -195,5 +210,5 @@ def approx_moments_to_rect(obj):
     wh = _m.sqrt(_m.sqrt(wh3*hw3))
     h = _m.sqrt(wh3/wh)
     w = _m.sqrt(hw3/wh)
-    return rect(cx-w, cy-h, cx+w, cy+h)
-register_approx(Moments2d, rect, approx_moments_to_rect)
+    return Rect(cx-w, cy-h, cx+w, cy+h)
+register_approx(Moments2d, Rect, approx_Moments2d_to_Rect)

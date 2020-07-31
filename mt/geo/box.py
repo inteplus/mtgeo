@@ -1,5 +1,6 @@
 import numpy as _np
 
+from mt.base.deprecated import deprecated_func
 from .dilatation import Dlt
 from .object import GeometricObject
 
@@ -11,6 +12,15 @@ class Box(GeometricObject):
     An axis-aligned n-dimensional box/hyperrectangle is defined as the set of points of the hypercube [-1,1]^n transformed by a dilatation.
 
     Note that is is a many-to-one representation. For each box, there are up to 2^n dilatations that map the hypbercube [-1,1]^n to it.
+
+    Parameters
+    ----------
+    min_coords : 1d array or Dlt
+        array of minimum coordinate values for all the dimensions, or the dilatation if self. In case of the latter, the `max_coords` argument is ignored.
+    max_coords : 1d array
+        array of maximum coordinate values for all the dimensions. If it is None, then `min_coords` represents `max_coords` and the minimum coordinate values are assumed 0.
+    force_valid : bool
+        whether or not to sort out `min_coords` and `max_coords` to make the the minus point meet the min_coords and the plus point meet the max_coords.
 
     Attributes
     ----------
@@ -88,16 +98,6 @@ class Box(GeometricObject):
     # ----- methods -----
 
     def __init__(self, min_coords, max_coords=None, force_valid=False):
-        '''Initialises a box.
-
-        :Parameters:
-            min_coords : 1d array or Dlt
-                array of minimum coordinate values for all the dimensions, or the dilatation if self. In case of the latter, the `max_coords` argument is ignored.
-            max_coords : 1d array
-                array of maximum coordinate values for all the dimensions. If it is None, then `min_coords` represents `max_coords` and the minimum coordinate values are assumed 0.
-            force_valid : bool
-                whether or not to sort out `min_coords` and `max_coords` to make the the minus point meet the min_coords and the plus point meet the max_coords.
-        '''
         if isinstance(min_coords, Dlt):
             self.dlt_tfm = min_coords
         else:
@@ -129,5 +129,11 @@ class Box(GeometricObject):
     def union(self, other):
         return Box(_np.minimum(self.min_coords, other.min_coords), _np.maximum(self.max_coords, other.max_coords))
 
-box = Box # for backward-compatibility
 
+class box(Box):
+
+    __doc__ = Box.__doc__
+
+    @deprecated_func("0.4.2", suggested_func='mt.geo.box.Box.__init__', removed_version="0.6.0")
+    def __init__(self, *args, **kwargs):
+        super(box, self).__init__(*args, **kwargs)

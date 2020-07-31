@@ -126,7 +126,14 @@ class Dlt(Aff):
         return Dlt(-self.offset/self.scale, 1/self.scale)
     invert.__doc__ = Aff.invert.__doc__
 
-dlt = Dlt # for backward compatibility
+
+class dlt(Dlt):
+
+    __doc__ = Dlt.__doc__
+
+    @deprecated_func("0.4.2", suggested_func='mt.geo.dilatation.Dlt.__init__', removed_version="0.6.0")
+    def __init__(self, *args, **kwargs):
+        super(dlt, self).__init__(*args, **kwargs)
 
 
 # ----- casting -----
