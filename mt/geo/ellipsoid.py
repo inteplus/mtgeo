@@ -138,3 +138,6 @@ def transform_Aff_on_Ellipsoid(aff_tfm, obj):
     return Ellipsoid(aff_tfm*obj.aff_tfm)
 register_transform(Aff, Ellipsoid, transform_Aff_on_Ellipsoid)
 register_transformable(Aff, Ellipsoid, lambda aff_tfm, obj: aff_tfm.dim==obj.dim)
+
+
+# MT-TODO: turn me into Ellipsoid and Hyperellipsoid
