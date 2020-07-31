@@ -1,11 +1,11 @@
 import numpy as _np
 
-from .dilatation import dlt
+from .dilatation import Dlt
 from .object import GeometricObject
 
-__all__ = ['box']
+__all__ = ['box', 'Box']
 
-class box(GeometricObject):
+class Box(GeometricObject):
     '''Axis-aligned n-dimensional hyperrectangle.
 
     An axis-aligned n-dimensional box/hyperrectangle is defined as the set of points of the hypercube [-1,1]^n transformed by a dilatation.
@@ -14,7 +14,7 @@ class box(GeometricObject):
 
     Attributes
     ----------
-    dlt_tfm : dlt
+    dlt_tfm : Dlt
         the dilatation equivalent, which can be get/set
     dim : int
         number of dimensions
@@ -91,28 +91,28 @@ class box(GeometricObject):
         '''Initialises a box.
 
         :Parameters:
-            min_coords : 1d array or dlt
+            min_coords : 1d array or Dlt
                 array of minimum coordinate values for all the dimensions, or the dilatation if self. In case of the latter, the `max_coords` argument is ignored.
             max_coords : 1d array
                 array of maximum coordinate values for all the dimensions. If it is None, then `min_coords` represents `max_coords` and the minimum coordinate values are assumed 0.
             force_valid : bool
                 whether or not to sort out `min_coords` and `max_coords` to make the the minus point meet the min_coords and the plus point meet the max_coords.
         '''
-        if isinstance(min_coords, dlt):
+        if isinstance(min_coords, Dlt):
             self.dlt_tfm = min_coords
         else:
             if max_coords is None:
                 max_coords = min_coords
                 min_coords = _np.zeros(dim)
-            self.dlt_tfm = dlt(offset=(max_coords + min_coords)/2, scale=(max_coords-min_coords)/2)
+            self.dlt_tfm = Dlt(offset=(max_coords + min_coords)/2, scale=(max_coords-min_coords)/2)
 
         if force_valid:
             min_coords = self.min_coords
             max_coords = self.max_coords
-            self.dlt_tfm = dlt(offset=(max_coords + min_coords)/2, scale=(max_coords-min_coords)/2)
+            self.dlt_tfm = Dlt(offset=(max_coords + min_coords)/2, scale=(max_coords-min_coords)/2)
 
     def __repr__(self):
-        return "box({})".format(self.dlt_tfm)
+        return "Box({})".format(self.dlt_tfm)
 
     def is_valid(self):
         return (self.dlt_tfm.scale >= 0).all()
@@ -121,10 +121,13 @@ class box(GeometricObject):
         '''Returns a validated version of the box.'''
         min_coords = self.min_coords
         max_coords = self.max_coords
-        return box(dlt(offset=(max_coords + min_coords)/2, scale=max_coords-min_coords))
+        return Box(Dlt(offset=(max_coords + min_coords)/2, scale=max_coords-min_coords))
 
     def intersect(self, other):
-        return box(_np.maximum(self.min_coords, other.min_coords), _np.minimum(self.max_coords, other.max_coords))
+        return Box(_np.maximum(self.min_coords, other.min_coords), _np.minimum(self.max_coords, other.max_coords))
 
     def union(self, other):
-        return box(_np.minimum(self.min_coords, other.min_coords), _np.maximum(self.max_coords, other.max_coords))
+        return Box(_np.minimum(self.min_coords, other.min_coords), _np.maximum(self.max_coords, other.max_coords))
+
+box = Box # for backward-compatibility
+
