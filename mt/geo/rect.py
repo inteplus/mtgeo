@@ -79,6 +79,11 @@ class Rect(TwoD, Hyperbox):
         '''Absolute area.'''
         return abs(self.w*self.h)
 
+    @property
+    def circumference(self):
+        '''Circumference.'''
+        return (abs(self.w)+abs(self.h))*2
+
     
     # ----- moments -----
 

@@ -104,6 +104,12 @@ class Box(ThreeD, Hyperbox):
         '''Absolute volume.'''
         return abs(self.signed_volume)
 
+    @property
+    def surface_area(self):
+        '''Surface area.'''
+        l = _np.abs(self.max_coords.self.min_coords)
+        return (l[0]*l[1]+l[1]*l[2]+l[2]*l[0])*2
+
     
     # ----- moments -----
 
