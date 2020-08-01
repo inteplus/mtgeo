@@ -221,3 +221,6 @@ def transform_Aff2d_on_Ellipse(aff_tfm, obj):
     '''
     return Ellipse(aff_tfm*obj.aff_tfm)
 register_transform(Aff2d, Ellipse, transform_Aff2d_on_Ellipse)
+
+
+# MT-TODO: cast Ellipse <-> Hyperellipsoid

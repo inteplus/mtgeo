@@ -71,7 +71,7 @@ class Aff(LieTransformer, GeometricObject):
 
     def multiply(self, other):
         '''a*b = Lie operator'''
-        if not isinstance(other, aff):
+        if not isinstance(other, Aff):
             raise ValueError(
                 "Expecting 'other' to be an affine transformation, but {} received.".format(other.__class__))
         return Aff(_np.dot(self.weight, other.weight), self << other.bias)

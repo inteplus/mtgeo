@@ -140,4 +140,4 @@ register_transform(Aff, Ellipsoid, transform_Aff_on_Ellipsoid)
 register_transformable(Aff, Ellipsoid, lambda aff_tfm, obj: aff_tfm.dim==obj.dim)
 
 
-# MT-TODO: turn me into Ellipsoid and Hyperellipsoid
+# MT-TODO: turn me into Ellipsoid and Hyperellipsoid, and cast Ellipsoid <-> Hyperellipsoid
