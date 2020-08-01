@@ -1,4 +1,4 @@
-'''There are many definitions of a hyperellipsoid. In our case, a hyperellipsoid is an affine transform of the unit sphere x^2+y^2+...=1.'''
+'''There are many definitions of a hyperellipsoid. In our case, a hyperellipsoid is an affine transform of the unit hypersphere x^2+y^2+...=1.'''
 
 import math as _m
 import numpy as _np
@@ -18,11 +18,11 @@ __all__ = ['hyperellipsoid', 'Hyperellipsoid', 'transform_Aff_on_Hyperellipsoid'
 
 
 class Hyperellipsoid(GeometricObject):
-    '''Hyperellipsoid, defined as an affine transform the unit sphere x^2+y^2+z^2+...=1.
+    '''Hyperellipsoid, defined as an affine transform the unit hypersphere x^2+y^2+z^2+...=1.
 
-    If the unit sphere is parameterised by `(cos(t_1), sin(t_1)*cos(t_2), sin(t_1)*sin(t_2)*cos(t_3), ...)` where `t_1, t_2, ... \in [0,\pi)` but the last `t_{dim-1} \in [0,2\pi)` then the hyperellipsoid is parameterised by `f0 + f1 cos(t_1) + f2 sin(t_1) cos(t_2) + f3 sin(t_1) sin(t_2) sin(t_3) cos(t_4) + ...`, where `f0` is the bias vector, `f1, f2, ...` are the columns of the weight matrix from left to right respectively, of the affine transformation. They are also called called axes of the hyperellipsoid.
+    If the unit hypersphere is parameterised by `(cos(t_1), sin(t_1)*cos(t_2), sin(t_1)*sin(t_2)*cos(t_3), ...)` where `t_1, t_2, ... \in [0,\pi)` but the last `t_{dim-1} \in [0,2\pi)` then the hyperellipsoid is parameterised by `f0 + f1 cos(t_1) + f2 sin(t_1) cos(t_2) + f3 sin(t_1) sin(t_2) sin(t_3) cos(t_4) + ...`, where `f0` is the bias vector, `f1, f2, ...` are the columns of the weight matrix from left to right respectively, of the affine transformation. They are also called called axes of the hyperellipsoid.
 
-    Note that this representation is not unique, the same hyperellipsoid can be represented by an infinite number of affine transforms of the unit sphere. To make the representation more useful and more unique, we further assert that when the axes are perpendicular (linearly independent), the hyperellipsoid is normalised. In other words, the weight matrix is a unitary matrix multiplied by a diagonal matrix. After normalisation there can still be an infinite number of ways to represent the same hyperellipsoid, but only in singular cases. You can normalise either at initialisation time, or later by invoking member function `normalised`.
+    Note that this representation is not unique, the same hyperellipsoid can be represented by an infinite number of affine transforms of the unit hypersphere. To make the representation more useful and more unique, we further assert that when the axes are perpendicular (linearly independent), the hyperellipsoid is normalised. In other words, the weight matrix is a unitary matrix multiplied by a diagonal matrix. After normalisation there can still be an infinite number of ways to represent the same hyperellipsoid, but only in singular cases. You can normalise either at initialisation time, or later by invoking member function `normalised`.
 
     Parameters
     ----------
@@ -95,7 +95,7 @@ def upper_bound_Hyperellipsoid_to_Hyperbox(obj):
     '''
     weight = obj.aff_tfm.weight
     c = off.aff_tfm.bias
-    m = _np.array([_nl.norm(weight[i]) for i in range(self.dim)])
+    m = _np.array([_nl.norm(weight[i]) for i in range(self.ndim)])
     return Hyperbox(min_coords=c-m, max_coords=c+m)
 register_upper_bound(Hyperellipsoid, Hyperbox, upper_bound_Hyperellipsoid_to_Hyperbox)
 
@@ -139,4 +139,4 @@ def transform_Aff_on_Hyperellipsoid(aff_tfm, obj):
     '''
     return Hyperellipsoid(aff_tfm*obj.aff_tfm)
 register_transform(Aff, Hyperellipsoid, transform_Aff_on_Hyperellipsoid)
-register_transformable(Aff, Hyperellipsoid, lambda aff_tfm, obj: aff_tfm.dim==obj.dim)
+register_transformable(Aff, Hyperellipsoid, lambda aff_tfm, obj: aff_tfm.ndim==obj.ndim)

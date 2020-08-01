@@ -4,12 +4,13 @@ import math as _m
 import numpy as _np
 import numpy.linalg as _nl
 
-from mt.base.casting import register_cast
+from mt.base.casting import register_cast, register_castable, cast
 from mt.base.deprecated import deprecated_func
 
-from .affine2d import Aff2d, Lin2d
+from .affine2d import Aff2d, Lin2d, Aff
 from .rect import Rect
 from .moments import EPSILON, Moments2d
+from .hyperellipsoid import Hyperellipsoid
 from .bounding import register_upper_bound, register_lower_bound
 from .approximation import register_approx
 from .transformation import transform, register_transform
@@ -137,6 +138,12 @@ class ellipse(Ellipse):
 
 # ----- casting -----
 
+
+register_cast(Ellipse, Hyperellipsoid, lambda x: Hyperellipsoid(cast(x.aff_tfm, Aff), make_normalised=False))
+register_cast(Hyperellipsoid, Ellipse, lambda x: Ellipse(cast(x.aff_tfm, Aff2d), make_normalised=False))
+register_castable(Hyperellipsoid, Ellipse, lambda x: x.ndim==2)
+
+
 def cast_Ellipse_to_Moments2d(obj):
     '''Extracts Moments2d from an Ellipse instance.'''
     a = _m.pi/4
@@ -221,6 +228,3 @@ def transform_Aff2d_on_Ellipse(aff_tfm, obj):
     '''
     return Ellipse(aff_tfm*obj.aff_tfm)
 register_transform(Aff2d, Ellipse, transform_Aff2d_on_Ellipse)
-
-
-# MT-TODO: cast Ellipse <-> Hyperellipsoid
