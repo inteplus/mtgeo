@@ -8,4 +8,4 @@ TODO
     - Implement square, cube and hypercube.
     - Unify the intersect and union interface. Right now it's ugly.
     - miniball.py exists, miniball.cpp exists. But only use them when the demand for them is non-zero.
-
+    - How to import polygon_integral.py automatically if at least polygon.py or moments.py is imported?
