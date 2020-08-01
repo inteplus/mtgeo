@@ -6,16 +6,16 @@ import numpy as _np
 from mt.base.deprecated import deprecated_func
 from mt.base.casting import *
 
-from .box import Box
+from .hyperbox import Hyperbox
 from .moments import EPSILON, Moments3d
 from .approximation import *
 from .object import ThreeD
 
 
-__all__ = ['Box3d', 'cast_Box_to_Box3d', 'cast_Box3d_to_Moments3d', 'approx_Moments3d_to_Box3d']
+__all__ = ['Box3d', 'cast_Hyperbox_to_Box3d', 'cast_Box3d_to_Moments3d', 'approx_Moments3d_to_Box3d']
 
 
-class Box3d(ThreeD, Box):
+class Box3d(ThreeD, Hyperbox):
     '''A 3D box.
 
     Note we do not care if the box is open or partially closed or closed.'''
@@ -184,15 +184,15 @@ class Box3d(ThreeD, Box):
 # ----- casting -----
         
 
-register_cast(Box3d, Box, lambda x: Box(x.dlt_tfm))
-register_castable(Box, Box3d, lambda x: x.dim==3)
+register_cast(Box3d, Hyperbox, lambda x: Hyperbox(x.dlt_tfm))
+register_castable(Hyperbox, Box3d, lambda x: x.dim==3)
 
-def cast_Box_to_Box3d(x):
-    '''Casts a Box to a Box3d.'''
+def cast_Hyperbox_to_Box3d(x):
+    '''Casts a Hyperbox to a Box3d.'''
     min_coords = x.min_coords
     max_coords = x.max_coords
     return Box3d(min_coords[0], min_coords[1], min_coords[2], max_coords[0], max_coords[1], max_coords[2])
-register_cast(Box, Box3d, cast_Box_to_Box3d)
+register_cast(Hyperbox, Box3d, cast_Hyperbox_to_Box3d)
 
 
 def cast_Box3d_to_Moments3d(obj):

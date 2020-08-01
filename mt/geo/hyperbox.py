@@ -4,9 +4,9 @@ from mt.base.deprecated import deprecated_func
 from .dilatation import Dlt
 from .object import GeometricObject
 
-__all__ = ['box', 'Box']
+__all__ = ['box', 'Hyperbox']
 
-class Box(GeometricObject):
+class Hyperbox(GeometricObject):
     '''Axis-aligned n-dimensional hyperrectangle.
 
     An axis-aligned n-dimensional box/hyperrectangle is defined as the set of points of the hypercube [-1,1]^n transformed by a dilatation.
@@ -112,7 +112,7 @@ class Box(GeometricObject):
             self.dlt_tfm = Dlt(offset=(max_coords + min_coords)/2, scale=(max_coords-min_coords)/2)
 
     def __repr__(self):
-        return "Box({})".format(self.dlt_tfm)
+        return "Hyperbox({})".format(self.dlt_tfm)
 
     def is_valid(self):
         return (self.dlt_tfm.scale >= 0).all()
@@ -121,19 +121,19 @@ class Box(GeometricObject):
         '''Returns a validated version of the box.'''
         min_coords = self.min_coords
         max_coords = self.max_coords
-        return Box(Dlt(offset=(max_coords + min_coords)/2, scale=max_coords-min_coords))
+        return Hyperbox(Dlt(offset=(max_coords + min_coords)/2, scale=max_coords-min_coords))
 
     def intersect(self, other):
-        return Box(_np.maximum(self.min_coords, other.min_coords), _np.minimum(self.max_coords, other.max_coords))
+        return Hyperbox(_np.maximum(self.min_coords, other.min_coords), _np.minimum(self.max_coords, other.max_coords))
 
     def union(self, other):
-        return Box(_np.minimum(self.min_coords, other.min_coords), _np.maximum(self.max_coords, other.max_coords))
+        return Hyperbox(_np.minimum(self.min_coords, other.min_coords), _np.maximum(self.max_coords, other.max_coords))
 
 
-class box(Box):
+class box(Hyperbox):
 
-    __doc__ = Box.__doc__
+    __doc__ = Hyperbox.__doc__
 
-    @deprecated_func("0.4.2", suggested_func='mt.geo.box.Box.__init__', removed_version="0.6.0")
+    @deprecated_func("0.4.2", suggested_func='mt.geo.hyperbox.Hyperbox.__init__', removed_version="0.6.0")
     def __init__(self, *args, **kwargs):
         super(box, self).__init__(*args, **kwargs)

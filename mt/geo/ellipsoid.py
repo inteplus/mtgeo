@@ -8,7 +8,7 @@ from mt.base.casting import register_cast, cast
 from mt.base.deprecated import deprecated_func
 
 from .affine_transformation import Aff
-from .box import Box
+from .hyperbox import Hyperbox
 from .bounding import register_upper_bound, register_lower_bound
 from .transformation import register_transform, register_transformable
 from .object import GeometricObject
@@ -78,7 +78,7 @@ class Ellipsoid(GeometricObject):
 # ----- bounding -----
 
 
-def upper_bound_Ellipsoid_to_Box(obj):
+def upper_bound_Ellipsoid_to_Hyperbox(obj):
     '''Returns a bounding axis-aligned box of the ellipsoid.
 
     Parameters
@@ -88,22 +88,22 @@ def upper_bound_Ellipsoid_to_Box(obj):
 
     Returns
     -------
-    Box
-        a bounding Box of the ellipsoid
+    Hyperbox
+        a bounding Hyperbox of the ellipsoid
     '''
     weight = obj.aff_tfm.weight
     c = off.aff_tfm.bias
     m = _np.array([_nl.norm(weight[i]) for i in range(self.dim)])
-    return Box(min_coords=c-m, max_coords=c+m)
-register_upper_bound(Ellipsoid, Box, upper_bound_Ellipsoid_to_Box)
+    return Hyperbox(min_coords=c-m, max_coords=c+m)
+register_upper_bound(Ellipsoid, Hyperbox, upper_bound_Ellipsoid_to_Hyperbox)
 
 
-def lower_bound_Box_to_Ellipsoid(x):
+def lower_bound_Hyperbox_to_Ellipsoid(x):
     '''Returns an axis-aligned ellipsoid bounded by the given axis-aligned box.
 
     Parameters
     ----------
-    x : Box
+    x : Hyperbox
         the box from which the enclosed ellipsoid is computed
 
     Returns
@@ -111,10 +111,10 @@ def lower_bound_Box_to_Ellipsoid(x):
     Ellipsoid
         the axis-aligned ellipsoid enclosed by the box
     '''
-    if not isinstance(x, Box):
-        raise ValueError("Input type must be a `Box`, '{}' given.".format(x.__class__))
+    if not isinstance(x, Hyperbox):
+        raise ValueError("Input type must be a `Hyperbox`, '{}' given.".format(x.__class__))
     return Ellipsoid(cast(x.dlt_tfm, Aff))
-register_lower_bound(Box, Ellipsoid, lower_bound_Box_to_Ellipsoid)
+register_lower_bound(Hyperbox, Ellipsoid, lower_bound_Hyperbox_to_Ellipsoid)
 
 
 # ----- transform functions -----

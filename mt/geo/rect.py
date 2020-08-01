@@ -6,16 +6,16 @@ import numpy as _np
 from mt.base.deprecated import deprecated_func
 from mt.base.casting import *
 
-from .box import Box
+from .hyperbox import Hyperbox
 from .moments import EPSILON, Moments2d
 from .approximation import *
 from .object import TwoD
 
 
-__all__ = ['rect', 'Rect', 'cast_Box_to_Rect', 'cast_Rect_to_Moments2d', 'approx_Moments2d_to_Rect']
+__all__ = ['rect', 'Rect', 'cast_Hyperbox_to_Rect', 'cast_Rect_to_Moments2d', 'approx_Moments2d_to_Rect']
 
 
-class Rect(TwoD, Box):
+class Rect(TwoD, Hyperbox):
     '''A 2D rectangle,
 
     Note we do not care if the rectangle is open or partially closed or closed.'''
@@ -188,15 +188,15 @@ class rect(Rect):
 # ----- casting -----
         
 
-register_cast(Rect, Box, lambda x: Box(x.dlt_tfm))
-register_castable(Box, Rect, lambda x: x.dim==2)
+register_cast(Rect, Hyperbox, lambda x: Hyperbox(x.dlt_tfm))
+register_castable(Hyperbox, Rect, lambda x: x.dim==2)
 
-def cast_Box_to_Rect(x):
-    '''Casts a Box to a Rect.'''
+def cast_Hyperbox_to_Rect(x):
+    '''Casts a Hyperbox to a Rect.'''
     min_coords = x.min_coords
     max_coords = x.max_coords
     return Rect(min_coords[0], min_coords[1], max_coords[0], max_coords[1])
-register_cast(Box, Rect, cast_Box_to_Rect)
+register_cast(Hyperbox, Rect, cast_Hyperbox_to_Rect)
 
 
 def cast_Rect_to_Moments2d(obj):
