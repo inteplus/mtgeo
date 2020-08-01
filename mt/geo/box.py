@@ -12,10 +12,10 @@ from .approximation import *
 from .object import ThreeD
 
 
-__all__ = ['Box3d', 'cast_Hyperbox_to_Box3d', 'cast_Box3d_to_Moments3d', 'approx_Moments3d_to_Box3d']
+__all__ = ['Box', 'cast_Hyperbox_to_Box', 'cast_Box_to_Moments3d', 'approx_Moments3d_to_Box']
 
 
-class Box3d(ThreeD, Hyperbox):
+class Box(ThreeD, Hyperbox):
     '''A 3D box.
 
     Note we do not care if the box is open or partially closed or closed.'''
@@ -163,39 +163,42 @@ class Box3d(ThreeD, Hyperbox):
 
     
     def __init__(self, min_x, min_y, min_z, max_x, max_y, max_z, force_valid=False):
-        super(Box3d, self).__init__(_np.array([min_x, min_y, min_z]), _np.array([max_x, max_y, max_z]), force_valid = force_valid)
+        super(Box, self).__init__(_np.array([min_x, min_y, min_z]), _np.array([max_x, max_y, max_z]), force_valid = force_valid)
 
     def __repr__(self):
-        return "Box3d(x={}, y={}, z={}, lx={}, ly={}, lz={})".format(self.x, self.y, self.z, self.lx, self.ly, self.lz)
+        return "Box(x={}, y={}, z={}, lx={}, ly={}, lz={})".format(self.x, self.y, self.z, self.lx, self.ly, self.lz)
 
     def intersect(self, other):
-        res = super(Box3d, self).intersect(other)
-        return Box3d(res.min_coords[0], res.min_coords[1], res.min_coords[2], res.max_coords[0], res.max_coords[1], res.max_coords[2])
+        res = super(Box, self).intersect(other)
+        return Box(res.min_coords[0], res.min_coords[1], res.min_coords[2], res.max_coords[0], res.max_coords[1], res.max_coords[2])
 
     def union(self, other):
-        res = super(Box3d, self).union(other)
-        return Box3d(res.min_coords[0], res.min_coords[1], res.min_coords[2], res.max_coords[0], res.max_coords[1], res.max_coords[2])
+        res = super(Box, self).union(other)
+        return Box(res.min_coords[0], res.min_coords[1], res.min_coords[2], res.max_coords[0], res.max_coords[1], res.max_coords[2])
 
     def move(self, offset):
-        '''Moves the Box3d by a given offset vector.'''
-        return Box3d(self.min_x + offset[0], self.min_y + offset[1], self.min_z + offset[2], self.max_x + offset[0], self.max_y + offset[1], self.max_z + offset[2])
+        '''Moves the Box by a given offset vector.'''
+        return Box(self.min_x + offset[0], self.min_y + offset[1], self.min_z + offset[2], self.max_x + offset[0], self.max_y + offset[1], self.max_z + offset[2])
+
+
+from .hyperbox import box # backward-compatibility
 
 
 # ----- casting -----
         
 
-register_cast(Box3d, Hyperbox, lambda x: Hyperbox(x.dlt_tfm))
-register_castable(Hyperbox, Box3d, lambda x: x.dim==3)
+register_cast(Box, Hyperbox, lambda x: Hyperbox(x.dlt_tfm))
+register_castable(Hyperbox, Box, lambda x: x.dim==3)
 
-def cast_Hyperbox_to_Box3d(x):
-    '''Casts a Hyperbox to a Box3d.'''
+def cast_Hyperbox_to_Box(x):
+    '''Casts a Hyperbox to a Box.'''
     min_coords = x.min_coords
     max_coords = x.max_coords
-    return Box3d(min_coords[0], min_coords[1], min_coords[2], max_coords[0], max_coords[1], max_coords[2])
-register_cast(Hyperbox, Box3d, cast_Hyperbox_to_Box3d)
+    return Box(min_coords[0], min_coords[1], min_coords[2], max_coords[0], max_coords[1], max_coords[2])
+register_cast(Hyperbox, Box, cast_Hyperbox_to_Box)
 
 
-def cast_Box3d_to_Moments3d(obj):
+def cast_Box_to_Moments3d(obj):
     m0 = obj.signed_volume
     m1 = [obj.moment_x, obj.moment_y]
     mxy = obj.moment_xy
@@ -203,13 +206,13 @@ def cast_Box3d_to_Moments3d(obj):
     mzx = obj.moment_zx
     m2 = [[obj.moment_xx, mxy, mzx], [mxy, obj.moment_yy, myz], [mzx, myz, obj.moment_zz]]
     return Moments3d(m0, m1, m2)
-register_cast(Box3d, Moments3d, cast_Box3d_to_Moments3d)
+register_cast(Box, Moments3d, cast_Box_to_Moments3d)
 
 
 # ----- approximation -----
 
 
-def approx_Moments3d_to_Box3d(obj):
+def approx_Moments3d_to_Box(obj):
     '''Approximates a Moments3d instance with a box such that the mean aligns with the box's center, and the covariance matrix of the instance is closest to the moment convariance matrix of the box.'''
     raise NotImplementedError("I don't know if the coefficients are correct. Need to figure out.")
-register_approx(Moments3d, Box3d, approx_Moments3d_to_Box3d)
+register_approx(Moments3d, Box, approx_Moments3d_to_Box)
