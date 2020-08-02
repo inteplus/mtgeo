@@ -4,6 +4,7 @@
 import numpy as _np
 import mt.base.casting as _bc
 from .point_list import PointList2d, castable_ndarray_PointList
+from .polygon_integral import * # for now assume that you want to do polygon integration whenever polygon is imported
 
 
 __all__ = ['Polygon']
