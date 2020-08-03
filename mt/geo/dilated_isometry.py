@@ -5,18 +5,20 @@ import math as _m
 import mt.base.casting as _bc
 
 from .affine_transformation import Aff
+from .approximation import register_approx
 
 
-__all__ = ['dliso', 'Dliso', 'cast_Aff_to_Dliso', 'castable_Aff_to_Dliso']
+__all__ = ['dliso', 'Dliso', 'approx_Aff_to_Dliso']
 
 
 class Dliso(Aff):
-    '''Dilated isometry = Isometry followed by a uniform scaling.
+    '''Dilated isometry = Isometry following a uniform scaling.
 
     An isometry is a (Euclidean-)metric-preserving transformation. In other words, it is an affine transformation but the linear part is a unitary matrix.
 
-    References:
-        [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not true but cheeky MT is trying to advertise his paper!)
+    References
+    ----------
+    .. [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not true but cheeky MT is trying to advertise his paper!)
     '''
 
     # ----- base adaptation -----
@@ -133,16 +135,16 @@ class dliso(Dliso):
 # ----- casting -----
 
 
-def cast_Aff_to_Dliso(obj):
-    '''Casts an Aff instance to Dliso.'''
-    raise NotImplementedError("Implement me!")
+def approx_Aff_to_Dliso(obj):
+    '''Approximates an Aff instance with a Dliso.'''
+    ndom = obj.ndim
+    U, S, VT = _nl.svd(obj.linear, full_matrices=True)
+    if len(S) < ndim or S[ndim-1] == 0:
+        return Dliso(offset=obj.bias, scale=0, unitary=_np.identity(ndim))
+    
+    scale = _m.pow(S.prod(), 1/obj.ndim)
+    return Dliso(offset=obj.bias, scale=scale, unitary=U@VT)
 
 
-def castable_Aff_to_Dliso(obj):
-    '''Checks if we can cast an Aff instance to Dliso.'''
-    raise NotImplementedError("Implement me!")
-
-
-_bc.register_cast(Dliso, Aff, lambda x: Aff(weights=x.weight, bias=x.offset, check_shapes=False))
-_bc.register_cast(Aff, Dliso, cast_Aff_to_Dliso)
-_bc.register_castable(Aff, Dliso, castable_Aff_to_Dliso)
+_bc.register_cast(Dliso, Aff, lambda x: Aff(weight=x.weight, bias=x.offset, check_shapes=False))
+register_approx(Aff, Dliso, approx_Aff_to_Dliso)
