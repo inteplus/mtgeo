@@ -6,13 +6,16 @@ import mt.base.casting as _bc
 from .approximation import register_approx
 from .transformation import register_transform, register_transformable
 from .dilated_isometry import Dliso
+from .dilatation import Dlt
 
 
-__all__ = ['dliso', 'Dliso', 'approx_Dliso_to_Dltra']
+__all__ = ['dliso', 'Dliso', 'approx_Dliso_to_Dltra', 'approx_Dlt_to_Dltra']
 
 
 class Dltra(Dliso):
     '''Dilated translation = Translation following a uniform scaling.
+
+    A dilated translation can be seen as both a dilatation and a dilated isometry.
 
     References
     ----------
@@ -66,13 +69,36 @@ class Dltra(Dliso):
 # ----- casting -----
 
 
-def approx_Dliso_to_Dltra(obj):
-    '''Approximates an Dliso instance wiht a Dltra by ignoring the unitary part.'''
-    return Dltra(offset=obj.offset, scale=obj.scale)
-
-
 _bc.register_cast(Dltra, Dliso, lambda x: Dliso(offset=x.offset, scale=x.scale))
+_bc.register_cast(Dltra, Dlt, lambda x: Dlt(offset=x.offset, scale=_np.diag(x.scale), check_shapes=False))
+
+
+# ----- approximation ------
+
+
+def approx_Dliso_to_Dltra(obj):
+    '''Approximates an Dliso instance with a Dltra by ignoring the unitary part.'''
+    return Dltra(offset=obj.offset, scale=obj.scale)
 register_approx(Dliso, Dltra, approx_Dliso_to_Dltra)
+
+
+def approx_Dlt_to_Dltra(dlt):
+    '''Approximates a Dlt instance with a Dltra.
+    
+    We approximate the scale components with their arithmetic mean in this case for efficiency and numerical stability, breaking theoretical concerns. So use this function with care.
+
+    Parameters
+    ----------
+    dlt : Dlt
+        a dilatation
+
+    Returns
+    -------
+    Dltra
+        a dilated translation
+    '''
+    return Dltra(offset=dlt.offset, scale=dlt.scale.mean())
+register_approx(Dlt, Dltra, approx_Dlt_to_Dltra)
 
 
 # ----- transform functions ------
