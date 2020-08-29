@@ -3,6 +3,7 @@ import numpy.linalg as _nl
 import math as _m
 
 import mt.base.casting as _bc
+from mt.base.deprecated import deprecated_func
 
 from .affine_transformation import Aff
 from .approximation import register_approx
