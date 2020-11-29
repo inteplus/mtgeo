@@ -12,7 +12,7 @@ from .affine3d import Aff3d
 from .box import Box
 from .bounding import register_upper_bound, register_lower_bound
 from .transformation import register_transform, register_transformable
-from .object import GeometricObject
+from .object import GeometricObject, ThreeD
 
 
 __all__ = ['ellipsoid', 'Ellipsoid', 'transform_Aff3d_on_Ellipsoid']

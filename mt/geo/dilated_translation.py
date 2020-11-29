@@ -24,8 +24,6 @@ class Dltra(Dliso):
 
     # ----- base adaptation -----
 
-    offset.__doc__ = '''The offset/bias part of the dilated translation.'''
-
     @property
     def unitary(self):
         '''The unitary matrix of the dilated translation.'''

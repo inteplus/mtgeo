@@ -14,7 +14,7 @@ from .transformation import register_transform, register_transformable
 from .object import GeometricObject
 
 
-__all__ = ['hyperellipsoid', 'Hyperellipsoid', 'transform_Aff_on_Hyperellipsoid']
+__all__ = ['Hyperellipsoid', 'transform_Aff_on_Hyperellipsoid']
 
 
 class Hyperellipsoid(GeometricObject):
