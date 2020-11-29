@@ -11,7 +11,7 @@ from .point_list import PointList3d
 from .affine_transformation import Aff
 
 
-__all__ = ['Aff3d', 'aff2', 'transform_Aff3d_on_Moments3d', 'transform_Aff3d_on_PointList3d']
+__all__ = ['Aff3d', 'transform_Aff3d_on_Moments3d', 'transform_Aff3d_on_PointList3d']
 
 
 class Aff3d(ThreeD, Aff):
