@@ -42,4 +42,4 @@ def iou(geo2d_obj1, geo2d_obj2):
     o2 = obj2.area
     ii = obj1.intersection(obj2).area
 
-    return ii/(o1+o2-ii+(1E-6))
+    return 0.0 if abs(ii) < 1E-7 else ii/(o1+o2-ii)
