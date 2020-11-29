@@ -7,13 +7,13 @@ from .polygon import Polygon
 
 
 def iou(geo2d_obj1, geo2d_obj2):
-    '''Computes the Intersection-over-Union ratio of two 2D geometry objects. Right now we only accept Rect and Polygon.
+    '''Computes the Intersection-over-Union ratio of two (sets of non-overlapping) 2D geometry objects. Right now we only accept Rect and Polygon.
 
     Parameters
     ----------
-    geo2d_obj1 : Rect or Polygon
+    geo2d_obj1 : Rect or Polygon or list of non-overlapping geometric objects of these types
         the first 2D geometry object
-    geo2d_obj2 : Rect or Polygon
+    geo2d_obj2 : Rect or Polygon or list of non-overlapping geometric objects of these types
         the second 2D geometry object
 
     Returns
@@ -21,25 +21,32 @@ def iou(geo2d_obj1, geo2d_obj2):
     float
         the IoU ratio of the two objects, regardless of whether they are sepcified in clockwise or counter-clockwise order
     '''
-    
-    # convert the first object into shapely format
-    if isinstance(geo2d_obj1, Rect):
-        obj1 = _sg.box(geo2d_obj1.min_x, geo2d_obj1.min_y, geo2d_obj1.max_x, geo2d_obj1.max_y)
-    elif isinstance(geo2d_obj1, Polygon):
-        obj1 = _sg.Polygon(geo2d_obj1.points)
-    else:
-        raise ValueError("The first object is neither a Rect nor a Polygon. Got '{}'.".format(type(geo2d_obj1)))
+    # make sure each object is a list
+    inputs = [obj if isinstance(obj, list) else [obj] for obj in [geo2d_obj1, geo2d_obj2]]
 
-    # convert the second object into shapely format
-    if isinstance(geo2d_obj2, Rect):
-        obj2 = _sg.box(geo2d_obj2.min_x, geo2d_obj2.min_y, geo2d_obj2.max_x, geo2d_obj2.max_y)
-    elif isinstance(geo2d_obj2, Polygon):
-        obj2 = _sg.Polygon(geo2d_obj2.points)
-    else:
-        raise ValueError("The second object is neither a Rect nor a Polygon. Got '{}'.".format(type(geo2d_obj2)))
+    # convert each item into shapely format
+    outputs = []
+    for i, group in enumerate(inputs):
+        out_group = []
+        for j, obj in enumerate(group):
+            if isinstance(obj, Rect):
+                out_obj = _sg.box(obj.min_x, obj.min_y, obj.max_x, obj.max_y)
+            elif isinstance(obj, Polygon):
+                out_obj = _sg.Polygon(obj.points)
+            else:
+                raise ValueError("The {}-th object of the {} argument is neither a Rect nor a Polygon. Got '{}'.".format(j+1, 'first' if i==0 else 'second', type(obj)))
+            out_group.append(out_obj)
+        outputs.append(out_group)
 
-    o1 = obj1.area
-    o2 = obj2.area
-    ii = obj1.intersection(obj2).area
+    # compute moments
+    sum_left = 0
+    sum_right = 0
+    sum_inner = 0
+    for obj1 in outputs[0]:
+        for obj2 in outputs[1]:
+            sum_left += obj1.area
+            sum_right += obj2.area
+            sum_inner += obj1.intersection(obj2).area
 
-    return 0.0 if abs(ii) < 1E-7 else ii/(o1+o2-ii)
+    # result
+    return 0.0 if abs(sum_inner) < 1E-7 else sum_inner/(sum_left + sum_right - sum_inner)
