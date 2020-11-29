@@ -8,7 +8,7 @@ from mt.base.deprecated import deprecated_func
 from .dilated_isometry import Dliso, Aff
 
 
-__all__ = ['Iso', 'iso', 'rotate2d', 'translate2d']
+__all__ = ['Iso']
 
 
 class Iso(Dliso):
@@ -59,36 +59,8 @@ class Iso(Dliso):
     invert.__doc__ = Dliso.invert.__doc__
 
 
-class iso(Iso):
-
-    __doc__ = Iso.__doc__
-
-    @deprecated_func("0.4.3", suggested_func='mt.geo.isometry.Iso.__init__', removed_version="0.6.0")
-    def __init__(self, *args, **kwargs):
-        super(iso, self).__init__(*args, **kwargs)
-
-
 # ----- casting -----
 
 
 _bc.register_cast(Iso, Dliso, lambda x: Dliso(offset=x.offset, unitary=x.unitary))
 _bc.register_cast(Iso, Aff, lambda x: Aff(bias=x.offset, weight=x.weight))
-
-
-# ----- useful 2D transformations -----
-
-
-@deprecated_func("0.3.1", suggested_func="mt.geo.affine2d.rotate2d", removed_version="0.5.0", docstring_prefix="    ")
-def rotate2d(theta):
-    '''Returns the rotation. Theta is in radian.'''
-    return Iso(
-        offset=_np.zeros(2),
-        unitary=_np.array([
-            [_np.cos(theta), -_np.sin(theta)],
-            [_np.sin(theta), _np.cos(theta)]]))
-
-
-@deprecated_func("0.3.1", suggested_func="mt.geo.affine2d.translate2d", removed_version="0.5.0", docstring_prefix="    ")
-def translate2d(x,y):
-    '''Returns the translation.'''
-    return Iso(offset=_np.array((x,y)), unitary=_np.identity(2))
