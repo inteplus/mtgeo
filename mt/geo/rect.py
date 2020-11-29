@@ -12,7 +12,7 @@ from .approximation import *
 from .object import TwoD
 
 
-__all__ = ['rect', 'Rect', 'cast_Hyperbox_to_Rect', 'cast_Rect_to_Moments2d', 'approx_Moments2d_to_Rect']
+__all__ = ['Rect', 'cast_Hyperbox_to_Rect', 'cast_Rect_to_Moments2d', 'approx_Moments2d_to_Rect']
 
 
 class Rect(TwoD, Hyperbox):
@@ -179,15 +179,6 @@ class Rect(TwoD, Hyperbox):
     def move(self, offset):
         '''Moves the Rect by a given offset vector.'''
         return Rect(self.min_x + offset[0], self.min_y + offset[1], self.max_x + offset[0], self.max_y + offset[1])
-
-
-class rect(Rect):
-
-    __doc__ = Rect.__doc__
-
-    @deprecated_func("0.4.3", suggested_func='mt.geo.rect.Rect.__init__', removed_version="0.6.0")
-    def __init__(self, *args, **kwargs):
-        super(rect, self).__init__(*args, **kwargs)
 
 
 # ----- casting -----
