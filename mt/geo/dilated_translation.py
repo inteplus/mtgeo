@@ -9,7 +9,7 @@ from .dilated_isometry import Dliso
 from .dilatation import Dlt
 
 
-__all__ = ['dliso', 'Dliso', 'approx_Dliso_to_Dltra', 'approx_Dlt_to_Dltra']
+__all__ = ['Dliso', 'approx_Dliso_to_Dltra', 'approx_Dlt_to_Dltra']
 
 
 class Dltra(Dliso):

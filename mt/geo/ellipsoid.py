@@ -15,7 +15,7 @@ from .transformation import register_transform, register_transformable
 from .object import GeometricObject, ThreeD
 
 
-__all__ = ['ellipsoid', 'Ellipsoid', 'transform_Aff3d_on_Ellipsoid']
+__all__ = ['Ellipsoid', 'transform_Aff3d_on_Ellipsoid']
 
 
 class Ellipsoid(ThreeD, GeometricObject):
