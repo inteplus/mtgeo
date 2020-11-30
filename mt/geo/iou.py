@@ -32,7 +32,7 @@ def iou(geo2d_obj1, geo2d_obj2):
             if isinstance(obj, Rect):
                 out_obj = _sg.box(obj.min_x, obj.min_y, obj.max_x, obj.max_y)
             elif isinstance(obj, Polygon):
-                out_obj = _sg.Polygon(obj.points)
+                out_obj = _sg.Polygon(obj.points).buffer(0) # to clean up
             else:
                 raise ValueError("The {}-th object of the {} argument is neither a Rect nor a Polygon. Got '{}'.".format(j+1, 'first' if i==0 else 'second', type(obj)))
             out_group.append(out_obj)
