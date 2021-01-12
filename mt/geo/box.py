@@ -182,6 +182,11 @@ class Box(ThreeD, Hyperbox):
         res = super(Box, self).union(other)
         return Box(res.min_coords[0], res.min_coords[1], res.min_coords[2], res.max_coords[0], res.max_coords[1], res.max_coords[2])
 
+    def iou(self, other, epsilon=1E-7):
+        i_vol = self.intersect(other).volume
+        u_vol = self.union(other).volume
+        return i_vol/ (u_vol + epsilon)
+        
     def move(self, offset):
         '''Moves the Box by a given offset vector.'''
         return Box(self.min_x + offset[0], self.min_y + offset[1], self.min_z + offset[2], self.max_x + offset[0], self.max_y + offset[1], self.max_z + offset[2])

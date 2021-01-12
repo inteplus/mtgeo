@@ -176,6 +176,11 @@ class Rect(TwoD, Hyperbox):
         res = super(Rect, self).union(other)
         return Rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
 
+    def iou(self, other, epsilon=1E-7):
+        i_area = self.intersect(other).area
+        u_area = self.union(other).area
+        return i_area/ (u_area + epsilon)
+        
     def move(self, offset):
         '''Moves the Rect by a given offset vector.'''
         return Rect(self.min_x + offset[0], self.min_y + offset[1], self.max_x + offset[0], self.max_y + offset[1])
