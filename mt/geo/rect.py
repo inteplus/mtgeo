@@ -9,6 +9,7 @@ from mt.base.casting import *
 from .hyperbox import Hyperbox
 from .moments import EPSILON, Moments2d
 from .approximation import *
+from .join_volume import *
 from .object import TwoD
 
 
@@ -226,3 +227,18 @@ def approx_Moments2d_to_Rect(obj):
     w = _m.sqrt(hw3/wh)
     return Rect(cx-w, cy-h, cx+w, cy+h)
 register_approx(Moments2d, Rect, approx_Moments2d_to_Rect)
+
+
+# ----- joining volumes -----
+
+
+def join_volume_Rect_and_Rect(obj1, obj2):
+    '''Joins the areas of two Rects.'''
+    inter = obj1.intersect(obj2)
+    union = obj1.union(obj2)
+    inter_area = inter.area
+    obj1_area = obj1.area
+    obj2_area = obj2.area
+    union_area = union.area
+    return (inter_area, obj1_area-inter_area, obj2_area-inter_area, union_area)
+register_join_volume(Box, Box, join_volume_Rect_and_Rect)

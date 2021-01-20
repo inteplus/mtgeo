@@ -9,6 +9,7 @@ from mt.base.casting import *
 from .hyperbox import Hyperbox
 from .moments import EPSILON, Moments3d
 from .approximation import *
+from .join_volume import *
 from .object import ThreeD
 
 
@@ -100,11 +101,6 @@ class Box(ThreeD, Hyperbox):
         return (self.min_z + self.max_z)/2
 
     @property
-    def volume(self):
-        '''Absolute volume.'''
-        return abs(self.signed_volume)
-
-    @property
     def surface_area(self):
         '''Surface area.'''
         l = _np.abs(self.max_coords.self.min_coords)
@@ -113,11 +109,6 @@ class Box(ThreeD, Hyperbox):
     
     # ----- moments -----
 
-
-    @property
-    def signed_volume(self):
-        '''Returns the signed volume of the box.'''
-        return (self.max_coords-self.min_coords).prod()
 
     @property
     def moment_x(self):
@@ -227,3 +218,18 @@ def approx_Moments3d_to_Box(obj):
     '''Approximates a Moments3d instance with a box such that the mean aligns with the box's center, and the covariance matrix of the instance is closest to the moment convariance matrix of the box.'''
     raise NotImplementedError("I don't know if the coefficients are correct. Need to figure out.")
 register_approx(Moments3d, Box, approx_Moments3d_to_Box)
+
+
+# ----- joining volumes -----
+
+
+def join_volume_Box_and_Box(obj1, obj2):
+    '''Joins the volumes of two Boxes.'''
+    inter = obj1.intersect(obj2)
+    union = obj1.union(obj2)
+    inter_volume = inter.volume
+    obj1_volume = obj1.volume
+    obj2_volume = obj2.volume
+    union_volume = union.volume
+    return (inter_volume, obj1_volume-inter_volume, obj2_volume-inter_volume, union_volume)
+register_join_volume(Box, Box, join_volume_Box_and_Box)

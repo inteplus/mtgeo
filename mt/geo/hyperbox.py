@@ -3,6 +3,7 @@ import numpy as _np
 from mt.base.deprecated import deprecated_func
 from .dilatation import Dlt
 from .object import GeometricObject
+from .join_volume import *
 
 __all__ = ['box', 'Hyperbox']
 
@@ -95,6 +96,16 @@ class Hyperbox(GeometricObject):
         '''box size'''
         return _np.abs(self.dlt_tfm.scale*2)
 
+    @property
+    def signed_volume(self):
+        '''signed (hyper-)volume'''
+        return (self.max_coords-self.min_coords).prod()
+
+    @property
+    def volume(self):
+        '''absolute/unsigned (hyper-)volume'''
+        return abs(self.signed_volume)
+
     # ----- methods -----
 
     def __init__(self, min_coords, max_coords=None, force_valid=False):
@@ -130,10 +141,18 @@ class Hyperbox(GeometricObject):
         return Hyperbox(_np.minimum(self.min_coords, other.min_coords), _np.maximum(self.max_coords, other.max_coords))
 
 
-class box(Hyperbox):
+# ----- joining volumes -----
 
-    __doc__ = Hyperbox.__doc__
 
-    @deprecated_func("0.4.2", suggested_func='mt.geo.hyperbox.Hyperbox.__init__', removed_version="0.6.0")
-    def __init__(self, *args, **kwargs):
-        super(box, self).__init__(*args, **kwargs)
+def join_volume_Hyperbox_and_Hyperbox(obj1, obj2):
+    '''Joins the volumes of two Hyperboxes of the same dimension.'''
+    if obj1.dim != obj2.dim:
+        raise ValueError("Two objects of dimension {} and {} are not in the same space.".format(obj1.dim, obj2.dim))
+    inter = obj1.intersect(obj2)
+    union = obj1.union(obj2)
+    inter_volume = inter.volume
+    obj1_volume = obj1.volume
+    obj2_volume = obj2.volume
+    union_volume = union.volume
+    return (inter_volume, obj1_volume-inter_volume, obj2_volume-inter_volume, union_volume)
+register_join_volume(Hyperbox, Hyperbox, join_volume_Hyperbox_and_Hyperbox)
