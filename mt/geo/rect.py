@@ -31,6 +31,7 @@ class Rect(TwoD, Hyperbox):
         if not hasattr(self, '_shapely'):
             import shapely.geometry as _sg
             self._shapely = _sg.box(self.min_x, self.min_y, self.max_x, self.max_y)
+            self._shapely = self._shapely.buffer(0.0001) # to clean up any (multi and/or non-simple) polygon into a simple polygon
         return self._shapely
 
 

@@ -37,7 +37,8 @@ class Polygon(PointList2d):
         '''Shapely representation for fast intersection operations.'''
         if not hasattr(self, '_shapely'):
             import shapely.geometry as _sg
-            self._shapely = _sg.Polygon(self.points).buffer(0) # to clean up
+            self._shapely = _sg.Polygon(self.points)
+            self._shapely = self._shapely.buffer(0.0001) # to clean up any (multi and/or non-simple) polygon into a simple polygon
         return self._shapely
 
 
