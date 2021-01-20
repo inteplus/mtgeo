@@ -4,6 +4,10 @@
 from .polygon import Rect, Polygon, join_volume_Polygon_Rect
 
 
+from mt.base import logger
+logger.warn_module_move('mt.geo.iou', 'mt.geo.join_volume')
+
+
 def iou(geo2d_obj1, geo2d_obj2):
     '''Computes the Intersection-over-Union ratio of two (sets of non-overlapping) 2D geometry objects. Right now we only accept Rect and Polygon.
 
