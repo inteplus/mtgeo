@@ -2,13 +2,11 @@
 
 
 import numpy as _np
-import shapely.geometry as _sg
 
 import mt.base.casting as _bc
 from .point_list import PointList2d, castable_ndarray_PointList
 from .polygon_integral import * # for now assume that you want to do polygon integration whenever polygon is imported
 
-import shapely.geometry as _sg # we need shapely to intersect _sg.Polygons and _sg.boxes
 from .rect import Rect
 from .join_volume import *
 
@@ -38,6 +36,7 @@ class Polygon(PointList2d):
     def shapely(self):
         '''Shapely representation for fast intersection operations.'''
         if not hasattr(self, '_shapely'):
+            import shapely.geometry as _sg
             self._shapely = _sg.Polygon(self.points).buffer(0) # to clean up
         return self._shapely
 

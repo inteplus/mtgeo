@@ -1,7 +1,7 @@
 from .version import version as __version__
 from .approximation import approx, approximable
-from .polygon_integral import _bc # just to import
 from .transformation import transform, transformable
+from .polygon_integral import _bc # just to import
 
 #from .affine_transformation import *
 #from .dilated_isometry import *

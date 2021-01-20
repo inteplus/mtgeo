@@ -26,7 +26,7 @@ setup(
     install_requires=[
         'numpy',
         'mtbase>=1.0.8',
-        'shapely', # shapely is compulsory now
+        #'shapely', # aarch64 does not have libgeos-dev (deb) or geos-devel (yum) prebuilt yet so we can't run shapely on tx2 for now
     ],
     url='https://github.com/inteplus/mtgeo',
     project_urls={

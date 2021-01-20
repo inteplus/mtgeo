@@ -2,7 +2,6 @@
 
 import math as _m
 import numpy as _np
-import shapely.geometry as _sg
 
 from mt.base.deprecated import deprecated_func
 from mt.base.casting import *
@@ -30,6 +29,7 @@ class Rect(TwoD, Hyperbox):
     def shapely(self):
         '''Shapely representation for fast intersection operations.'''
         if not hasattr(self, '_shapely'):
+            import shapely.geometry as _sg
             self._shapely = _sg.box(self.min_x, self.min_y, self.max_x, self.max_y)
         return self._shapely
 

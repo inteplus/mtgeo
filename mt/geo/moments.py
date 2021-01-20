@@ -8,7 +8,6 @@ import mt.base.casting as _bc
 
 from .object import GeometricObject, TwoD, ThreeD
 from .point_list import PointList, PointList2d, PointList3d
-from .polygon import Polygon
 
 
 __all__ = ['EPSILON', 'Moments', 'Moments2d', 'Moments3d', 'moments_from_pointlist']
