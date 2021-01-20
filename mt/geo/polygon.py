@@ -2,6 +2,8 @@
 
 
 import numpy as _np
+import shapely.geometry as _sg
+
 import mt.base.casting as _bc
 from .point_list import PointList2d, castable_ndarray_PointList
 from .polygon_integral import * # for now assume that you want to do polygon integration whenever polygon is imported
@@ -29,7 +31,15 @@ class Polygon(PointList2d):
     points : `numpy.ndarray(shape=(N,2))`
         The list of 2D vertices in numpy.
     '''
-    pass
+
+    # ----- internal representations -----
+
+    @property
+    def shapely(self):
+        '''Shapely representation for fast intersection operations.'''
+        if not hasattr(self, '_shapely'):
+            self._shapely = _sg.Polygon(self.points).buffer(0) # to clean up
+        return self._shapely
 
 
 _bc.register_castable(_np.ndarray, Polygon, lambda x: castable_ndarray_PointList(x,2))

@@ -2,6 +2,7 @@
 
 import math as _m
 import numpy as _np
+import shapely.geometry as _sg
 
 from mt.base.deprecated import deprecated_func
 from mt.base.casting import *
@@ -22,6 +23,17 @@ class Rect(TwoD, Hyperbox):
     Note we do not care if the rectangle is open or partially closed or closed.'''
 
     
+    # ----- internal representations -----
+
+
+    @property
+    def shapely(self):
+        '''Shapely representation for fast intersection operations.'''
+        if not hasattr(self, '_shapely'):
+            self._shapely = _sg.box(self.min_x, self.min_y, self.max_x, self.max_y)
+        return self._shapely
+
+
     # ----- derived properties -----
 
     
@@ -173,14 +185,11 @@ class Rect(TwoD, Hyperbox):
         res = super(Rect, self).intersect(other)
         return Rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
 
-    def union(self, other):
-        res = super(Rect, self).union(other)
-        return Rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
-
     def iou(self, other, epsilon=1E-7):
         i_area = self.intersect(other).area
-        u_area = self.union(other).area
-        return i_area/ (u_area + epsilon)
+        s_area = self.area
+        o_area = other.area
+        return i_area/ ((s_area + o_area - i_area) + epsilon)
         
     def move(self, offset):
         '''Moves the Rect by a given offset vector.'''

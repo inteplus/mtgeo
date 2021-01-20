@@ -137,9 +137,12 @@ class Hyperbox(GeometricObject):
     def intersect(self, other):
         return Hyperbox(_np.maximum(self.min_coords, other.min_coords), _np.minimum(self.max_coords, other.max_coords))
 
-    def union(self, other):
-        return Hyperbox(_np.minimum(self.min_coords, other.min_coords), _np.maximum(self.max_coords, other.max_coords))
-
+    def iou(self, other, epsilon=1E-7):
+        i_vol = self.intersect(other).volume
+        s_vol = self.volume
+        o_vol = other.volume
+        return i_vol/ ((s_vol + o_vol - i_vol) + epsilon)
+        
 
 # ----- joining volumes -----
 
