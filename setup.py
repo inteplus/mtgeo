@@ -25,8 +25,8 @@ setup(
     zip_safe=False,
     install_requires=[
         'numpy',
-        'mtbase>=1.0.0',
-        #'shapely', # lazy import. Only needed in the iou.py module
+        'mtbase>=1.0.8',
+        'shapely', # shapely is compulsory now
     ],
     url='https://github.com/inteplus/mtgeo',
     project_urls={
