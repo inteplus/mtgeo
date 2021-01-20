@@ -145,14 +145,31 @@ class Hyperbox(GeometricObject):
 
 
 def join_volume_Hyperbox_and_Hyperbox(obj1, obj2):
-    '''Joins the volumes of two Hyperboxes of the same dimension.'''
+    '''Joins the volumes of two Hyperboxes of the same dimension.
+
+    Parameters
+    ----------
+    obj1 : Hyperbox
+        the first hyperbox
+    obj2 : Hyperbox
+        the second hyperbox
+
+    Returns
+    -------
+    intersection_volume : float
+        the volume of the intersection of the two hyperboxes' interior regions
+    obj1_only_volume : float
+        the volume of the interior of obj1 that does not belong to obj2
+    obj2_only_volume : float
+        the volume of the interior of obj2 that does not belong to obj1
+    union_volume : float
+        the volume of the union of the two hyperboxes' interior regions
+    '''
     if obj1.dim != obj2.dim:
         raise ValueError("Two objects of dimension {} and {} are not in the same space.".format(obj1.dim, obj2.dim))
     inter = obj1.intersect(obj2)
-    union = obj1.union(obj2)
     inter_volume = inter.volume
     obj1_volume = obj1.volume
     obj2_volume = obj2.volume
-    union_volume = union.volume
-    return (inter_volume, obj1_volume-inter_volume, obj2_volume-inter_volume, union_volume)
+    return (inter_volume, obj1_volume - inter_volume, obj2_volume - inter_volume, obj1_volume + obj2_volume - inter_volume)
 register_join_volume(Hyperbox, Hyperbox, join_volume_Hyperbox_and_Hyperbox)

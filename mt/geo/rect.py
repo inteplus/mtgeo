@@ -233,12 +233,29 @@ register_approx(Moments2d, Rect, approx_Moments2d_to_Rect)
 
 
 def join_volume_Rect_and_Rect(obj1, obj2):
-    '''Joins the areas of two Rects.'''
+    '''Joins the areas of two Rects.
+
+    Parameters
+    ----------
+    obj1 : Rect
+        the first rectangle
+    obj2 : Rect
+        the second rectangle
+
+    Returns
+    -------
+    intersection_area : float
+        the area of the intersection of the two Rects' interior regions
+    obj1_only_area : float
+        the area of the interior of obj1 that does not belong to obj2
+    obj2_only_area : float
+        the area of the interior of obj2 that does not belong to obj1
+    union_area : float
+        the area of the union of the two Rects' interior regions
+    '''
     inter = obj1.intersect(obj2)
-    union = obj1.union(obj2)
     inter_area = inter.area
     obj1_area = obj1.area
     obj2_area = obj2.area
-    union_area = union.area
-    return (inter_area, obj1_area-inter_area, obj2_area-inter_area, union_area)
-register_join_volume(Box, Box, join_volume_Rect_and_Rect)
+    return (inter_area, obj1_area - inter_area, obj2_area - inter_area, obj1_area + obj2_area - inter_area)
+register_join_volume(Rect, Rect, join_volume_Rect_and_Rect)

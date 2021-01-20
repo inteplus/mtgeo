@@ -224,12 +224,29 @@ register_approx(Moments3d, Box, approx_Moments3d_to_Box)
 
 
 def join_volume_Box_and_Box(obj1, obj2):
-    '''Joins the volumes of two Boxes.'''
+    '''Joins the volumes of two Boxes.
+
+    Parameters
+    ----------
+    obj1 : Box
+        the first box
+    obj2 : Box
+        the second box
+
+    Returns
+    -------
+    intersection_volume : float
+        the volume of the intersection of the two boxes' interior regions
+    obj1_only_volume : float
+        the volume of the interior of obj1 that does not belong to obj2
+    obj2_only_volume : float
+        the volume of the interior of obj2 that does not belong to obj1
+    union_volume : float
+        the volume of the union of the two boxes' interior regions
+    '''
     inter = obj1.intersect(obj2)
-    union = obj1.union(obj2)
     inter_volume = inter.volume
     obj1_volume = obj1.volume
     obj2_volume = obj2.volume
-    union_volume = union.volume
-    return (inter_volume, obj1_volume-inter_volume, obj2_volume-inter_volume, union_volume)
+    return (inter_volume, obj1_volume - inter_volume, obj2_volume - inter_volume, obj1_volume + obj2_volume - inter_volume)
 register_join_volume(Box, Box, join_volume_Box_and_Box)
