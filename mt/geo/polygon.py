@@ -71,23 +71,9 @@ def join_volume_Polygon_Rect(obj1, obj2):
     union_area : float
         the area of the union of the two objects' interior regions
     '''
-    if isinstance(obj1, Rect):
-        out_obj1 = _sg.box(obj1.min_x, obj1.min_y, obj1.max_x, obj1.max_y)
-    elif isinstance(obj1, Polygon):
-        out_obj1 = _sg.Polygon(obj1.points).buffer(0) # to clean up
-    else:
-        raise ValueError("The first object is neither a Rect nor a Polygon. Got '{}'.".format(type(obj1)))
-
-    if isinstance(obj2, Rect):
-        out_obj2 = _sg.box(obj2.min_x, obj2.min_y, obj2.max_x, obj2.max_y)
-    elif isinstance(obj2, Polygon):
-        out_obj2 = _sg.Polygon(obj2.points).buffer(0) # to clean up
-    else:
-        raise ValueError("The second object is neither a Rect nor a Polygon. Got '{}'.".format(type(obj2)))
-
-    inter_area = obj1.intersection(obj2).area
-    obj1_area = obj1.area
-    obj2_area = obj2.area
+    inter_area = obj1.shapely.intersection(obj2.shapely).area
+    obj1_area = obj1.shapely.area
+    obj2_area = obj2.shapely.area
     return (inter_area, obj1_area - inter_area, obj2_area - inter_area, obj1_area + obj2_area - inter_area)
 register_join_volume(Rect, Polygon, join_volume_Polygon_Rect)
 register_join_volume(Polygon, Rect, join_volume_Polygon_Rect)
