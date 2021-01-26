@@ -1,9 +1,6 @@
 '''Intersection over Union. In the current primitive form, it is treated as a separate module.'''
 
 
-from .polygon import Rect, Polygon, join_volume_Polygon_Rect
-
-
 __all__ = ['iou_impl', 'iou']
 
 
