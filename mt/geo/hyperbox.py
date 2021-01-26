@@ -4,6 +4,7 @@ from mt.base.deprecated import deprecated_func
 from .dilatation import Dlt
 from .object import GeometricObject
 from .join_volume import *
+from .iou import iou_impl
 
 __all__ = ['box', 'Hyperbox']
 
@@ -138,10 +139,7 @@ class Hyperbox(GeometricObject):
         return Hyperbox(_np.maximum(self.min_coords, other.min_coords), _np.minimum(self.max_coords, other.max_coords))
 
     def iou(self, other, epsilon=1E-7):
-        i_vol = self.intersect(other).volume
-        s_vol = self.volume
-        o_vol = other.volume
-        return i_vol/ ((s_vol + o_vol - i_vol) + epsilon)
+        return iou_impl(self.intersect(other).volume, self.volume, other.volume, eps=epsilon)
         
 
 # ----- joining volumes -----

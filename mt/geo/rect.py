@@ -10,6 +10,7 @@ from .hyperbox import Hyperbox
 from .moments import EPSILON, Moments2d
 from .approximation import *
 from .join_volume import *
+from .iou import iou_impl
 from .object import TwoD
 
 
@@ -187,10 +188,7 @@ class Rect(TwoD, Hyperbox):
         return Rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
 
     def iou(self, other, epsilon=1E-7):
-        i_area = self.intersect(other).area
-        s_area = self.area
-        o_area = other.area
-        return i_area/ ((s_area + o_area - i_area) + epsilon)
+        return iou_impl(self.intersect(other).area, self.area, other.area, eps=epsilon)
         
     def move(self, offset):
         '''Moves the Rect by a given offset vector.'''

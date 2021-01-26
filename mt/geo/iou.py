@@ -4,8 +4,11 @@
 from .polygon import Rect, Polygon, join_volume_Polygon_Rect
 
 
-from mt.base import logger
-logger.warn_module_move('mt.geo.iou', 'mt.geo.join_volume')
+__all__ = ['iou_impl', 'iou']
+
+
+def iou_impl(inter_volume, obj1_volume, obj2_volume, eps=1E-7):
+    return inter_volume / (obj1_volume + obj2_volume - inter_volume + eps)
 
 
 def iou(geo2d_obj1, geo2d_obj2):
@@ -37,4 +40,4 @@ def iou(geo2d_obj1, geo2d_obj2):
             sum_inner += obj1.shapely.intersection(obj2.shapely).area
 
     # result
-    return 0.0 if abs(sum_inner) < 1E-7 else sum_inner/(sum_left + sum_right - sum_inner)
+    return iou_impl(sum_inner, sum_left, sum_right)
