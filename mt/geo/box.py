@@ -174,9 +174,6 @@ class Box(ThreeD, Hyperbox):
         return Box(self.min_x + offset[0], self.min_y + offset[1], self.min_z + offset[2], self.max_x + offset[0], self.max_y + offset[1], self.max_z + offset[2])
 
 
-from .hyperbox import box # backward-compatibility
-
-
 # ----- casting -----
         
 
