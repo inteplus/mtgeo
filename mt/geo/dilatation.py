@@ -44,7 +44,7 @@ class Dlt(Aff):
     # ----- base adaptation -----
 
     @property
-    def ndim(self):
+    def dim(self):
         return self.bias_dim
 
     @property
