@@ -329,7 +329,7 @@ def crop2d(tl, br=None):
     return Aff2d(offset=_np.array([-tl[0]/(br[0]-tl[0]), -tl[1]/(br[1]-tl[1])]), linear=Lin2d(scale=[1.0/(br[0]-tl[0]), 1.0/(br[1]-tl[1])]))
 
 
-def rect2rect(src_rect: Rect, dst_rect: Rect, esp=1e-7) -> Aff2d:
+def rect2rect(src_rect: Rect, dst_rect: Rect, eps=1e-7) -> Aff2d:
     '''Returns an Aff2d that transforms pixels in a source Rect to pixels in a destination Rect.
 
     The transformation ensures that the source corner pixels match with the destination corner pixels.
