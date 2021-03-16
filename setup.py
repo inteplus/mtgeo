@@ -8,6 +8,7 @@ extensions = [
     Extension(
         name="mt.geo.linear2d",
         sources=["mt/geo/linear2d.pyx"],
+        language_level=3,
     )
 ]
 
