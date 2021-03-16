@@ -99,6 +99,21 @@ class Rect(TwoD, Hyperbox):
         '''Circumference.'''
         return (abs(self.w)+abs(self.h))*2
 
+    @property
+    def min_pt(self):
+        '''Corner point with minimum coordinates.'''
+        return _np.array([self.min_x, self.min_y])
+
+    @property
+    def max_pt(self):
+        '''Corner point with maximum coordinates.'''
+        return _np.array([self.max_x, self.max_y])
+
+    @property
+    def center_pt(self):
+        '''Center point.'''
+        return _np.array([self.cx, self.cy])
+
     
     # ----- moments -----
 
@@ -174,6 +189,31 @@ class Rect(TwoD, Hyperbox):
         return Rect(cx-w, cy-h, cx+w, cy+h)
 
 
+    # ----- serialization -----
+
+
+    def to_json(self):
+        '''Returns a list [min_x, min_y, max_x, max_y].'''
+        return [self.min_x, self.min_y, self.max_x, self.max_y]
+
+
+    @staticmethod
+    def from_json(json_obj):
+        '''Creates a Rect from a JSON-like object.
+
+        Parameters
+        ----------
+        json_obj : list
+            list [min_x, min_y, max_x, max_y]
+
+        Returns
+        -------
+        Rect
+            output rectangle
+        '''
+        return Rect(json_obj[0], json_obj[1], json_obj[2], json_obj[3])
+
+    
     # ----- methods -----
 
     
