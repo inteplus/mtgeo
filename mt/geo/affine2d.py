@@ -14,7 +14,7 @@ from .affine_transformation import Aff
 from .linear2d import Lin2d
 
 
-__all__ = ['Aff2d', 'transform_Aff2d_on_Moments2d', 'transform_Aff2d_on_PointList2d', 'transform_Aff2d_on_Polygon', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d', 'rect2rect']
+__all__ = ['Aff2d', 'transform_Aff2d_on_Moments2d', 'transform_Aff2d_on_PointList2d', 'transform_Aff2d_on_Polygon', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d', 'crop_rect', 'uncrop_rect', 'rect2rect']
 
 
 class Aff2d(TwoD, Aff):
@@ -327,6 +327,41 @@ def crop2d(tl, br=None):
     if br is None:
         return scale2d(1.0/tl[0], 1.0/tl[1])
     return Aff2d(offset=_np.array([-tl[0]/(br[0]-tl[0]), -tl[1]/(br[1]-tl[1])]), linear=Lin2d(scale=[1.0/(br[0]-tl[0]), 1.0/(br[1]-tl[1])]))
+
+
+def crop_rect(r: Rect) -> Aff2d:
+    '''Transforms an-axis-aligned Rect into [(0,0),(1,1)].
+
+    Parameters
+    ----------
+    r : Rect
+        the input rectangle
+
+    Returns
+    -------
+    Aff2d
+        A transformation that maps points in [(0,0),(1,1)] to the crop given by `tl` and `br`.
+    '''
+    return crop2d((r.min_x, r.min_y), (r.max_x, r.max_y))
+
+
+def uncrop_rect(tfm: Aff2d) -> Rect:
+    '''Transforms a 2D affine transformation back to a crop, ignoring shearing and rotation.
+
+    Parameters
+    ----------
+    tfm : Aff2d
+        A 2D affine transformation supposedly transforms a crop to [(0,0),(1,1)]
+
+    Returns
+    -------
+    Rect
+        the recovered rectangle
+    '''
+    tfm = ~tfm # take the inverse
+    x, y = tfm.offset
+    w, h = tfm.linear.scale
+    return Rect(x, y, x+w, y+h)
 
 
 def rect2rect(src_rect: Rect, dst_rect: Rect, eps=1e-7) -> Aff2d:
