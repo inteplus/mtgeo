@@ -1,16 +1,15 @@
 '''Utilities for converting a rectangle into an octagon bounded by it.'''
 
-import math as _m
-import numpy as _np
+from mt import np
 
 
 __all__ = ['ISQRT2', 'approx_oct']
 
 
-ISQRT2 = 1/_m.sqrt(2)
+ISQRT2 = 1/np.sqrt(2)
 
 # octagon to approximate a circle originating at (0,0) with radius 1
-std_oct = _np.array([
+std_oct = np.array([
     (1,       0),
     (ISQRT2,  ISQRT2),
     (0,       1),
@@ -41,6 +40,6 @@ def approx_oct(min_x, min_y, max_x, max_y):
     polygon : numpy array
         list of 2D (x,y) points representing an octagon inside the rectangle (min_x, min_y, max_x, max_y)
     '''
-    c = _np.array([min_x + max_x, min_y + max_y])*0.5
-    r = _np.array([max_x, max_y]) - c
+    c = np.array([min_x + max_x, min_y + max_y])*0.5
+    r = np.array([max_x, max_y]) - c
     return std_oct*r + c
