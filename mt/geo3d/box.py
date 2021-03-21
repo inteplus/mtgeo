@@ -7,7 +7,8 @@ from ..geo.approximation import *
 from ..geo.join_volume import *
 from ..geo.object import ThreeD
 from ..geond.hyperbox import Hyperbox
-from .moments import EPSILON, Moments3d
+from ..geond.moments import EPSILON
+from .moments import Moments3d
 
 
 __all__ = ['Box', 'cast_Hyperbox_to_Box', 'cast_Box_to_Moments3d', 'approx_Moments3d_to_Box']
