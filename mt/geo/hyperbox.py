@@ -4,7 +4,7 @@ from mt.base.deprecated import deprecated_func
 from .dilatation import Dlt
 from .object import GeometricObject
 from .join_volume import *
-from .iou import iou_impl
+from ..geond.iou import iou_impl
 
 __all__ = ['box', 'Hyperbox']
 

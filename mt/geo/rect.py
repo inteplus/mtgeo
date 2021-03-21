@@ -10,7 +10,7 @@ from .hyperbox import Hyperbox
 from .moments import EPSILON, Moments2d
 from .approximation import *
 from .join_volume import *
-from .iou import iou_impl
+from ..geo2d.iou import iou_impl
 from .object import TwoD
 
 
