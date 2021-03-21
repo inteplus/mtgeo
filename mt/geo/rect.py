@@ -148,46 +148,6 @@ class Rect(TwoD, Hyperbox):
         '''Returns the integral of y*y over the rectangle's interior.'''
         return self.signed_area*(self.min_y*self.min_y+self.min_y*self.max_y+self.max_y*self.max_y)/3
 
-    @property
-    @deprecated_func("0.3.5", suggested_func=["mt.base.casting.cast", "mt.geo.rect.cast_Rect_to_Moments2d"], removed_version="0.5.0")
-    def to_moments2d(self):
-        '''Computes all moments, up to 2nd-order of the rectangle's interior.'''
-        from .moments2d import moments2d
-        m0 = self.signed_area
-        m1 = [self.moment_x, self.moment_y]
-        mxy = self.moment_xy
-        m2 = [[self.moment_xx, mxy], [mxy, self.moment_yy]]
-        return moments2d(m0, m1, m2)
-
-    @staticmethod
-    @deprecated_func("0.3.5", suggested_func=["mt.geo.approximation.approx", "mt.geo.rect.approx_Moments2d_to_Rect"], removed_version="0.5.0")
-    def from_moments2d(obj):
-        '''Returns a rectangle that best approximates the moments2d instance.
-        
-        The function returns a rectangle such that its mean is the same as the mean of the instance, and its x-variance and y-variance are the same as those of the instance. The correlation is ignored.
-        
-        Parameters
-        ----------
-        obj : moments2d
-            an instance containing moments of 2D points up to 2nd order
-        
-        Returns
-        -------
-        Rect
-            the output rectangle
-        '''
-        cx, cy = obj.mean
-        cov = obj.cov
-
-        # w = half width, h = half height
-        size = abs(obj.m0)
-        hw3 = cov[0][0]*size*0.75 # should be >= 0
-        wh3 = cov[1][1]*size*0.75 # should be >= 0
-        wh = _m.sqrt(_m.sqrt(wh3*hw3))
-        h = _m.sqrt(wh3/wh)
-        w = _m.sqrt(hw3/wh)
-        return Rect(cx-w, cy-h, cx+w, cy+h)
-
 
     # ----- serialization -----
 
