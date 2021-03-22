@@ -4,7 +4,7 @@ from mt import np
 from mt.base.casting import register_cast, register_castable, cast
 from mt.base.deprecated import deprecated_func
 
-from ..geo_base import GeometricObject, ThreeD, transform, register_transform, register_approx, register_upper_bound, register_lower_bound
+from ..geo import GeometricObject, ThreeD, transform, register_transform, register_approx, register_upper_bound, register_lower_bound
 from ..geond import EPSILON, Hyperellipsoid 
 from .affine import Aff3d
 from .box import Box

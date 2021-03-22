@@ -4,7 +4,7 @@ from mt import np
 from mt.base.casting import register_cast, cast
 from mt.base.deprecated import deprecated_func
 
-from ..geo_base import GeometricObject, register_transform, register_transformable, register_upper_bound, register_lower_bound
+from ..geo import GeometricObject, register_transform, register_transformable, register_upper_bound, register_lower_bound
 from .affine import Aff
 from .hyperbox import Hyperbox
 
@@ -29,7 +29,7 @@ class Hyperellipsoid(GeometricObject):
     Examples
     --------
     >>> import numpy as np
-    >>> from mt.geo.hyperellipsoid import Aff, Hyperellipsoid
+    >>> from mt.geond.hyperellipsoid import Aff, Hyperellipsoid
     >>> a = Aff(bias=np.array([2,3]), weight=np.diag([4,5]))
     >>> e = Hyperellipsoid(a)
     >>> e

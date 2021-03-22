@@ -4,7 +4,7 @@ from mt import np
 from mt.base import logger
 from mt.base.deprecated import deprecated_func
 
-from ..geo_base import GeometricObject, LieTransformer, transform, register_transform, register_transformable
+from ..geo import GeometricObject, LieTransformer, transform, register_transform, register_transformable
 from .point_list import PointList
 from .moments import Moments
 
@@ -17,9 +17,8 @@ class Aff(LieTransformer, GeometricObject):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> import mt.geo as _mg
-    >>> a = _mg.Aff(weight=np.array([[1,-1],[-2,3]]), bias=np.array([3,4]))
+    >>> from mt import np, geond as gn
+    >>> a = gn.Aff(weight=np.array([[1,-1],[-2,3]]), bias=np.array([3,4]))
     >>> a.bias
     array([3, 4])
     >>> a.weight
@@ -47,7 +46,7 @@ class Aff(LieTransformer, GeometricObject):
     Aff(weight_diagonal=[11 41], bias=[-5 30])
     >>> a*(a*a)
     Aff(weight_diagonal=[11 41], bias=[-5 30])
-    >>> b = _mg.Aff(weight=np.array([[1,-1],[-3,2]]), bias=np.array([2,1]))
+    >>> b = gn.Aff(weight=np.array([[1,-1],[-3,2]]), bias=np.array([2,1]))
     >>> a*b
     Aff(weight_diagonal=[4 8], bias=[4 3])
     >>> b*a

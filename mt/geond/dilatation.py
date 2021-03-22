@@ -1,7 +1,7 @@
 from mt import np
 import mt.base.casting as _bc
 
-from ..geo_base import register_transform, register_transformable
+from ..geo import register_transform, register_transformable
 from .point_list import PointList
 from .moments import Moments
 from .affine import Aff
@@ -16,7 +16,7 @@ class Dlt(Aff):
     Examples
     --------
     >>> import numpy as _np
-    >>> from mt.geo.dilatation import Dlt
+    >>> from mt.geond.dilatation import Dlt
     >>> a = Dlt(offset=np.array([1,2]), scale=np.array([3,4]))
     >>> ~a
     Dlt(offset=[-0.33333333 -0.5       ], scale=[0.33333333 0.25      ])

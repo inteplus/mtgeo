@@ -5,7 +5,7 @@ import sys as _sys
 
 import mt.base.casting as _bc
 
-from ..geo_base import GeometricObject
+from ..geo import GeometricObject
 from .point_list import PointList
 
 
@@ -31,9 +31,9 @@ class Moments(GeometricObject):
 
     Examples
     --------
-    >>> import mt.geo.polygon as gp
+    >>> import mt.geo2d.polygon as gp
     >>> poly = gp.Polygon([[0,0],[0,1],[1,2],[1,0]])
-    >>> import mt.geo.moments as gm
+    >>> import mt.geond.moments as gm
     >>> from mt.base.casting import cast
     >>> m = cast(poly, gm.Moments2d)
     >>> m.m0

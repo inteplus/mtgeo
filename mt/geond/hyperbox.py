@@ -1,7 +1,7 @@
 '''Hyperrectangle.'''
 
 from mt import np
-from ..geo_base import GeometricObject, join_volume, register_join_volume
+from ..geo import GeometricObject, join_volume, register_join_volume
 from .dilatation import Dlt
 from .iou import iou_impl
 

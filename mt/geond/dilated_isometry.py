@@ -1,7 +1,7 @@
 import math as _m
 from mt import np
 import mt.base.casting as _bc
-from ..geo_base.approximation import register_approx
+from ..geo.approximation import register_approx
 from .affine import Aff
 
 

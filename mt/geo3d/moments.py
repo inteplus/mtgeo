@@ -5,7 +5,7 @@ import sys as _sys
 
 import mt.base.casting as _bc
 
-from ..geo_base import ThreeD
+from ..geo import ThreeD
 from ..geond import Moments, moments_from_pointlist
 from .point_list import PointList3d
 
