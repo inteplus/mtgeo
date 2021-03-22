@@ -1,14 +1,11 @@
-import numpy as _np
-import math as _m
-
+from mt import np
 import mt.base.casting as _bc
-from mt.base.deprecated import deprecated_func
 
 from .dilated_isometry import Dliso
-from .affine2d import Aff2d, Lin2d
+from .affine import Aff2d, Lin2d
 
 
-__all__ = ['Sim2d', 'sim2']
+__all__ = ['Sim2d']
 
 
 class Sim2d(Dliso):
@@ -29,9 +26,9 @@ class Sim2d(Dliso):
     @staticmethod
     def get_linear(angle, on, scale=1.0):
         '''Forms the linear part of the transformation matrix representing scaling*rotation*reflection.'''
-        ca = _m.cos(angle)*scale
-        sa = _m.sin(angle)*scale
-        return _np.array([[-ca, -sa], [-sa, ca]]) if on else _np.array([[ca, -sa], [sa, ca]])
+        ca = np.cos(angle)*scale
+        sa = np.sin(angle)*scale
+        return np.array([[-ca, -sa], [-sa, ca]]) if on else np.array([[ca, -sa], [sa, ca]])
 
     # ----- base adaptation -----
 
@@ -79,7 +76,7 @@ class Sim2d(Dliso):
 
     # ----- methods -----
 
-    def __init__(self, offset=_np.zeros(2), scale=1, angle=0, on=False):
+    def __init__(self, offset=np.zeros(2), scale=1, angle=0, on=False):
         self.offset = offset
         self.scale = scale
         self.angle = angle
@@ -104,17 +101,8 @@ class Sim2d(Dliso):
         invScale = 1/self.scale
         invAngle = self.angle if self.on else -self.angle
         mat = Sim2d.get_linear(invAngle, self.on, invScale)
-        return Sim2d(_np.dot(mat, -self.offset), invScale, invAngle, self.on)
+        return Sim2d(np.dot(mat, -self.offset), invScale, invAngle, self.on)
     invert.__doc__ = Dliso.invert.__doc__
-
-
-class sim2(Sim2d):
-
-    __doc__ = Sim2d.__doc__
-
-    @deprecated_func("0.4.3", suggested_func='mt.geo.similarity2d.Sim2d.__init__', removed_version="0.6.0")
-    def __init__(self, *args, **kwargs):
-        super(sim2, self).__init__(*args, **kwargs)
 
 
 # ----- casting -----
