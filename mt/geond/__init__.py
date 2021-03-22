@@ -5,3 +5,7 @@ from .moments import *
 from .affine import *
 from .dilatation import *
 from .hyperbox import *
+from .dilatation import *
+from .dilated_isometry import *
+from .dilated_translation import *
+from .hypercube import *
