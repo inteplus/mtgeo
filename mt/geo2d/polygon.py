@@ -5,7 +5,6 @@ import mt.base.casting as _bc
 from ..geo.join_volume import *
 from ..geond.point_list import castable_ndarray_PointList
 from .point_list import PointList2d
-from .polygon_integral import * # for now assume that you want to do polygon integration whenever polygon is imported
 from .rect import Rect
 
 
