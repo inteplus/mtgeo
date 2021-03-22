@@ -12,7 +12,7 @@ from .point_list import PointList2d
 from .polygon import Polygon
 
 
-__all__ = ['feq', 'radian_range', 'ssr2mat', 'mat2ssr', 'rss2mat', 'mat2rss', 'Lin2d', 'lin2', 'transform_Lin2d_on_Moments2d', 'transform_Lin2d_on_PointList2d', 'transform_Lin2d_on_Polygon']
+__all__ = ['feq', 'radian_range', 'ssr2mat', 'mat2ssr', 'rss2mat', 'mat2rss', 'Lin2d', 'transform_Lin2d_on_Moments2d', 'transform_Lin2d_on_PointList2d', 'transform_Lin2d_on_Polygon']
 
 
 cpdef bool feq(double a, double b, double eps=1e-06):
