@@ -6,8 +6,7 @@ from libc.math cimport fabs, hypot, atan2, sin, cos, M_PI, M_PI_2
 
 from mt import np
 
-from ..geo.object import TwoD, GeometricObject
-from ..geo.transformation import LieTransformer, register_transform, register_transformable
+from ..geo_base import TwoD, GeometricObject, LieTransformer, register_transform, register_transformable
 from .moments import Moments2d
 from .point_list import PointList2d
 from .polygon import Polygon

@@ -1,9 +1,8 @@
 from mt import np
 import mt.base.casting as _bc
 
-from ..geo.object import TwoD
-from ..geo.transformation import register_transform, register_transformable
-from ..geond.affine import Aff
+from ..geo_base import TwoD, register_transform, register_transformable
+from ..geond import Aff
 from .moments import Moments2d
 from .point_list import PointList2d
 from .polygon import Polygon
