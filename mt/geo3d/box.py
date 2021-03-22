@@ -3,11 +3,8 @@
 from mt import np
 from mt.base.casting import *
 
-from ..geo.approximation import *
-from ..geo.join_volume import *
-from ..geo.object import ThreeD
-from ..geond.hyperbox import Hyperbox
-from ..geond.moments import EPSILON
+from ..geo_base import ThreeD, register_approx, register_join_volume
+from ..geond import EPSILON, Hyperbox
 from .moments import Moments3d
 
 
