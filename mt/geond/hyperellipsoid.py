@@ -1,17 +1,12 @@
 '''There are many definitions of a hyperellipsoid. In our case, a hyperellipsoid is an affine transform of the unit hypersphere x^2+y^2+...=1.'''
 
-import math as _m
-import numpy as _np
-import numpy.linalg as _nl
-
+from mt import np
 from mt.base.casting import register_cast, cast
 from mt.base.deprecated import deprecated_func
 
-from .affine_transformation import Aff
+from ..geo_base import GeometricObject, register_transform, register_transformable, register_upper_bound, register_lower_bound
+from .affine import Aff
 from .hyperbox import Hyperbox
-from .bounding import register_upper_bound, register_lower_bound
-from .transformation import register_transform, register_transformable
-from .object import GeometricObject
 
 
 __all__ = ['Hyperellipsoid', 'transform_Aff_on_Hyperellipsoid']
@@ -61,8 +56,8 @@ class Hyperellipsoid(GeometricObject):
         if not isinstance(aff_tfm, Aff):
             raise ValueError("Only an instance of class `Aff` is accepted.")
         if make_normalised:
-            U, S, VT = _nl.svd(aff_tfm.weight, full_matrices=False)
-            aff_tfm = Aff(bias=aff_tfm.bias, weight=U @ _np.diag(S))
+            U, S, VT = np.linalg.svd(aff_tfm.weight, full_matrices=False)
+            aff_tfm = Aff(bias=aff_tfm.bias, weight=U @ np.diag(S))
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
@@ -95,7 +90,7 @@ def upper_bound_Hyperellipsoid_to_Hyperbox(obj):
     '''
     weight = obj.aff_tfm.weight
     c = off.aff_tfm.bias
-    m = _np.array([_nl.norm(weight[i]) for i in range(self.ndim)])
+    m = np.array([np.linalg.norm(weight[i]) for i in range(self.ndim)])
     return Hyperbox(min_coords=c-m, max_coords=c+m)
 register_upper_bound(Hyperellipsoid, Hyperbox, upper_bound_Hyperellipsoid_to_Hyperbox)
 

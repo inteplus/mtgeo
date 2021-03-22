@@ -1,18 +1,13 @@
 '''There are many definitions of an ellipsoid. In our case, an ellipsoid is an affine transform of the unit sphere x^2+y^2+z^2=1.'''
 
-import math as _m
-import numpy as _np
-import numpy.linalg as _nl
-
+from mt import np
 from mt.base.casting import register_cast, register_castable, cast
 from mt.base.deprecated import deprecated_func
 
-from .hyperellipsoid import Hyperellipsoid
-from .affine3d import Aff3d
+from ..geo_base import GeometricObject, ThreeD, transform, register_transform, register_approx, register_upper_bound, register_lower_bound
+from ..geond import EPSILON, Hyperellipsoid 
+from .affine import Aff3d
 from .box import Box
-from .bounding import register_upper_bound, register_lower_bound
-from .transformation import register_transform, register_transformable
-from .object import GeometricObject, ThreeD
 
 
 __all__ = ['Ellipsoid', 'transform_Aff3d_on_Ellipsoid']
@@ -54,8 +49,8 @@ class Ellipsoid(ThreeD, GeometricObject):
         if not isinstance(aff_tfm, Aff3d):
             raise ValueError("Only an instance of class `Aff3d` is accepted.")
         if make_normalised:
-            U, S, VT = _nl.svd(aff_tfm.weight, full_matrices=False)
-            aff_tfm = Aff3d(bias=aff_tfm.bias, weight=U @ _np.diag(S))
+            U, S, VT = np.linalg.svd(aff_tfm.weight, full_matrices=False)
+            aff_tfm = Aff3d(bias=aff_tfm.bias, weight=U @ np.diag(S))
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
@@ -64,7 +59,7 @@ class Ellipsoid(ThreeD, GeometricObject):
     @property
     def volume(self):
         '''The absolute volume of the ellipsoid's interior.'''
-        return (4*_m.pi/3)*self.aff_tfm.det
+        return (4*np.pi/3)*self.aff_tfm.det
 
     @property
     def surface_area(self):
@@ -102,7 +97,7 @@ def upper_bound_Ellipsoid_to_Box(obj):
     '''
     weight = obj.aff_tfm.weight
     c = off.aff_tfm.bias
-    m = _np.array([_nl.norm(weight[i]) for i in range(3)])
+    m = np.array([np.linalg.norm(weight[i]) for i in range(3)])
     return Box(min_coords=c-m, max_coords=c+m)
 register_upper_bound(Ellipsoid, Box, upper_bound_Ellipsoid_to_Box)
 
