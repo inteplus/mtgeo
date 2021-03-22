@@ -2,8 +2,7 @@ from mt import np
 from mt.base.deprecated import deprecated_func
 from mt.base.casting import cast, register_cast
 
-from ..geo.object import GeometricObject
-from ..geo.approximation import approx, register_approx
+from ..geo_base import GeometricObject, approx, register_approx
 from .dilated_translation import Dltra
 from .hyperbox import Hyperbox
 

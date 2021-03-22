@@ -3,7 +3,7 @@
 
 import numpy as _np
 import mt.base.casting as _bc
-from ..geo.object import GeometricObject
+from ..geo_base import GeometricObject
 
 
 __all__ = ['PointList', 'castable_ndarray_PointList']

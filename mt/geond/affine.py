@@ -4,8 +4,7 @@ from mt import np
 from mt.base import logger
 from mt.base.deprecated import deprecated_func
 
-from ..geo.object import GeometricObject
-from ..geo.transformation import LieTransformer, transform, register_transform, register_transformable
+from ..geo_base import GeometricObject, LieTransformer, transform, register_transform, register_transformable
 from .point_list import PointList
 from .moments import Moments
 

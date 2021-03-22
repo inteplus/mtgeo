@@ -1,7 +1,6 @@
 from mt import np
 import mt.base.casting as _bc
-from ..geo.approximation import register_approx
-from ..geo.transformation import register_transform, register_transformable
+from ..geo_base import register_approx, register_transform, register_transformable
 from .dilated_isometry import Dliso
 from .dilatation import Dlt
 

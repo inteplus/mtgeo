@@ -5,7 +5,7 @@ import sys as _sys
 
 import mt.base.casting as _bc
 
-from ..geo.object import GeometricObject
+from ..geo_base import GeometricObject
 from .point_list import PointList
 
 

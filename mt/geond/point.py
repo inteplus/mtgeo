@@ -6,7 +6,7 @@ For efficiency reasons, please try to bunch points into arrays or lists and use 
 
 import numpy as _np
 import mt.base.casting as _bc
-from ..geo.object import GeometricObject
+from ..geo_base import GeometricObject
 
 
 __all__ = ['Point', 'castable_ndarray_Point']

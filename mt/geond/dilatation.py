@@ -1,7 +1,7 @@
 from mt import np
 import mt.base.casting as _bc
 
-from ..geo.transformation import register_transform, register_transformable
+from ..geo_base import register_transform, register_transformable
 from .point_list import PointList
 from .moments import Moments
 from .affine import Aff
