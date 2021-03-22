@@ -1,15 +1,13 @@
 # distutils: language = c++
 # distutils: language_level = 3
 
-import numpy as _np
-
 from libcpp cimport bool
 from libc.math cimport fabs, hypot, atan2, sin, cos, M_PI, M_PI_2
 
-from mt.base.deprecated import deprecated_func
+from mt import np
 
-from .object import TwoD, GeometricObject
-from .transformation import LieTransformer, register_transform, register_transformable
+from ..geo.object import TwoD, GeometricObject
+from ..geo.transformation import LieTransformer, register_transform, register_transformable
 from .moments import Moments2d
 from .point_list import PointList2d
 from .polygon import Polygon
@@ -225,7 +223,7 @@ cdef class Lin2dBase(object):
 
     @property
     def scale(self):
-        return _np.array([self.m_buf[0], self.m_buf[1]])
+        return np.array([self.m_buf[0], self.m_buf[1]])
 
     @scale.setter
     def scale(self, scale):
@@ -278,7 +276,7 @@ cdef class Lin2dBase(object):
         '''Returns the linear transformation matrix.'''
         cdef double[4] m
         ssr2mat(self.m_buf, m)
-        return _np.array([[m[0], m[1]], [m[2], m[3]]])
+        return np.array([[m[0], m[1]], [m[2], m[3]]])
 
     @property
     def det(self):
@@ -287,7 +285,7 @@ cdef class Lin2dBase(object):
 
     # ----- methods -----
 
-    def __init__(self, scale=_np.ones(2), shear=0, angle=0):
+    def __init__(self, scale=np.ones(2), shear=0, angle=0):
         self.scale = scale
         self.shear = shear
         self.angle = angle
@@ -372,22 +370,13 @@ class Lin2d(TwoD, GeometricObject, LieTransformer, Lin2dBase):
     invert.__doc__ = LieTransformer.invert.__doc__
 
     def multiply(self, other):
-        return Lin2d.from_matrix(_np.dot(self.matrix, other.matrix))
+        return Lin2d.from_matrix(np.dot(self.matrix, other.matrix))
     multiply.__doc__ = LieTransformer.multiply.__doc__
 
     # ----- methods -----
 
     def __repr__(self):
         return "Lin2d(scale={}, shear={}, angle={})".format(self.scale, self.shear, self.angle)
-
-
-class lin2(Lin2d):
-
-    __doc__ = Lin2d.__doc__
-
-    @deprecated_func("0.4.2", suggested_func='mt.geo.linear2d.Lin2d.__init__', removed_version="0.6.0")
-    def __init__(self, *args, **kwargs):
-        super(lin2, self).__init__(*args, **kwargs)
 
 
 # ----- transform functions -----
@@ -416,7 +405,7 @@ def transform_Lin2d_on_Moments2d(lin_tfm, moments):
     new_cov = A @ old_cov @ A.T
     new_m0 = old_m0*abs(lin_tfm.det)
     new_m1 = new_m0*new_mean
-    new_m2 = new_m0*(_np.outer(new_mean, new_mean) + new_cov)
+    new_m2 = new_m0*(np.outer(new_mean, new_mean) + new_cov)
     return Moments2d(new_m0, new_m1, new_m2)
 register_transform(Lin2d, Moments2d, transform_Lin2d_on_Moments2d)
 
@@ -437,8 +426,8 @@ def transform_Lin2d_on_ndarray(lin_tfm, point_array):
         linear-transformed point array
     '''
     return point_array @ lin_tfm.matrix.T
-register_transform(Lin2d, _np.ndarray, transform_Lin2d_on_ndarray)
-register_transformable(Lin2d, _np.ndarray, lambda x, y: y.shape[-1] == 2)
+register_transform(Lin2d, np.ndarray, transform_Lin2d_on_ndarray)
+register_transformable(Lin2d, np.ndarray, lambda x, y: y.shape[-1] == 2)
 
 
 def transform_Lin2d_on_PointList2d(lin_tfm, point_list):
