@@ -1,12 +1,11 @@
-import numpy as _np
-
+from mt import np
 from mt.base.deprecated import deprecated_func
 from mt.base.casting import cast, register_cast
 
+from ..geo.object import GeometricObject
+from ..geo.approximation import approx, register_approx
 from .dilated_translation import Dltra
 from .hyperbox import Hyperbox
-from .object import GeometricObject
-from .approximation import approx, register_approx
 
 __all__ = ['Hypercube']
 
@@ -93,7 +92,7 @@ class Hypercube(GeometricObject):
     @property
     def size(self):
         '''box size'''
-        return _np.abs(self.dlt_tfm.scale*2)
+        return np.abs(self.dlt_tfm.scale*2)
 
     # ----- methods -----
 
