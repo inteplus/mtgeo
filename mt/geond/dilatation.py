@@ -1,6 +1,5 @@
 from mt import np
 import mt.base.casting as _bc
-from mt.base.deprecated import deprecated_func
 
 from ..geo.transformation import register_transform, register_transformable
 from .point_list import PointList

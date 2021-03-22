@@ -5,7 +5,7 @@ from ..geo.approximation import register_approx
 from .affine import Aff
 
 
-__all__ = ['dliso', 'Dliso', 'approx_Aff_to_Dliso']
+__all__ = ['Dliso', 'approx_Aff_to_Dliso']
 
 
 class Dliso(Aff):
