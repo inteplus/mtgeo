@@ -30,7 +30,7 @@ class Ellipsoid(ThreeD, GeometricObject):
     Examples
     --------
     >>> import numpy as np
-    >>> from mt.geo.ellipsoid import Aff3d, Ellipsoid
+    >>> from mt.geo3d import Aff3d, Ellipsoid
     >>> a = Aff3d(bias=np.array([2,3]), weight=np.diag([4,5]))
     >>> e = Ellipsoid(a)
     >>> e
