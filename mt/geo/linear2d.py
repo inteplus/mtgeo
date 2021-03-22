@@ -1,1 +1,1 @@
-from ..geo2d.linear2d import *
+from ..geo2d.linear import *

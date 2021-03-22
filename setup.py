@@ -6,8 +6,8 @@ from mt.geo.version import version
 
 extensions = [
     Extension(
-        name="mt.geo2d.linear2d",
-        sources=["mt/geo2d/linear2d.pyx"],
+        name="mt.geo2d.linear",
+        sources=["mt/geo2d/linear.pyx"],
         language_level=3,
     )
 ]

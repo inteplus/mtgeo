@@ -8,7 +8,7 @@ from .moments import Moments2d
 from .point_list import PointList2d
 from .polygon import Polygon
 from .rect import Rect
-from .linear2d import Lin2d
+from .linear import Lin2d
 
 
 __all__ = ['Aff2d', 'transform_Aff2d_on_Moments2d', 'transform_Aff2d_on_PointList2d', 'transform_Aff2d_on_Polygon', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d', 'crop_rect', 'uncrop_rect', 'rect2rect']
