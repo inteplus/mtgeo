@@ -10,3 +10,4 @@ from .dilated_isometry import *
 from .isometry import *
 from .dilated_translation import *
 from .hypercube import *
+from .hyperellipsoid import *
