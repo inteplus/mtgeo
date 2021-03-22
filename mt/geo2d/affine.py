@@ -1,6 +1,5 @@
 from mt import np
 import mt.base.casting as _bc
-from mt.base.deprecated import deprecated_func
 
 from ..geo.object import TwoD
 from ..geo.transformation import register_transform, register_transformable
@@ -145,15 +144,6 @@ class Aff2d(TwoD, Aff):
 
     def __repr__(self):
         return "Aff2d(offset={}, linear={})".format(self.offset, self.linear)
-
-
-class aff2(Aff2d):
-
-    __doc__ = Aff2d.__doc__
-
-    @deprecated_func("0.4.3", suggested_func='mt.geo.affine2d.Aff2d.__init__', removed_version="0.6.0")
-    def __init__(self, *args, **kwargs):
-        super(aff2, self).__init__(*args, **kwargs)
 
 
 # ----- casting -----
