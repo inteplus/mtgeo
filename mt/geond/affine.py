@@ -148,7 +148,7 @@ class Aff(LieTransformer, GeometricObject):
     def __repr__(self):
         return "Aff(weight_diagonal={}, bias={})".format(self.weight.diagonal(), self.bias)
 
-    @deprecated_func("0.3.8", suggested_func=["mt.geo.transformation.transform", "mt.geo.affine_transformation.transform_Aff_on_ndarray"], removed_version="0.6.0", docstring_prefix="        ")
+    @deprecated_func("0.3.8", suggested_func=["mt.geo.transformation.transform", "mt.geond.affine_transformation.transform_Aff_on_ndarray"], removed_version="0.6.0", docstring_prefix="        ")
     def transform_points(self, X):
         '''Transforms a list of points.
         

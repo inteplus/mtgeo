@@ -33,8 +33,8 @@ def trapezium_integral(poly, func):
 
     Examples
     --------
-    >>> from mt.geo.polygon_integral import trapezium_integral
-    >>> from mt.geo.polygon import Polygon
+    >>> from mt.geo2d.polygon_integral import trapezium_integral
+    >>> from mt.geo2d.polygon import Polygon
     >>> poly = Polygon([[1,2]])
     >>> trapezium_integral(poly, None)
     0
@@ -76,8 +76,8 @@ def signed_area(poly):
 
     Examples
     --------
-    >>> from mt.geo.polygon_integral import signed_area
-    >>> import mt.geo.polygon as mp
+    >>> from mt.geo2d.polygon_integral import signed_area
+    >>> import mt.geo2d.polygon as mp
     >>> poly = mp.Polygon([[10,10],[20,10],[20,20]])
     >>> round(signed_area(poly), 3)
     -50.0
@@ -100,8 +100,8 @@ def moment_x(poly):
 
     Examples
     --------
-    >>> from mt.geo.polygon_integral import moment_x
-    >>> import mt.geo.polygon as mp
+    >>> from mt.geo2d.polygon_integral import moment_x
+    >>> import mt.geo2d.polygon as mp
     >>> poly = mp.Polygon([[3,4],[2,3],[3,2]])
     >>> round(moment_x(poly), 3)
     -2.667
@@ -123,8 +123,8 @@ def moment_y(poly):
 
     Examples
     --------
-    >>> from mt.geo.polygon_integral import moment_y
-    >>> import mt.geo.polygon as mp
+    >>> from mt.geo2d.polygon_integral import moment_y
+    >>> import mt.geo2d.polygon as mp
     >>> poly = mp.Polygon([[3,3],[2,2],[3,1]])
     >>> round(moment_y(poly), 3)
     -2.0
@@ -146,8 +146,8 @@ def moment_xy(poly):
 
     Examples
     --------
-    >>> from mt.geo.polygon_integral import moment_xy
-    >>> import mt.geo.polygon as mp
+    >>> from mt.geo2d.polygon_integral import moment_xy
+    >>> import mt.geo2d.polygon as mp
     >>> poly = mp.Polygon([[3,3],[2,2],[3,1]])
     >>> round(moment_xy(poly), 3)
     -5.333
@@ -169,8 +169,8 @@ def moment_xx(poly):
 
     Examples
     --------
-    >>> from mt.geo.polygon_integral import moment_xx
-    >>> import mt.geo.polygon as mp
+    >>> from mt.geo2d.polygon_integral import moment_xx
+    >>> import mt.geo2d.polygon as mp
     >>> poly = mp.Polygon([[3,3],[2,2],[3,1]])
     >>> round(moment_xx(poly), 3)
     -7.167
@@ -192,8 +192,8 @@ def moment_yy(poly):
 
     Examples
     --------
-    >>> from mt.geo.polygon_integral import moment_yy
-    >>> import mt.geo.polygon as mp
+    >>> from mt.geo2d.polygon_integral import moment_yy
+    >>> import mt.geo2d.polygon as mp
     >>> poly = mp.Polygon([[3,3],[2,2],[3,1]])
     >>> round(moment_yy(poly), 3)
     -4.167
@@ -216,8 +216,8 @@ def to_moments2d(poly):
 
     Examples
     --------
-    >>> from mt.geo.polygon_integral import to_moments2d
-    >>> import mt.geo.polygon as mp
+    >>> from mt.geo2d.polygon_integral import to_moments2d
+    >>> import mt.geo2d.polygon as mp
     >>> poly = mp.Polygon([[3,3],[2,2],[3,1]])
     >>> m = to_moments2d(poly)
     >>> round(m.m0, 3)

@@ -31,7 +31,7 @@ class Ellipse(TwoD, GeometricObject):
     Examples
     --------
     >>> import numpy as np
-    >>> from mt.geo.ellipse import Aff2d, Ellipse, Lin2d
+    >>> from mt.geo2d import Aff2d, Ellipse, Lin2d
     >>> a = Aff2d(offset=np.array([2,3]), linear=Lin2d(scale=np.array([0.3,7]), shear=0.3, angle=0.3))
     >>> Ellipse(a)
     Ellipse(aff_tfm=Aff2d(offset=[2 3], linear=Lin2d(scale=[-0.3  7. ], shear=-0.30000000000000787, angle=-1.5702443840777238)))
@@ -42,7 +42,7 @@ class Ellipse(TwoD, GeometricObject):
 
     See Also
     --------
-    mt.geo.ellipsoid.Ellipsoid
+    mt.geond.ellipsoid.Ellipsoid
     '''
 
     def __init__(self, aff_tfm, make_normalised=True):
@@ -81,7 +81,7 @@ class Ellipse(TwoD, GeometricObject):
         '''Returns an equivalent ellipse where f1 and f2 are perpendicular (linearly independent).'''
         return Ellipse(self.aff_tfm, make_normalised=True)
 
-    @deprecated_func("0.3.8", suggested_func=["mt.geo.transformation.transform", "mt.geo.ellipse.transform_Aff2d_on_Ellipse"], removed_version="0.6.0", docstring_prefix="        ")
+    @deprecated_func("0.3.8", suggested_func=["mt.geo.transformation.transform", "mt.geo2d.ellipse.transform_Aff2d_on_Ellipse"], removed_version="0.6.0", docstring_prefix="        ")
     def transform(self, aff_tfm):
         '''Affine-transforms the ellipse. The resultant ellipse has affine transformation `aff_tfm*self.aff_tfm`.'''
         if not isinstance(aff_tfm, Aff2d):
@@ -90,7 +90,7 @@ class Ellipse(TwoD, GeometricObject):
 
     # ----- bounding rect -----
 
-    @deprecated_func("0.4.3", suggested_func=["mt.geo.bounding.upper_bound", "mt.geo.ellipse.upper_bound_Ellipse_to_Rect"], removed_version="0.6.0", docstring_prefix="        ")
+    @deprecated_func("0.4.3", suggested_func=["mt.geo.bounding.upper_bound", "mt.geo2d.ellipse.upper_bound_Ellipse_to_Rect"], removed_version="0.6.0", docstring_prefix="        ")
     def to_bounding_rect(self, rotated=False):
         '''Returns a bounding rectangle of the ellipse.
 
@@ -113,7 +113,7 @@ class Ellipse(TwoD, GeometricObject):
         return Rect(cx-mx, cy-my, cx+mx, cy+my)
 
     @staticmethod
-    @deprecated_func("0.4.3", suggested_func=["mt.geo.bounding.lower_bound", "mt.geo.ellipse.lower_bound_Rect_to_Ellipse"], removed_version="0.6.0", docstring_prefix="        ")
+    @deprecated_func("0.4.3", suggested_func=["mt.geo.bounding.lower_bound", "mt.geo2d.ellipse.lower_bound_Rect_to_Ellipse"], removed_version="0.6.0", docstring_prefix="        ")
     def from_bounding_rect(x):
         '''Returns an axis-aligned ellipse bounded by the given axis-aligned rectangle x.'''
         if not isinstance(x, Rect):

@@ -310,7 +310,7 @@ class Lin2d(TwoD, GeometricObject, LieTransformer, Lin2dBase):
 
     >>> import numpy as np
     >>> import math as m
-    >>> import mt.geo.linear2d as gl
+    >>> import mt.geo2d.linear as gl
     >>> a = gl.Lin2d()
     >>> a
     Lin2d(scale=[1. 1.], shear=0.0, angle=0.0)

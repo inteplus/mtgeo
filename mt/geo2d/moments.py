@@ -19,7 +19,7 @@ class Moments2d(TwoD, Moments):
     Examples
     --------
     >>> import numpy as np
-    >>> from mt.geo.moments import Moments2d
+    >>> from mt.geo2d.moments import Moments2d
     >>> gm.Moments2d(10, np.array([2,3]), np.array([[1,2],[3,4]]))
     Moments2d(m0=10.0, mean=[0.2 0.3], cov=[[0.06, 0.14], [0.24, 0.31000000000000005]])
     '''
