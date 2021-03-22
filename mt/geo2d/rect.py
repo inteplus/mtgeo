@@ -3,7 +3,7 @@
 from mt import np
 from mt.base.casting import *
 
-from ..geo_base import TwoD, register_approx, register_join_volume
+from ..geo import TwoD, register_approx, register_join_volume
 from ..geond import Hyperbox
 from .moments import Moments2d
 from .iou import iou_impl

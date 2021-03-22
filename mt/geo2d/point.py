@@ -6,7 +6,7 @@ For efficiency reasons, please try to bunch points into arrays or lists and use 
 
 import numpy as np
 import mt.base.casting as _bc
-from ..geo_base import TwoD
+from ..geo import TwoD
 from ..geond import Point, castable_ndarray_Point
 
 

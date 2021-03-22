@@ -1,8 +1,9 @@
 from mt import np
 import mt.base.casting as _bc
 
-from .dilated_isometry import Dliso
-from .affine import Aff2d, Lin2d
+from ..geond.dilated_isometry import Dliso
+from .linear import Lin2d
+from .affine import Aff2d
 
 
 __all__ = ['Sim2d']

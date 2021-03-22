@@ -2,7 +2,7 @@
 
 from mt import np
 import mt.base.casting as _bc
-from ..geo_base import register_join_volume
+from ..geo import register_join_volume
 from ..geond import castable_ndarray_PointList
 from .point_list import PointList2d
 from .rect import Rect
