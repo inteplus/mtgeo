@@ -1,9 +1,5 @@
-import numpy as _np
-import numpy.linalg as _nl
-import math as _m
-
+from mt import np
 import mt.base.casting as _bc
-from mt.base.deprecated import deprecated_func
 
 from .dilated_isometry import Dliso, Aff
 
@@ -38,7 +34,7 @@ class Iso(Dliso):
 
     # ----- methods -----
 
-    def __init__(self, offset=_np.zeros(2), unitary=_np.identity(2)):
+    def __init__(self, offset=np.zeros(2), unitary=np.identity(2)):
         self.offset = offset
         self.unitary = unitary
 
@@ -50,12 +46,12 @@ class Iso(Dliso):
     def multiply(self, other):
         if not isinstance(other, Iso):
             return super(Iso, self).__mul__(other)
-        return Iso(offset=self << other.offset, unitary=_np.dot(self.unitary, other.unitary))
+        return Iso(offset=self << other.offset, unitary=np.dot(self.unitary, other.unitary))
     multiply.__doc__ = Dliso.multiply.__doc__
 
     def invert(self):
-        invUnitary = _nl.inv(self.unitary) # slow, and assuming the unitary matrix is invertible
-        return Iso(offset=_np.dot(invUnitary, -self.offset), unitary=invUnitary)
+        invUnitary = np.linalg.inv(self.unitary) # slow, and assuming the unitary matrix is invertible
+        return Iso(offset=np.dot(invUnitary, -self.offset), unitary=invUnitary)
     invert.__doc__ = Dliso.invert.__doc__
 
 
