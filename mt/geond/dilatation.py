@@ -116,7 +116,7 @@ class Dlt(Aff):
         return "Dlt(offset={}, scale={})".format(self.offset, self.scale)
 
     def multiply(self, other):
-        if not isinstance(other, dlt):
+        if not isinstance(other, Dlt):
             return super(Dlt, self).multiply(other)
         return Dlt(self << other.offset, self.scale*other.scale)
     multiply.__doc__ = Aff.multiply.__doc__
