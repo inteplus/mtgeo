@@ -10,7 +10,7 @@ from .rect import Rect
 from .linear import Lin2d
 
 
-__all__ = ['Aff2d', 'transform_Aff2d_on_Moments2d', 'transform_Aff2d_on_PointList2d', 'transform_Aff2d_on_Polygon', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d', 'crop_rect', 'uncrop_rect', 'rect2rect']
+__all__ = ['Aff2d', 'transform_Aff2d_on_Moments2d', 'transform_Aff2d_on_PointList2d', 'transform_Aff2d_on_ndarray', 'transform_Aff2d_on_Polygon', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d', 'crop_rect', 'uncrop_rect', 'rect2rect']
 
 
 class Aff2d(TwoD, Aff):
@@ -53,7 +53,7 @@ class Aff2d(TwoD, Aff):
 
     def multiply(self, other):
         if not isinstance(other, Aff2d):
-            return super(Aff2d, self).__mul__(other)
+            return super(Aff2d, self).multiply(other)
         return Aff2d(
             offset=(self.linear << other.offset) + self.offset,
             linear=self.linear*other.linear)
