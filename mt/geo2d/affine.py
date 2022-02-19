@@ -10,7 +10,7 @@ from .rect import Rect
 from .linear import Lin2d
 
 
-__all__ = ['Aff2d', 'transform_Aff2d_on_Moments2d', 'transform_Aff2d_on_PointList2d', 'transform_Aff2d_on_ndarray', 'transform_Aff2d_on_Polygon', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d', 'crop_rect', 'uncrop_rect', 'rect2rect']
+__all__ = ['Aff2d', 'transform_Aff2d_on_Moments2d', 'transform_Aff2d_on_PointList2d', 'transform_Aff2d_on_ndarray', 'transform_Aff2d_on_Polygon', 'swapAxes2d', 'flipLR2d', 'flipUD2d', 'shearX2d', 'shearY2d', 'originate2d', 'rotate2d', 'translate2d', 'scale2d', 'crop2d', 'crop_rect', 'uncrop_rect', 'rect2rect', 'rect2rect_tf']
 
 
 class Aff2d(TwoD, Aff):
@@ -385,3 +385,68 @@ def rect2rect(src_rect: Rect, dst_rect: Rect, eps=1e-7) -> Aff2d:
     else:
         sy = dst_rect.h/src_rect.h
     return translate2d(dst_rect.cx, dst_rect.cy)*scale2d(sx, sy)/translate2d(src_rect.cx, src_rect.cy)
+
+
+def rect2rect_tf(src_rects, dst_rects):
+    '''A tensorflow version of :func:`rect2rect` where inputs and outputs are replaced by tensors.
+
+    ----------
+    src_rects : tf.Tensor
+        source rectangles of shape `[batch, 4]` where each batch item is `[min_x, min_y, max_x, max_y]`
+    dst_rects : tf.Tensor
+        destination rectangles of shape `[batch, 4]` where each batch item is
+        `[min_x, min_y, max_x, max_y]`
+
+    Returns
+    -------
+    tfm_array : tf.Tensor
+        the output transformations of shape `[batch, 3, 3]` where each item is a 3x3 affine
+        transformation matrix mapping source coordinates to destination coordinates
+    '''
+    from mt import tf
+
+    # batch_size = src_rects.shape[0]
+
+    # center points
+    src_pts = (src_rects[:,0:2]+src_rects[:,2:4])*.5
+    dst_pts = (dst_rects[:,0:2]+dst_rects[:,2:4])*.5
+
+    # lengths
+    src_lens = src_rects[:,2:4]-src_rects[:,0:2]
+    dst_lens = dst_rects[:,2:4]-dst_rects[:,0:2]
+
+    # scales
+    scales = tf.math.divide_no_nan(dst_lens, src_lens)
+
+    # translations: src_pts*scales + transalations = dst_pts
+    translations = dst_pts - src_pts*scales
+
+    # parts of the returning array of 3x3 matrices
+    sx = tf.tensordot(scales[:,0], tf.constant([
+        [1., 0., 0.],
+        [0., 0., 0.],
+        [0., 0., 0.],
+    ]), axes=0)
+    sy = tf.tensordot(scales[:,1], tf.constant([
+        [0., 0., 0.],
+        [0., 1., 0.],
+        [0., 0., 0.],
+    ]), axes=0)
+    tx = tf.tensordot(translations[:,0], tf.constant([
+        [0., 0., 1.],
+        [0., 0., 0.],
+        [0., 0., 0.],
+    ]), axes=0)
+    ty = tf.tensordot(translations[:,1], tf.constant([
+        [0., 0., 0.],
+        [0., 0., 1.],
+        [0., 0., 0.],
+    ]), axes=0)
+    ones = tf.expand_dims(tf.constant([
+        [0., 0., 0.],
+        [0., 0., 0.],
+        [0., 0., 1.],
+    ]), axis=0)
+
+    # returning
+    return sx+sy+tx+ty+ones

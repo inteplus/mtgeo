@@ -168,6 +168,12 @@ class Rect(TwoD, Hyperbox):
         '''
         return Rect(json_obj[0], json_obj[1], json_obj[2], json_obj[3])
 
+
+    def to_tensor(self):
+        '''Returns a tensor [min_x, min_y, max_x, max_y] representing the rect .'''
+        from mt import tf
+        return tf.convert_to_tensor(self.to_json())
+
     
     # ----- methods -----
 
