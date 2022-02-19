@@ -27,8 +27,8 @@ setup(
     install_requires=[
         'numpy',
         'mtbase>=1.6',
+        'mttf', # some functions use tensorflow and tensorflow-graphics tensors
         #'shapely', # aarch64 does not have libgeos-dev (deb) or geos-devel (yum) prebuilt yet so we can't run shapely on tx2 for now
-        #'mttf', # some functions use tensorflow and tensorflow-graphics tensors
     ],
     url='https://github.com/inteplus/mtgeo',
     project_urls={
