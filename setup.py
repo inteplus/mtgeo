@@ -8,7 +8,6 @@ extensions = [
     Extension(
         name="mt.geo2d.linear",
         sources=["mt/geo2d/linear.pyx"],
-        language_level=3,
     )
 ]
 
@@ -18,7 +17,7 @@ setup(
     description="The most fundamental geometric modules in Python for Minh-Tri Pham",
     author=["Minh-Tri Pham"],
     packages=find_packages() + find_namespace_packages(include=['mt.*']),
-    ext_modules=cythonize(extensions),
+    ext_modules=cythonize(extensions, language_level=3),
     package_data={
         'mt.geo': ['*.pyx'],
     },
