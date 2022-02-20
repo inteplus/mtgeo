@@ -9,7 +9,132 @@ from .point_list import PointList2d
 from .polygon import Polygon
 
 
-__all__ = ['Lin2d', 'transform_Lin2d_on_Moments2d', 'transform_Lin2d_on_PointList2d', 'transform_Lin2d_on_Polygon']
+__all__ = ['Lin2d', 'mat2sshr', 'sshr2mat', 'make_affine', 'transform_Lin2d_on_Moments2d', 'transform_Lin2d_on_PointList2d', 'transform_Lin2d_on_Polygon']
+
+
+# ----- sshr representation of a 2x2 matrix -----
+
+
+# Redundant vector (sx,sy,h,r,cr,sr).
+# Matrix 2x2 parametrised as [a0,a1,a2,a3].
+
+
+def sshr2mat(tensor):
+    '''Converts an array of sshr tuples into an array of 2x2 transformation matrices.
+
+    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation.
+
+    Formula::
+
+        cr = cos(r)
+        sr = sin(r)
+        a0 = sx*(h*sr + cr)
+        a1 = sx*(h*cr - sr)
+        a2 = sy*sr
+        a3 = sy*cr
+        m  = [[a0, a1], [a2, a3]]
+
+    Parameters
+    ----------
+    tensor : tensorflow.Tensor
+        a tensor of shape (batch, 4) containing sshr tuples
+
+    Returns
+    -------
+    tensorflow.Tensor
+        a tensor of shape (batch, 2, 2) containing 2d row-major transformation matrices
+
+    References
+    ----------
+    .. [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not really, cheeky MT is trying to advertise his paper!)
+    '''
+
+    from mt import tf
+
+    sx = tensor[:,0]
+    sy = tensor[:,1]
+    h = tensor[:,2]
+    r = tensor[:,3]
+
+    cr = tf.math.cos(r)
+    sr = tf.math.sin(r)
+    a0 = sx*(h*sr + cr)
+    a1 = sx*(h*cr - sr)
+    a2 = sy*sr
+    a3 = sy*cr
+
+    m0 = tf.stack([a0, a1], axis=1)
+    m1 = tf.stack([a2, a3], axis=1)
+    m = tf.stack([m0, m1], axis=1)
+
+    return m
+
+
+def mat2sshr(tensor):
+    '''Converts an array of 2x2 transformation matrices into an array of sshr tuples.
+
+    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation.
+
+    Formula::
+
+        [[a0, a1], [a2, a3]] = m
+        sy = hypot(a2,a3)
+        r = atan2(a2,a3)
+        sx = det(A)/sy
+        h = (a0*a2 + a1*a3)/(sx*r)
+
+
+    Parameters
+    ----------
+    tensor : tensorflow.Tensor
+        a tensor of shape (batch, 2, 2) containing 2d row-major transformation matrices
+
+    Returns
+    -------
+    tensorflow.Tensor
+        a tensor of shape (batch, 4) containing sshr tuples
+
+    References
+    ----------
+    .. [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not really, cheeky MT is trying to advertise his paper!)
+    '''
+
+    from mt import tf
+
+    a0 = tensor[:,0,0]
+    a1 = tensor[:,0,1]
+    a2 = tensor[:,1,0]
+    a3 = tensor[:,1,1]
+
+    sy = tf.experimental.numpy.hypot(a2, a3)
+    r = tf.math.atan2(a2, a3)
+    sx = tf.math.divide_no_nan(a0*a3 - a1*a2, sy)
+    h = tf.math.divide_no_nan(a0*a2 + a1*a3, sx*r)
+
+    return tf.stack([sx, sy, h, r], axis=1)
+
+
+def make_affine(mat2d_tensor, ofs2d_tensor):
+    '''Makes an array of 2d affine transformation matrices (in 3x3 with `[0,0,1]` as the 3rd row).
+
+    Parameters
+    ----------
+    mat2d_tensor : tensorflow.Tensor
+        a tensor of shape (batch, 2, 2) containing 2d row-major transformation matrices
+    ofs2d_tensor : tensorflow.Tensor
+        a tensor of shape (batch, 2) containing 2d translations
+
+    Returns
+    -------
+    tensorflow.Tensor
+        a tensor of shape (batch, 3, 3) containing 2d affine transformation matrices with the
+        linear and translation parts defined in the input tensors
+    '''
+
+    from mt import tf
+    tensor = tf.concat([mat2d_tensor, tf.expand_dims(ofs2d_tensor, axis=-1)], axis=2)
+    tensor = tf.concat([tensor, tf.broadcast_to(tf.constant([0, 0, 1], dtype=tensor.dtype), [mat2d_tensor.shape[0], 1, 3])], axis=1)
+    return tensor
 
 
 # ----- transform functions -----
