@@ -6,8 +6,8 @@ from mt.geo.version import version
 
 extensions = [
     Extension(
-        name="mt.geo2d.linear",
-        sources=["mt/geo2d/linear.pyx"],
+        name="mt.geo2d.linear_impl",
+        sources=["mt/geo2d/linear_impl.pyx"],
     )
 ]
 
@@ -25,7 +25,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'numpy',
-        'mtbase>=1.6',
+        'mtbase>=2.10',
         'mttf', # some functions use tensorflow and tensorflow-graphics tensors
         #'shapely', # aarch64 does not have libgeos-dev (deb) or geos-devel (yum) prebuilt yet so we can't run shapely on tx2 for now
     ],
