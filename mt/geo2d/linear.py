@@ -132,8 +132,11 @@ def make_affine(mat2d_tensor, ofs2d_tensor):
     '''
 
     from mt import tf
-    tensor = tf.concat([mat2d_tensor, tf.expand_dims(ofs2d_tensor, axis=-1)], axis=2)
-    tensor = tf.concat([tensor, tf.broadcast_to(tf.constant([0, 0, 1], dtype=tensor.dtype), [mat2d_tensor.shape[0], 1, 3])], axis=1)
+    zero_tensor = tf.zeros_like(mat2d_tensor[:,:1,:])
+    col12 = tf.concat([mat2d_tensor, zero_tensor], axis=1)
+    one_tensor = tf.ones_like(ofs2d_tensor[:,:1])
+    col3 = tf.concat([ofs2d_tensor, one_tensor], axis=1)
+    tensor = tf.concat([col12, tf.expand_dims(col3, axis=-1)], axis=2)
     return tensor
 
 
