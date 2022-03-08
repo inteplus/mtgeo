@@ -110,12 +110,12 @@ class RRect(TwoD, GeometricObject):
     @property
     def area(self):
         '''Absolute area.'''
-        return abs(self.w*self.h*math.sin(self.ofs2d.angle))
+        return abs(self.lin2d.det)
 
     @property
     def circumference(self):
         '''Circumference.'''
-        return (abs(self.w)+abs(self.h))*2
+        return (self.w+self.h)*2
 
     
     # ----- moments -----
