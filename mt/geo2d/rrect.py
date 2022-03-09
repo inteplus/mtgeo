@@ -5,9 +5,9 @@ import math
 from mt import np
 from mt.base.casting import *
 
-from ..geo import GeometricObject, TwoD, register_approx
+from ..geo import GeometricObject, TwoD, register_approx, transform
 from .moments import Moments2d
-from .linear import Lin2d
+from .affine import originate2d, rotate2d, scale2d, translate2d
 from .rect import Rect
 
 
@@ -17,24 +17,30 @@ __all__ = ['RRect', 'cast_RRect_to_Moments2d', 'approx_Moments2d_to_RRect']
 class RRect(TwoD, GeometricObject):
     '''A 2D rotated rectangle.
 
-    An RRect is defined as the 2D affine transform of the unit square '[0,0,1,1]' where the
-    transformation in the sshr representation has no shearing.  Note we do not care if the
-    rectangle is open or partially closed or closed. Scaling along x-axis and y-axis allow
-    flipping vertically and horizontally. Scaling with 0 coefficient is undefined.
-
+    An RRect represents a 2D axis-aligned rectangle rotated by an angle. It is parametrised by
+    center point, width, height and angle. Internally, an affine transformation is computed that
+    transforms the unit square '[0,0,1,1]' to the rotated rectangle. Width cannot be zero and
+    height must be positive. Angle is in radian. Note that we do not care if the rectangle is open
+    or partially closed or closed.
 
     Parameters
     ----------
-    lin2d : Lin2d
-        the linear part of the affine transformation
-    ofs2d : numpy.ndarray
-        the transalation part of the affine transformation, or the position of the transform of
-        point (0,0)
-    force_valid : bool
-        whether or not to reset the shearing to zero
+    width : float
+        the width
+    height : float
+        the height
+    cx : float
+        the x-coordinate of the rectangle's centroid
+    cy : float
+        the y-coordinate of the rectangle's centroid
+    angle : float
+        the angle (in radian) at which the rectangle is rotated, the rotation direction is in
+        the standard convention, from x-axis to y-axis
 
     Attributes
     ----------
+    center_pt : point
+        the rectangle's centroid
     tl : point
         the transform of point (0,0)
     br : point
@@ -43,16 +49,18 @@ class RRect(TwoD, GeometricObject):
         the transform of point (0,1)
     bl : point
         the transform of point (1,0)
-    w : float
-        the width, always non-negative
-    h : float
-        the height, always non-negative
-    center_pt : point
-        center point
+    tfm : mt.geo2d.Aff2d
+        the 2D affine transformation turning unit square [0,0,1,1] into the given rectangle
+    corners : numpy.ndarray
+        the four corners [tl,tr,bl,br] above
     area : float
         the area
     circumference : float
         the circumference
+    sign : {-1,0,1,nan}
+        the sign of the rectangle
+    signed_area : float
+        the signed area
 
     Notes
     -----
@@ -82,59 +90,36 @@ class RRect(TwoD, GeometricObject):
     @property
     def tl(self):
         '''The transform of point (0,0).'''
-        return self.ofs2d
+        return self.corners[0]
 
     @property
     def br(self):
         '''The transform of point (1,1).'''
-        if not hasattr(self, '_br'):
-            self._br = self.transform(np.ones(2))
-        return self._br
+        return self.corners[3]
 
     @property
     def tr(self):
         '''The transform of point (1,0).'''
-        if not hasattr(self, '_tr'):
-            self._tr = self.transform(np.array([1,0]))
-        return self._tr
+        return self.corners[1]
 
     @property
     def bl(self):
         '''The transform of point (0,1).'''
-        if not hasattr(self, '_bl'):
-            self._bl = self.transform(np.array([0,1]))
-        return self._bl
+        return self.corners[2]
 
     @property
     def sign(self):
-        return np.sign(self.lin2d.det)
-
-    @property
-    def w(self):
-        '''width'''
-        return abs(self.lin2d.sx)
-
-    @property
-    def h(self):
-        '''height'''
-        return abs(self.lin2d.sh)
-
-    @property
-    def center_pt(self):
-        '''The transform of point (0.5, 0.5).'''
-        if not hasattr(self, '_center_pt'):
-            self._center_pt = self.transform(np.array([0.5,0.5]))
-        return self._center_pt
+        return np.sign(self.width*self.height)
 
     @property
     def area(self):
         '''Absolute area.'''
-        return abs(self.lin2d.det)
+        return abs(self.width*self.height)
 
     @property
     def circumference(self):
         '''Circumference.'''
-        return (self.w+self.h)*2
+        return (self.width+self.height)*2
 
     
     # ----- moments -----
@@ -142,15 +127,13 @@ class RRect(TwoD, GeometricObject):
 
     @property
     def signed_area(self):
-        '''Returns the signed area of the rectangle.'''
-        return self.lin2d.sx*self.lin2d.sy
+        '''Signed area.'''
+        return self.width*self.height
 
     @property
     def moment1(self):
         '''First-order moment.'''
-        if not hasattr(self, '_moment1'):
-            self._moment1 = self.sign*self.center_pt
-        return self._moment1
+        return self.sign*self.center_pt
 
     @property
     def moment_x(self):
@@ -172,7 +155,7 @@ class RRect(TwoD, GeometricObject):
             r = Rect(-rx, -ry, rx, ry)
             Muu = r.moment_xx
             Muv = r.moment_xy
-            Mvv = r.moment_xy
+            Mvv = r.moment_yy
 
             # Rotate the central moments (a.k.a. moments of inertia):
             #   Original axes: x, y
@@ -185,8 +168,8 @@ class RRect(TwoD, GeometricObject):
             #     Mxy = -c*s*Muu + (c*c-s*s)*Muv + c*s*Mvv
             #     Myy =  s*s*Muu +    -2*c*s*Muv + c*c*Mvv
             # Reference: `link <https://calcresource.com/moment-of-inertia-rotation.html>`_
-            c = self.lin2d.cos_angle
-            s = self.lin2d.sin_angle
+            c = math.cos(self.angle)
+            s = math.sin(self.angle)
             cc = c*c
             cs = c*s
             ss = s*s
@@ -235,8 +218,8 @@ class RRect(TwoD, GeometricObject):
 
 
     def to_json(self):
-        '''Returns a list [scale_x, scale_y, angle, ofs_x, ofs_y].'''
-        return [self.lin2d.sx, self.lin2d.sy, self.lin2d.angle, self.ofs2d[0], self.ofs2d[1]]
+        '''Returns a list [width, height, cx, cy, angle].'''
+        return [self.width, self.height, self.cx, self.cy, self.angle]
 
 
     @staticmethod
@@ -246,18 +229,18 @@ class RRect(TwoD, GeometricObject):
         Parameters
         ----------
         json_obj : list
-            list [scale_x, scale_y, angle, ofs_x, ofs_y]
+            list [width, height, cx, cy, angle]
 
         Returns
         -------
         RRect
             output rotated rectangle
         '''
-        return RRect(Lin2d(scale=np.array([json_obj[0], json_obj[1]]), angle=json_obj[2]), ofs2d=np.array([json_obj[3], json_obj[4]]))
+        return RRect(*json_obj)
 
 
     def to_tensor(self):
-        '''Returns a tensor [scale_x, scale_y, angle, ofs_x, ofs_y] representing the RRect .'''
+        '''Returns a tensor [width, height, cx, cy, angle] representing the RRect .'''
         from mt import tf
         return tf.convert_to_tensor(self.to_json())
 
@@ -265,28 +248,33 @@ class RRect(TwoD, GeometricObject):
     # ----- methods -----
 
     
-    def __init__(self, lin2d: Lin2d = Lin2d(), ofs2d: np.ndarray = np.zeros(2), force_valid: bool = False):
-        if force_valid:
-            lin2d = Lin2d(scale=lin2d.scale, angle=lin2d.angle)
-        self.lin2d = lin2d
-        self.ofs2d = ofs2d
+    def __init__(self, width: float, height: float, cx: float = 0., cy: float = 0., angle: float = 0.):
+        self.width = width
+        self.height = height
+        self.center_pt = np.array([cx, cy])
+        self.angle = angle
+
+        # compute the transformation
+        tfm = translate2d(-0.5, -0.5) # shift the centroid of [0,0,1,1] to the origin
+        tfm = scale2d(scale_x=width, scale_y=height)*tfm # scale it along width and height
+        tfm = rotate2d(angle, 0., 0.) # rotate it
+        tfm = translate2d(cx, cy)*tfm # now shift the centroid of the rotated rectangle to the target location
+        self.tfm = tfm
+
+        # transform the corners
+        corners = np.array([[0,0],[1,0],[0,1],[1,1]]) # [tl, tr, bl, br]
+        self.corners = transform(self.tfm, corners)
+
 
     def __repr__(self):
-        return "RRect(lin2d={}, ofs2d={})".format(self.lin2d, self.ofs2d)
-
-    def transform(self, pt):
-        return np.dot(pt, self.lin2d.matrix) + self.ofs2d
+        return "RRect(width=%r, height=%r, cx=%r, cy=%r, angle=%r)" % (self.width, self.height, self.center_pt[0], self.center_pt[1], self.angle)
 
 
 # ----- casting -----
         
 
 def cast_RRect_to_Moments2d(obj):
-    m0 = obj.signed_area
-    m1 = [obj.moment_x, obj.moment_y]
-    mxy = obj.moment_xy
-    m2 = [[obj.moment_xx, mxy], [mxy, obj.moment_yy]]
-    return Moments2d(m0, m1, m2)
+    return Moments2d(obj.signed_area, obj.moment1, obj.moment2)
 register_cast(RRect, Moments2d, cast_RRect_to_Moments2d)
 
 

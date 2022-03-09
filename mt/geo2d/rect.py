@@ -228,11 +228,7 @@ register_cast(Hyperbox, Rect, cast_Hyperbox_to_Rect)
 
 
 def cast_Rect_to_Moments2d(obj):
-    m0 = obj.signed_area
-    m1 = [obj.moment_x, obj.moment_y]
-    mxy = obj.moment_xy
-    m2 = [[obj.moment_xx, mxy], [mxy, obj.moment_yy]]
-    return Moments2d(m0, m1, m2)
+    return Moments2d(obj.signed_area, obj.moment1, obj.moment2)
 register_cast(Rect, Moments2d, cast_Rect_to_Moments2d)
 
 

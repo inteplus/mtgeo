@@ -281,7 +281,7 @@ def originate2d(tfm, x, y):
 
 def rotate2d(theta, x, y):
     '''Returns the rotation about a reference point (x,y). Theta is in radian.'''
-    return originate2d(Aff2d(angle=theta), x, y)
+    return originate2d(Aff2d(linear=Lin2d(angle=theta)), x, y)
 
 
 def translate2d(x, y):
