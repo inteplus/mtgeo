@@ -119,29 +119,46 @@ class Rect(TwoD, Hyperbox):
         return self.w*self.h
 
     @property
+    def moment1(self):
+        '''First-order moment.'''
+        if not hasattr(self, '_moment1'):
+            self._moment1 = self.signed_area*self.center_pt
+        return self._moment1
+
+    @property
     def moment_x(self):
         '''Returns the integral of x over the rectangle's interior.'''
-        return self.signed_area*self.cx
+        return self.moment1[0]
 
     @property
     def moment_y(self):
         '''Returns the integral of y over the rectangle's interior.'''
-        return self.signed_area*self.cy
+        return self.moment1[1]
+
+    @property
+    def moment2(self):
+        '''Second-order moment.'''
+        if not hasattr(self, '_moment2'):
+            moment_xx = self.signed_area*(self.min_x*self.min_x+self.min_x*self.max_x+self.max_x*self.max_x)/3
+            moment_xy = self.moment_x*self.cy # self.sign*self.cx*self.cy
+            moment_yy = self.signed_area*(self.min_y*self.min_y+self.min_y*self.max_y+self.max_y*self.max_y)/3
+            self._moment2 = np.array([[moment_xx, moment_xy], [moment_xy, moment_yy]])
+        return self._moment2
 
     @property
     def moment_xy(self):
         '''Returns the integral of x*y over the rectangle's interior.'''
-        return self.moment_x*self.cy
+        return self.moment2[0][1]
 
     @property
     def moment_xx(self):
         '''Returns the integral of x*x over the rectangle's interior.'''
-        return self.signed_area*(self.min_x*self.min_x+self.min_x*self.max_x+self.max_x*self.max_x)/3
+        return self.moment2[0][0]
 
     @property
     def moment_yy(self):
         '''Returns the integral of y*y over the rectangle's interior.'''
-        return self.signed_area*(self.min_y*self.min_y+self.min_y*self.max_y+self.max_y*self.max_y)/3
+        return self.moment2[1][1]
 
 
     # ----- serialization -----

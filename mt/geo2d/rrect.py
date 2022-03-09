@@ -8,6 +8,7 @@ from mt.base.casting import *
 from ..geo import GeometricObject, TwoD, register_approx
 from .moments import Moments2d
 from .linear import Lin2d
+from .rect import Rect
 
 
 __all__ = ['RRect', 'cast_RRect_to_Moments2d', 'approx_Moments2d_to_RRect']
@@ -52,6 +53,12 @@ class RRect(TwoD, GeometricObject):
         the area
     circumference : float
         the circumference
+
+    Notes
+    -----
+
+    For more details, see `this page <https://structx.com/Shape_Formulas_033.html>`_. But note that
+    we primarily use CV convention for images, top left is (0,0).
     '''
 
     
@@ -80,17 +87,27 @@ class RRect(TwoD, GeometricObject):
     @property
     def br(self):
         '''The transform of point (1,1).'''
-        return self.transform(np.ones(2))
+        if not hasattr(self, '_br'):
+            self._br = self.transform(np.ones(2))
+        return self._br
 
     @property
     def tr(self):
         '''The transform of point (1,0).'''
-        return self.transform(np.array([1,0]))
+        if not hasattr(self, '_tr'):
+            self._tr = self.transform(np.array([1,0]))
+        return self._tr
 
     @property
     def bl(self):
         '''The transform of point (0,1).'''
-        return self.transform(np.array([0,1]))
+        if not hasattr(self, '_bl'):
+            self._bl = self.transform(np.array([0,1]))
+        return self._bl
+
+    @property
+    def sign(self):
+        return np.sign(self.lin2d.det)
 
     @property
     def w(self):
@@ -105,7 +122,9 @@ class RRect(TwoD, GeometricObject):
     @property
     def center_pt(self):
         '''The transform of point (0.5, 0.5).'''
-        return self.transform(np.array([0.5,0.5]))
+        if not hasattr(self, '_center_pt'):
+            self._center_pt = self.transform(np.array([0.5,0.5]))
+        return self._center_pt
 
     @property
     def area(self):
@@ -127,34 +146,89 @@ class RRect(TwoD, GeometricObject):
         return self.lin2d.sx*self.lin2d.sy
 
     @property
+    def moment1(self):
+        '''First-order moment.'''
+        if not hasattr(self, '_moment1'):
+            self._moment1 = self.sign*self.center_pt
+        return self._moment1
+
+    @property
     def moment_x(self):
         '''Returns the integral of x over the rectangle's interior.'''
-        raise NotImplementedError("MT: to do one day")
-        #return self.signed_area*self.cx
+        return self.moment1[0]
 
     @property
     def moment_y(self):
         '''Returns the integral of y over the rectangle's interior.'''
-        raise NotImplementedError("MT: to do one day")
-        #return self.signed_area*self.cy
+        return self.moment1[1]
+
+    @property
+    def moment2(self):
+        '''Second-order moment.'''
+        if not hasattr(self, '_moment2'):
+            # 2nd-order central moments if the rectangle were not rotated
+            rx = self.width/2
+            ry = self.height/2
+            r = Rect(-rx, -ry, rx, ry)
+            Muu = r.moment_xx
+            Muv = r.moment_xy
+            Mvv = r.moment_xy
+
+            # Rotate the central moments (a.k.a. moments of inertia):
+            #   Original axes: x, y
+            #   Rotated axes:  u, v
+            #   Dst-to-src change-of-coordinates formulae:
+            #     x =  c*u+s*v
+            #     y = -s*u+c*v
+            #   where c = cos(theta), s = sin(theta). Therefore,
+            #     Mxx =  c*c*Muu +     2*c*s*Muv + s*s*Mvv
+            #     Mxy = -c*s*Muu + (c*c-s*s)*Muv + c*s*Mvv
+            #     Myy =  s*s*Muu +    -2*c*s*Muv + c*c*Mvv
+            # Reference: `link <https://calcresource.com/moment-of-inertia-rotation.html>`_
+            c = self.lin2d.cos_angle
+            s = self.lin2d.sin_angle
+            cc = c*c
+            cs = c*s
+            ss = s*s
+            Mxx =  cc*Muu +    2*cs*Muv + ss*Mvv
+            Mxy = -cs*Muu + (cc-ss)*Muv + cs*Mvv
+            Myy =  ss*Muu -    2*cs*Muv + cc*Mvv
+
+            # Shift the origin to where it should be:
+            #   Axes from the rectangle center point: x, y
+            #   Image axes: p, q
+            #   Dst-to-src chang-of-coordinates formulae:
+            #     p = x+cx
+            #     q = y+cy
+            #   Formulae:
+            #     Mpp = Mxx + 2*cx*Mx       + cx*cx*M1
+            #     Mpq = Mxy + cx*My + cy*Mx + cx*cy*M1
+            #     Mqq = Myy + 2*cy*My       + cy*cy*M1
+            #   where M1 is the signed area. But because the rectangle is symmetric, Mx = My = 0.
+            cx = self.center_pt[0]
+            cy = self.center_pt[1]
+            M1 = self.signed_area
+            Mpp = Mxx + cx*cx*M1
+            Mpq = Mxy + cx*cy*M1
+            Mqq = Myy + cy*cy*M1
+
+            self._moment2 = np.array([[Mpp, Mpq], [Mpq, Mqq]])
+        return self._moment2
 
     @property
     def moment_xy(self):
         '''Returns the integral of x*y over the rectangle's interior.'''
-        raise NotImplementedError("MT: to do one day")
-        #return self.moment_x*self.cy
+        return self.moment2[0][1]
 
     @property
     def moment_xx(self):
         '''Returns the integral of x*x over the rectangle's interior.'''
-        raise NotImplementedError("MT: to do one day")
-        #return self.signed_area*(self.min_x*self.min_x+self.min_x*self.max_x+self.max_x*self.max_x)/3
+        return self.moment2[0][0]
 
     @property
     def moment_yy(self):
         '''Returns the integral of y*y over the rectangle's interior.'''
-        raise NotImplementedError("MT: to do one day")
-        #return self.signed_area*(self.min_y*self.min_y+self.min_y*self.max_y+self.max_y*self.max_y)/3
+        return self.moment2[1][1]
 
 
     # ----- serialization -----
