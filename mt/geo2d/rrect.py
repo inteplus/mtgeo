@@ -10,6 +10,7 @@ from ..geo import GeometricObject, TwoD, register_approx, transform, register_jo
 from .moments import Moments2d
 from .affine import originate2d, rotate2d, scale2d, translate2d
 from .rect import Rect
+from .polygon import Polygon
 from .shapely import HasShapely, join_volume_shapely
 
 
@@ -350,4 +351,6 @@ register_approx(Moments2d, RRect, approx_Moments2d_to_RRect)
 
 register_join_volume(Rect, RRect, join_volume_shapely)
 register_join_volume(RRect, Rect, join_volume_shapely)
+register_join_volume(Polygon, RRect, join_volume_shapely)
+register_join_volume(RRect, Polygon, join_volume_shapely)
 register_join_volume(RRect, RRect, join_volume_shapely)

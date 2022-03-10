@@ -7,7 +7,6 @@ from ..geond import castable_ndarray_PointList
 from .point_list import PointList2d
 from .shapely import HasShapely, join_volume_shapely
 from .rect import Rect
-from .rrect import RRect
 
 
 __all__ = ['Polygon']
@@ -52,6 +51,4 @@ _bc.register_cast(PointList2d, Polygon, lambda x: Polygon(x.points, check=False)
 
 register_join_volume(Rect, Polygon, join_volume_shapely)
 register_join_volume(Polygon, Rect, join_volume_shapely)
-register_join_volume(RRect, Polygon, join_volume_shapely)
-register_join_volume(Polygon, RRect, join_volume_shapely)
 register_join_volume(Polygon, Polygon, join_volume_shapely)

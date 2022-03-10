@@ -109,7 +109,7 @@ class Rect(HasShapely, TwoD, Hyperbox):
         '''Center point.'''
         return np.array([self.cx, self.cy])
 
-    
+
     # ----- moments -----
 
 
@@ -191,10 +191,10 @@ class Rect(HasShapely, TwoD, Hyperbox):
         from mt import tf
         return tf.convert_to_tensor(self.to_json())
 
-    
+
     # ----- methods -----
 
-    
+
     def __init__(self, min_x, min_y, max_x, max_y, force_valid=False):
         super(Rect, self).__init__(np.array([min_x, min_y]), np.array([max_x, max_y]), force_valid = force_valid)
 
@@ -208,14 +208,14 @@ class Rect(HasShapely, TwoD, Hyperbox):
     def iou(self, other, epsilon=1E-7):
         inter, _, _, union = join_volume(self, other)
         return inter / (union + epsilon)
-        
+
     def move(self, offset):
         '''Moves the Rect by a given offset vector.'''
         return Rect(self.min_x + offset[0], self.min_y + offset[1], self.max_x + offset[0], self.max_y + offset[1])
 
 
 # ----- casting -----
-        
+
 
 register_cast(Rect, Hyperbox, lambda x: Hyperbox(x.dlt_tfm))
 register_castable(Hyperbox, Rect, lambda x: x.dim==2)
