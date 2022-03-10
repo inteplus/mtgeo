@@ -3,10 +3,9 @@
 from mt import np
 from mt.base.casting import *
 
-from ..geo import TwoD, register_approx, register_join_volume
+from ..geo import TwoD, register_approx, register_join_volume, join_volume
 from ..geond import Hyperbox
 from .moments import Moments2d
-from .iou import iou_impl
 from .shapely import HasShapely
 
 
@@ -207,7 +206,8 @@ class Rect(HasShapely, TwoD, Hyperbox):
         return Rect(res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1])
 
     def iou(self, other, epsilon=1E-7):
-        return iou_impl(self.intersect(other).area, self.area, other.area, eps=epsilon)
+        inter, _, _, union = join_volume(self, other)
+        return inter / (union + epsilon)
         
     def move(self, offset):
         '''Moves the Rect by a given offset vector.'''
