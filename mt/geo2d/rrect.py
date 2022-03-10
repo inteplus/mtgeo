@@ -84,7 +84,7 @@ class RRect(TwoD, GeometricObject):
         #return self._shapely
 
 
-    # ----- derived properties -----\
+    # ----- derived properties -----
 
     
     @property
@@ -120,6 +120,43 @@ class RRect(TwoD, GeometricObject):
     def circumference(self):
         '''Circumference.'''
         return (self.width+self.height)*2
+
+
+    # ---- interior squares ----
+
+
+    def left_square(self): -> RRect
+        '''The interior square attaching to the left edge.'''
+
+        if self.width < self.height:
+            raise ValueError("The left square does not exist because width is less than height.")
+
+        tl = self.tl
+        bl = self.bl
+        br = self.br
+
+        v = br - bl
+        br2 = bl + v*abs(self.height/self.width)
+        cpt = (bl+br2)/2 # new center point
+
+        return RRect(self.height, self.height, cx=cpt[0], cy=cpt[1], angle=self.angle)
+
+
+    def right_square(self): -> RRect
+        '''The interior square attaching to the right edge.'''
+
+        if self.width < self.height:
+            raise ValueError("The right square does not exist because width is less than height.")
+
+        tr = self.tr
+        br = self.br
+        bl = self.bl
+
+        v = bl - br
+        bl2 = br + v*abs(self.height/self.width)
+        cpt = (bl2+br)/2 # new center point
+
+        return RRect(self.height, self.height, cx=cpt[0], cy=cpt[1], angle=self.angle)
 
     
     # ----- moments -----
