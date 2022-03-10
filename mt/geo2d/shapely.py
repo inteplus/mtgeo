@@ -9,7 +9,8 @@ class HasShapely(object):
 
     @property
     def shapely(self):
-        '''Shapely representation for fast intersection operations.'''
+        '''Shapely representation for fast intersection operations. Noe that shapely treats
+        signed and unsigned regions equally.'''
         raise NotImplementedError("Implement me.")
 
 
