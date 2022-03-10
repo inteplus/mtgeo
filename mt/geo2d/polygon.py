@@ -5,13 +5,15 @@ import mt.base.casting as _bc
 from ..geo import register_join_volume
 from ..geond import castable_ndarray_PointList
 from .point_list import PointList2d
+from .shapely import HasShapely, join_volume_shapely
 from .rect import Rect
+from .rrect import RRect
 
 
 __all__ = ['Polygon']
 
 
-class Polygon(PointList2d):
+class Polygon(HasShapely, PointList2d):
     '''A 2D polygon, represented as a point list of vertices in either clockwise or counter-clockwise order.
 
     Parameters
@@ -48,31 +50,8 @@ _bc.register_cast(PointList2d, Polygon, lambda x: Polygon(x.points, check=False)
 # ----- joining volumes -----
 
 
-def join_volume_Polygon_Rect(obj1, obj2):
-    '''Joins the areas of two objects of types Polygons or Rect.
-
-    Parameters
-    ----------
-    obj1 : Rect or Polygon
-        the first 2D geometry object
-    obj2 : Rect or Polygon
-        the second 2D geometry object
-
-    Returns
-    -------
-    intersection_area : float
-        the area of the intersection of the two objects' interior regions
-    obj1_only_area : float
-        the area of the interior of obj1 that does not belong to obj2
-    obj2_only_area : float
-        the area of the interior of obj2 that does not belong to obj1
-    union_area : float
-        the area of the union of the two objects' interior regions
-    '''
-    inter_area = obj1.shapely.intersection(obj2.shapely).area
-    obj1_area = obj1.shapely.area
-    obj2_area = obj2.shapely.area
-    return (inter_area, obj1_area - inter_area, obj2_area - inter_area, obj1_area + obj2_area - inter_area)
-register_join_volume(Rect, Polygon, join_volume_Polygon_Rect)
-register_join_volume(Polygon, Rect, join_volume_Polygon_Rect)
-register_join_volume(Polygon, Polygon, join_volume_Polygon_Rect)
+register_join_volume(Rect, Polygon, join_volume_shapely)
+register_join_volume(Polygon, Rect, join_volume_shapely)
+register_join_volume(RRect, Polygon, join_volume_shapely)
+register_join_volume(Polygon, RRect, join_volume_shapely)
+register_join_volume(Polygon, Polygon, join_volume_shapely)

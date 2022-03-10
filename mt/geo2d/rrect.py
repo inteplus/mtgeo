@@ -5,16 +5,17 @@ import math
 from mt import np
 from mt.base.casting import *
 
-from ..geo import GeometricObject, TwoD, register_approx, transform
+from ..geo import GeometricObject, TwoD, register_approx, transform, register_join_volume
 from .moments import Moments2d
 from .affine import originate2d, rotate2d, scale2d, translate2d
 from .rect import Rect
+from .shapely import HasShapely, join_volume_shapely
 
 
 __all__ = ['RRect', 'cast_RRect_to_Moments2d', 'approx_Moments2d_to_RRect']
 
 
-class RRect(TwoD, GeometricObject):
+class RRect(HasShapely, TwoD, GeometricObject):
     '''A 2D rotated rectangle.
 
     An RRect represents a 2D axis-aligned rectangle rotated by an angle. It is parametrised by
@@ -79,12 +80,12 @@ class RRect(TwoD, GeometricObject):
     @property
     def shapely(self):
         '''Shapely representation for fast intersection operations.'''
-        raise NotImplementedError("MT: to do one day")
-        #if not hasattr(self, '_shapely'):
-            #import shapely.geometry as _sg
-            #self._shapely = _sg.box(self.min_x, self.min_y, self.max_x, self.max_y)
-            #self._shapely = self._shapely.buffer(0.0001) # to clean up any (multi and/or non-simple) polygon into a simple polygon
-        #return self._shapely
+        if not hasattr(self, '_shapely'):
+            import shapely.geometry as _sg
+            points = self.corners[[0,1,3,2] if self.signed_width >= 0 else [2,3,1,0]]
+            self._shapely = _sg.Polygon(points)
+            self._shapely = self._shapely.buffer(0.0001) # to clean up any (multi and/or non-simple) polygon into a simple polygon
+        return self._shapely
 
 
     # ----- derived properties -----
@@ -341,3 +342,11 @@ def approx_Moments2d_to_RRect(obj):
     #w = np.sqrt(hw3/wh)
     #return Rect(cx-w, cy-h, cx+w, cy+h)
 register_approx(Moments2d, RRect, approx_Moments2d_to_RRect)
+
+
+# ----- joining volumes -----
+
+
+register_join_volume(Rect, RRect, join_volume_shapely)
+register_join_volume(RRect, Rect, join_volume_shapely)
+register_join_volume(RRect, RRect, join_volume_shapely)

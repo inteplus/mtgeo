@@ -7,12 +7,13 @@ from ..geo import TwoD, register_approx, register_join_volume
 from ..geond import Hyperbox
 from .moments import Moments2d
 from .iou import iou_impl
+from .shapely import HasShapely
 
 
 __all__ = ['Rect', 'cast_Hyperbox_to_Rect', 'cast_Rect_to_Moments2d', 'approx_Moments2d_to_Rect']
 
 
-class Rect(TwoD, Hyperbox):
+class Rect(HasShapely, TwoD, Hyperbox):
     '''A 2D rectangle,
 
     Note we do not care if the rectangle is open or partially closed or closed.'''
