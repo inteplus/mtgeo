@@ -18,15 +18,16 @@ class RRect(TwoD, GeometricObject):
     '''A 2D rotated rectangle.
 
     An RRect represents a 2D axis-aligned rectangle rotated by an angle. It is parametrised by
-    center point, width, height and angle. Internally, an affine transformation is computed that
-    transforms the unit square '[0,0,1,1]' to the rotated rectangle. Width cannot be zero and
-    height must be positive. Angle is in radian. Note that we do not care if the rectangle is open
-    or partially closed or closed.
+    center point, signed width, height and angle. Internally, an affine transformation is computed
+    that transforms the unit square '[0,0,1,1]' to the rotated rectangle. Signed width cannot be
+    zero and height must be positive. Angle is in radian. Note that we do not care if the rectangle
+    is open or partially closed or closed.
 
     Parameters
     ----------
-    width : float
-        the width
+    signed_width : float
+        the signed width, meaning normal width if positive or width with left-right flipping if
+        negative
     height : float
         the height
     cx : float
@@ -39,6 +40,8 @@ class RRect(TwoD, GeometricObject):
 
     Attributes
     ----------
+    width : float
+        the actual (positive) width
     center_pt : point
         the rectangle's centroid
     tl : point
@@ -86,6 +89,11 @@ class RRect(TwoD, GeometricObject):
 
     # ----- derived properties -----
 
+
+    @property
+    def width(self):
+        '''The actual (positive) width.'''
+        return abs(self.signed_width)
     
     @property
     def tl(self):
@@ -109,12 +117,12 @@ class RRect(TwoD, GeometricObject):
 
     @property
     def sign(self):
-        return np.sign(self.width*self.height)
+        return np.sign(self.signed_width)
 
     @property
     def area(self):
         '''Absolute area.'''
-        return abs(self.width*self.height)
+        return abs(self.signed_width*self.height)
 
     @property
     def circumference(self):
@@ -125,7 +133,7 @@ class RRect(TwoD, GeometricObject):
     # ---- interior squares ----
 
 
-    def left_square(self): -> RRect
+    def left_square(self):
         '''The interior square attaching to the left edge.'''
 
         if self.width < self.height:
@@ -137,12 +145,12 @@ class RRect(TwoD, GeometricObject):
 
         v = br - bl
         br2 = bl + v*abs(self.height/self.width)
-        cpt = (bl+br2)/2 # new center point
+        cpt = (tl+br2)/2 # new center point
 
-        return RRect(self.height, self.height, cx=cpt[0], cy=cpt[1], angle=self.angle)
+        return RRect(self.sign*self.height, self.height, cx=cpt[0], cy=cpt[1], angle=self.angle)
 
 
-    def right_square(self): -> RRect
+    def right_square(self):
         '''The interior square attaching to the right edge.'''
 
         if self.width < self.height:
@@ -154,9 +162,9 @@ class RRect(TwoD, GeometricObject):
 
         v = bl - br
         bl2 = br + v*abs(self.height/self.width)
-        cpt = (bl2+br)/2 # new center point
+        cpt = (bl2+tr)/2 # new center point
 
-        return RRect(self.height, self.height, cx=cpt[0], cy=cpt[1], angle=self.angle)
+        return RRect(self.sign*self.height, self.height, cx=cpt[0], cy=cpt[1], angle=self.angle)
 
     
     # ----- moments -----
@@ -165,7 +173,7 @@ class RRect(TwoD, GeometricObject):
     @property
     def signed_area(self):
         '''Signed area.'''
-        return self.width*self.height
+        return self.signed_width*self.height
 
     @property
     def moment1(self):
@@ -187,7 +195,7 @@ class RRect(TwoD, GeometricObject):
         '''Second-order moment.'''
         if not hasattr(self, '_moment2'):
             # 2nd-order central moments if the rectangle were not rotated
-            rx = self.width/2
+            rx = self.signed_width/2
             ry = self.height/2
             r = Rect(-rx, -ry, rx, ry)
             Muu = r.moment_xx
@@ -255,8 +263,8 @@ class RRect(TwoD, GeometricObject):
 
 
     def to_json(self):
-        '''Returns a list [width, height, cx, cy, angle].'''
-        return [self.width, self.height, self.cx, self.cy, self.angle]
+        '''Returns a list [signed_width, height, cx, cy, angle].'''
+        return [self.signed_width, self.height, self.cx, self.cy, self.angle]
 
 
     @staticmethod
@@ -266,7 +274,7 @@ class RRect(TwoD, GeometricObject):
         Parameters
         ----------
         json_obj : list
-            list [width, height, cx, cy, angle]
+            list [signed_width, height, cx, cy, angle]
 
         Returns
         -------
@@ -277,7 +285,7 @@ class RRect(TwoD, GeometricObject):
 
 
     def to_tensor(self):
-        '''Returns a tensor [width, height, cx, cy, angle] representing the RRect .'''
+        '''Returns a tensor [signed_width, height, cx, cy, angle] representing the RRect .'''
         from mt import tf
         return tf.convert_to_tensor(self.to_json())
 
@@ -285,16 +293,16 @@ class RRect(TwoD, GeometricObject):
     # ----- methods -----
 
     
-    def __init__(self, width: float, height: float, cx: float = 0., cy: float = 0., angle: float = 0.):
-        self.width = width
+    def __init__(self, signed_width: float, height: float, cx: float = 0., cy: float = 0., angle: float = 0.):
+        self.signed_width = signed_width
         self.height = height
         self.center_pt = np.array([cx, cy])
         self.angle = angle
 
         # compute the transformation
         tfm = translate2d(-0.5, -0.5) # shift the centroid of [0,0,1,1] to the origin
-        tfm = scale2d(scale_x=width, scale_y=height)*tfm # scale it along width and height
-        tfm = rotate2d(angle, 0., 0.) # rotate it
+        tfm = scale2d(scale_x=signed_width, scale_y=height)*tfm # scale it along signed_width and height
+        tfm = rotate2d(angle, 0., 0.)*tfm # rotate it
         tfm = translate2d(cx, cy)*tfm # now shift the centroid of the rotated rectangle to the target location
         self.tfm = tfm
 
@@ -304,7 +312,7 @@ class RRect(TwoD, GeometricObject):
 
 
     def __repr__(self):
-        return "RRect(width=%r, height=%r, cx=%r, cy=%r, angle=%r)" % (self.width, self.height, self.center_pt[0], self.center_pt[1], self.angle)
+        return "RRect(signed_width=%r, height=%r, cx=%r, cy=%r, angle=%r)" % (self.signed_width, self.height, self.center_pt[0], self.center_pt[1], self.angle)
 
 
 # ----- casting -----
@@ -324,7 +332,7 @@ def approx_Moments2d_to_RRect(obj):
     #cx, cy = obj.mean
     #cov = obj.cov
 
-    ## w = half width, h = half height
+    ## w = half signed_width, h = half height
     #size = abs(obj.m0)
     #hw3 = cov[0][0]*size*0.75 # should be >= 0
     #wh3 = cov[1][1]*size*0.75 # should be >= 0
