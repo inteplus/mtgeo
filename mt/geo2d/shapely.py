@@ -16,7 +16,7 @@ class HasShapely(object):
 # ----- joining volumes -----
 
 
-def join_volume_shapely(obj1, obj2):
+def join_volume_shapely(obj1: HasShapely, obj2: HasShapely):
     '''Joins the areas of two 2D geometry objects supporting shapely.
 
     Parameters

@@ -1,3 +1,4 @@
+
 '''A 2D rotated rectangle.'''
 
 import math
