@@ -4,7 +4,7 @@
 from libcpp cimport bool
 from libc.math cimport fabs, hypot, atan2, sin, cos, M_PI, M_PI_2
 
-from mt import np
+import numpy as np
 
 from ..geo import TwoD, GeometricObject, LieTransformer
 
@@ -32,7 +32,7 @@ cpdef double radian_range(double rad):
 
 cpdef void ssr2mat(double[:] i, double[:] o):
     '''Converts redundant vector (sx,sy,h,r,cr,sr) representing scale2d(sx,sy) shear2d(h) rotate2d(r) into a 2x2 transformation matrix.
-    
+
     Formula::
 
         a0 = sx*(h*sr + cr)
@@ -62,7 +62,7 @@ cpdef void ssr2mat(double[:] i, double[:] o):
 
 cpdef void mat2ssr(double[:] i, double[:] o):
     '''Converts a 2x2 transformation matrix into an redundant vector (sx,sy,h,r,cr,sr) representing scale2d(sx,sy) shear2d(h) rotate2d(r).
-    
+
     Formula::
 
         sy = hypot(a2,a3)
@@ -94,7 +94,7 @@ cpdef void mat2ssr(double[:] i, double[:] o):
 
 cpdef void rss2mat(double[:] i, double[:] o):
     '''Converts redundant vector (sx,sy,h,r,cr,sr) representing rotate2d(r) shear2d(h) scale2d(sx,sy) into a 2x2 transformation matrix.
-    
+
     Formula::
 
         a0 = sx*sr
@@ -124,7 +124,7 @@ cpdef void rss2mat(double[:] i, double[:] o):
 
 cpdef void mat2rss(double[:] i, double[:] o):
     '''Converts a 2x2 transformation matrix into an redundant vector (sx,sy,h,r,cr,sr) representing rotate2d(r) shear2d(h) scale2d(sx,sy).
-    
+
     Formula when `det(A) > 0`::
 
         sx = hypot(a2,a0)
