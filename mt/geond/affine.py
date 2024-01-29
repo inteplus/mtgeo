@@ -1,19 +1,25 @@
-'''Affine transformation in ND.'''
+"""Affine transformation in ND."""
 
 from mt import np
 from mt.base import logger
 from mt.base.deprecated import deprecated_func
 
-from ..geo import GeometricObject, LieTransformer, transform, register_transform, register_transformable
+from ..geo import (
+    GeometricObject,
+    LieTransformer,
+    transform,
+    register_transform,
+    register_transformable,
+)
 from .point_list import PointList
 from .moments import Moments
 
 
-__all__ = ['Aff', 'transform_Aff_on_Moments', 'transform_Aff_on_PointList']
+__all__ = ["Aff", "transform_Aff_on_Moments", "transform_Aff_on_PointList"]
 
 
 class Aff(LieTransformer, GeometricObject):
-    '''A transformer to perform affine transformations using the same transformation matrix in n-dim space.
+    """A transformer to perform affine transformations using the same transformation matrix in n-dim space.
 
     Examples
     --------
@@ -53,7 +59,7 @@ class Aff(LieTransformer, GeometricObject):
     Aff(weight_diagonal=[3 9], bias=[1 0])
     >>> a.conjugate(b)
     Aff(weight_diagonal=[ 6. -3.], bias=[-18.  66.])
-    '''
+    """
 
     # ----- base adaptation -----
 
@@ -62,70 +68,73 @@ class Aff(LieTransformer, GeometricObject):
         return self.dim
 
     def invert(self):
-        '''Lie inverse'''
+        """Lie inverse"""
         invWeight = np.linalg.inv(
-            self.weight)  # slow, and assuming weight matrix is invertible
+            self.weight
+        )  # slow, and assuming weight matrix is invertible
         return Aff(invWeight, np.dot(invWeight, -self.bias))
 
     def multiply(self, other):
-        '''a*b = Lie operator'''
+        """a*b = Lie operator"""
         if not isinstance(other, Aff):
             raise ValueError(
-                "Expecting 'other' to be an affine transformation, but {} received.".format(other.__class__))
+                "Expecting 'other' to be an affine transformation, but {} received.".format(
+                    other.__class__
+                )
+            )
         return Aff(np.dot(self.weight, other.weight), self << other.bias)
 
     # ----- data encapsulation -----
 
     @property
     def bias(self):
-        '''The bias component of the affine transformation matrix.'''
+        """The bias component of the affine transformation matrix."""
         return self.__bias
 
     @bias.setter
     def bias(self, bias):
         if len(bias.shape) != 1:
-            raise ValueError(
-                "Bias is not a vector, shape {}.".format(bias.shape))
+            raise ValueError("Bias is not a vector, shape {}.".format(bias.shape))
         self.__bias = bias
 
     @property
     def weight(self):
-        '''The weight/linear component of the affine transformation matrix.'''
+        """The weight/linear component of the affine transformation matrix."""
         return self.__weight
 
     @weight.setter
     def weight(self, weight):
         if len(weight.shape) != 2:
-            raise ValueError(
-                "bias has non-matrix shape {}.".format(weight.shape))
+            raise ValueError("bias has non-matrix shape {}.".format(weight.shape))
         self.__weight = weight
 
     # ----- derived properties -----
 
     @property
     def bias_dim(self):
-        '''Returns the dimension of the bias vector.'''
+        """Returns the dimension of the bias vector."""
         return self.bias.shape[0]
 
     @property
     def weight_shape(self):
-        '''Returns the shape of the weight matrix.'''
+        """Returns the shape of the weight matrix."""
         return self.weight.shape
 
     @property
     def dim(self):
-        '''Returns the dimension of the transformation.'''
+        """Returns the dimension of the transformation."""
         val = self.bias_dim
         if self.weight_shape != (val, val):
             raise ValueError(
-                "Weight does not have a square matrix shape {}.".format(self.weight.shape))
+                f"Weight {self.weight.shape} does not have a square matrix shape {(val, val)}."
+            )
         return val
 
     @property
     def matrix(self):
-        '''Returns the transformation matrix.'''
+        """Returns the transformation matrix."""
         dim = self.dim
-        a = np.empty((dim+1, dim+1))
+        a = np.empty((dim + 1, dim + 1))
         a[:dim, :dim] = self.weight
         a[:dim, dim] = self.bias
         a[dim, :dim] = 0
@@ -134,7 +143,7 @@ class Aff(LieTransformer, GeometricObject):
 
     @property
     def det(self):
-        '''Returns the determinant of the transformation matrix.'''
+        """Returns the determinant of the transformation matrix."""
         return np.linalg.det(self.weight)  # slow method
 
     # ----- methods -----
@@ -146,12 +155,22 @@ class Aff(LieTransformer, GeometricObject):
             _ = self.dim  # just to check shapes
 
     def __repr__(self):
-        return "Aff(weight_diagonal={}, bias={})".format(self.weight.diagonal(), self.bias)
+        return "Aff(weight_diagonal={}, bias={})".format(
+            self.weight.diagonal(), self.bias
+        )
 
-    @deprecated_func("0.3.8", suggested_func=["mt.geo.transformation.transform", "mt.geond.affine_transformation.transform_Aff_on_ndarray"], removed_version="0.6.0", docstring_prefix="        ")
+    @deprecated_func(
+        "0.3.8",
+        suggested_func=[
+            "mt.geo.transformation.transform",
+            "mt.geond.affine_transformation.transform_Aff_on_ndarray",
+        ],
+        removed_version="0.6.0",
+        docstring_prefix="        ",
+    )
     def transform_points(self, X):
-        '''Transforms a list of points.
-        
+        """Transforms a list of points.
+
         Parameters
         ----------
         X : numpy.ndarray of shape (N,D)
@@ -161,13 +180,13 @@ class Aff(LieTransformer, GeometricObject):
         -------
         X2 : numpy.ndarray of shape (N,D)
             transformed N points, where `X2 = X @ self.weight.T + self.bias`
-        '''
+        """
         if len(X.shape) != 2 or X.shape[1] != self.dim:
             raise ValueErro("Input shape {} is not (N,{}).".format(X.shape, self.dim))
         return np.dot(X, self.weight.T) + self.bias
 
     def weight_sign(self, eps=1e-06):
-        '''Returns whether weight determinant is positive (+1), close to zero (0), or negative (-1).'''
+        """Returns whether weight determinant is positive (+1), close to zero (0), or negative (-1)."""
         det = self.det
         return 1 if det > eps else -1 if det < -eps else 0
 
@@ -176,7 +195,7 @@ class Aff(LieTransformer, GeometricObject):
 
 
 def transform_Aff_on_Moments(aff_tfm, moments):
-    '''Transform the Moments using an affine transformation.
+    """Transform the Moments using an affine transformation.
 
     Parameters
     ----------
@@ -189,22 +208,24 @@ def transform_Aff_on_Moments(aff_tfm, moments):
     -------
     Moments
         affined-transformed moments
-    '''
+    """
     A = aff_tfm.weight
     old_m0 = moments.m0
     old_mean = moments.mean
     old_cov = moments.cov
     new_mean = A @ old_mean + aff_tfm.bias
     new_cov = A @ old_cov @ A.T
-    new_m0 = old_m0*abs(aff_tfm.det)
-    new_m1 = new_m0*new_mean
-    new_m2 = new_m0*(np.outer(new_mean, new_mean) + new_cov)
+    new_m0 = old_m0 * abs(aff_tfm.det)
+    new_m1 = new_m0 * new_mean
+    new_m2 = new_m0 * (np.outer(new_mean, new_mean) + new_cov)
     return Moments(new_m0, new_m1, new_m2)
+
+
 register_transform(Aff, Moments, transform_Aff_on_Moments)
 
 
 def transform_Aff_on_ndarray(aff_tfm, point_array):
-    '''Transform an array of points using an affine transformation.
+    """Transform an array of points using an affine transformation.
 
     Parameters
     ----------
@@ -217,14 +238,16 @@ def transform_Aff_on_ndarray(aff_tfm, point_array):
     -------
     numpy.ndarray
         affine-transformed point array
-    '''
+    """
     return point_array @ aff_tfm.weight.T + aff_tfm.bias
+
+
 register_transform(Aff, np.ndarray, transform_Aff_on_ndarray)
 register_transformable(Aff, np.ndarray, lambda x, y: x.ndim == y.shape[-1])
 
 
 def transform_Aff_on_PointList(aff_tfm, point_list):
-    '''Transform a point list using an affine transformation.
+    """Transform a point list using an affine transformation.
 
     Parameters
     ----------
@@ -237,6 +260,8 @@ def transform_Aff_on_PointList(aff_tfm, point_list):
     -------
     PointList
         affine-transformed point list
-    '''
+    """
     return PointList(point_list.points @ aff_tfm.weight.T + aff_tfm.bias, check=False)
+
+
 register_transform(Aff, PointList, transform_Aff_on_PointList)
