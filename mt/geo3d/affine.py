@@ -67,6 +67,13 @@ class Aff3d(ThreeD, Aff):
             self.weight.diagonal(), self.bias
         )
 
+    def as_glMatrix(self):
+        """Returns a float32 16-vector that can be used as an OpenGL 4x4 columnar matrix."""
+        a = np.zeros((4, 4), dtype=np.float32, order="F")
+        a[:3, :3] = self.weight
+        a[:3, 3] = self.bias
+        return a
+
 
 # ----- casting -----
 
