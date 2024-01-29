@@ -131,3 +131,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# repo-specific
+mt/geo2d/linear_impl.cpp
