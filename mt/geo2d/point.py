@@ -1,23 +1,37 @@
-'''The base class to represent a point. 
+"""The base class to represent a point. 
 
 For efficiency reasons, please try to bunch points into arrays or lists and use appropriate representations instead of using single points implemented here.
-'''
+"""
 
-
+import glm
 import numpy as np
 import mt.base.casting as _bc
 from ..geo import TwoD
 from ..geond import Point, castable_ndarray_Point
 
 
-__all__ = ['Point2d']
+__all__ = ["Point2d"]
 
 
 class Point2d(TwoD, Point):
-    '''A 2D point. See Point for more details.'''
-    pass
-_bc.register_castable(np.ndarray, Point2d, lambda x: castable_ndarray_Point(x,2))
+    """A 2D point implemented in glm.
+
+    See Point for more details."""
+
+    def __init__(self, point, check=True):
+        self.point = point
+
+    @property
+    def point(self):
+        return np.array(self.point_glm)
+
+    @point.setter
+    def point(self, p):
+        self.point_glm = glm.vec2(p)
+
+
+_bc.register_castable(np.ndarray, Point2d, lambda x: castable_ndarray_Point(x, 2))
 _bc.register_cast(np.ndarray, Point2d, lambda x: Point2d(x, check=False))
 _bc.register_cast(Point2d, Point, lambda x: Point(x.point, check=False))
 _bc.register_cast(Point, Point2d, lambda x: Point2d(x.point, check=False))
-_bc.register_castable(Point, Point2d, lambda x: x.ndim==2)
+_bc.register_castable(Point, Point2d, lambda x: x.ndim == 2)
