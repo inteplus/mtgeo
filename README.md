@@ -5,6 +5,9 @@ Documentation
 
 Checkout [mtdoc](https://mtdoc.readthedocs.io/).
 
+Version 1.0 has been developed since 2024-01-30 which uses pyglm as the backend for faster matrix
+operations.
+
 Testing
 -------
 
