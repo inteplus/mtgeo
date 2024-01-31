@@ -1,6 +1,7 @@
-"""The base class to represent a point. 
+"""The base class to represent a point.
 
-For efficiency reasons, please try to bunch points into arrays or lists and use appropriate representations instead of using single points implemented here.
+For efficiency reasons, please try to bunch points into arrays or lists and use appropriate
+representations instead of using single points implemented here.
 """
 
 
@@ -17,7 +18,15 @@ __all__ = ["Point3d"]
 class Point3d(ThreeD, Point):
     """A 3D point implemented in glm.
 
-    See Point for more details."""
+    See :class:`Point` for more details.
+
+    Attributes
+    ----------
+    point_glm : `glm.vec3`
+        The point in glm.
+    point : `numpy.ndarray(shape=(3,), dtype=numpy.float32)`
+        The numpy view of `point_glm`
+    """
 
     def __init__(self, point, check=True):
         self.point = point

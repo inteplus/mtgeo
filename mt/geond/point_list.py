@@ -1,12 +1,11 @@
-'''The base class to represent a list of points.'''
+"""The base class to represent a list of points."""
 
 
 import numpy as _np
-import mt.base.casting as _bc
 from ..geo import GeometricObject
 
 
-__all__ = ['PointList', 'castable_ndarray_PointList']
+__all__ = ["PointList", "castable_ndarray_PointList"]
 
 
 def castable_ndarray_PointList(obj, ndim):
@@ -16,7 +15,7 @@ def castable_ndarray_PointList(obj, ndim):
 
 
 class PointList(GeometricObject):
-    '''A list of points.
+    """A list of points.
 
     Parameters
     ----------
@@ -29,12 +28,18 @@ class PointList(GeometricObject):
     ----------
     points : `numpy.ndarray(shape=(N,D))`
         The list of points in numpy.
-    '''
+    """
 
     def __init__(self, point_list, check=True):
-        points = point_list if isinstance(point_list, _np.ndarray) else _np.array(point_list)
+        points = (
+            point_list if isinstance(point_list, _np.ndarray) else _np.array(point_list)
+        )
         if check and not castable_ndarray_PointList(points, self.ndim):
-            raise ValueError("Point list in {}D not in the right shape: {}".format(self.ndim, points.shape))
+            raise ValueError(
+                "Point list in {}D not in the right shape: {}".format(
+                    self.ndim, points.shape
+                )
+            )
         if points.size == 0:
-            points = points.reshape((0,self.ndim))
+            points = points.reshape((0, self.ndim))
         self.points = points

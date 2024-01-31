@@ -1,6 +1,7 @@
-"""The base class to represent a point. 
+"""The base class to represent a point.
 
-For efficiency reasons, please try to bunch points into arrays or lists and use appropriate representations instead of using single points implemented here.
+For efficiency reasons, please try to bunch points into arrays or lists and use appropriate
+representations instead of using single points implemented here.
 """
 
 import glm
@@ -16,9 +17,17 @@ __all__ = ["Point2d"]
 class Point2d(TwoD, Point):
     """A 2D point implemented in glm.
 
-    See Point for more details."""
+    See :class:`Point` for more details.
 
-    def __init__(self, point, check=True):
+    Attributes
+    ----------
+    point_glm : `glm.vec2`
+        The point in glm.
+    point : `numpy.ndarray(shape=(2,), dtype=numpy.float32)`
+        The numpy view of `point_glm`
+    """
+
+    def __init__(self, point):
         self.point = point
 
     @property
