@@ -28,12 +28,33 @@ class Moments2d(TwoD, Moments):
         2nd-order raw moment. If the input is numpy.ndarray, a row-major matrix is expected.
         Otherwise, a column-major matrix is expected.
 
+    Attributes
+    ----------
+    m0 : float
+        0th-order raw moment
+    m1_glm : glm.vec2
+        1st-order raw moment
+    m1 : numpy.ndarray
+        the numpy view of `m1_glm`
+    m2_glm : glm.mat2
+        2nd-order column-major raw moment
+    m2 : numpy.ndarray
+        the numpy view of `m2_glm`
+    mean_glm : glm.vec2
+        the mean of points
+    mean : numpy.ndarray
+        the numpy view of `mean_glm`
+    cov_glm : glm.mat2
+        the covariance matrix of points
+    cov : numpy.ndarray
+        the numpy view of `cov_glm`
+
     Examples
     --------
     >>> import numpy as np
     >>> from mt.geo2d.moments import Moments2d
     >>> gm.Moments2d(10, np.array([2,3]), np.array([[1,2],[3,4]]))
-    Moments2d(m0=10.0, mean=[0.2, 0.3], cov=[[0.06, 0.14], [0.24, 0.31000000000000005]])
+    Moments2d(m0=10, mean=vec2( 0.2, 0.3 ), cov=mat2x2(( 0.06, 0.14 ), ( 0.24, 0.31 )))
 
     See Also
     --------
@@ -57,26 +78,55 @@ class Moments2d(TwoD, Moments):
         self._cov = None
 
     @property
-    def mean(self):
-        """Returns the mean vector."""
+    def m1_glm(self):
+        return self._m1
+
+    @property
+    def m1(self):
+        return np.frombuffer(self._m1.to_bytes(), dtype=np.float32)
+
+    @property
+    def m2_glm(self):
+        return self._m2
+
+    @property
+    def m2(self):
+        return np.frombuffer(self._m2.to_bytes(), dtype=np.float32).reshape(2, 2).T
+
+    @property
+    def mean_glm(self):
+        """Returns the mean vector as a vec2."""
         if self._mean is None:
-            self._mean = glm.vec2() if glm.abs(self.m0) < EPSILON else self.m1 / self.m0
+            self._mean = (
+                glm.vec2() if glm.abs(self._m0) < EPSILON else self._m1 / self._m0
+            )
         return self._mean
 
     @property
-    def cov(self):
-        """Returns the column-major covariance matrix."""
+    def mean(self):
+        """Returns the mean vector."""
+        return np.frombuffer(self.mean_glm.to_bytes(), dtype=np.float32)
+
+    @property
+    def cov_glm(self):
+        """Returns the column-major covariance matrix as a mat2."""
         if self._cov is None:
+            mean = self.mean_glm
             self._cov = (
                 glm.mat2()
-                if glm.abs(self.m0) < EPSILON
-                else (self.m2 / self.m0) - glm.outerProduct(self.mean, self.mean)
+                if glm.abs(self._m0) < EPSILON
+                else (self._m2 / self._m0) - glm.outerProduct(mean, mean)
             )
         return self._cov
 
+    @property
+    def cov(self):
+        """Returns the row-major covariance matrix as a numpy array."""
+        return np.frombuffer(self.cov_glm.to_bytes(), dtype=np.float32).reshape(2, 2).T
+
     def __repr__(self):
         return "Moments2d(m0={}, mean={}, cov={})".format(
-            self.m0, self.mean.to_list(), self.cov.to_list()
+            self.m0, repr(self.mean_glm), repr(self.cov_glm)
         )
 
 
