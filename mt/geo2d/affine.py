@@ -220,12 +220,12 @@ def transform_Aff2d_on_Moments2d(aff_tfm, moments):
     Moments2d
         affined-transformed 2D moments
     """
-    A = aff_tfm.weight
+    A = aff_tfm.linear
     old_m0 = moments.m0
-    old_mean = moments.mean
-    old_cov = moments.cov
-    new_mean = A @ old_mean + aff_tfm.bias
-    new_cov = A @ old_cov @ A.T
+    old_mean = moments.mean_glm
+    old_cov = moments.cov_glm
+    new_mean = A * old_mean + aff_tfm.offset
+    new_cov = A * old_cov * glm.transpose(A.T)
     new_m0 = old_m0 * abs(aff_tfm.det)
     new_m1 = new_m0 * new_mean
     new_m2 = new_m0 * (np.outer(new_mean, new_mean) + new_cov)
@@ -402,8 +402,9 @@ def uncrop_rect(tfm: Aff2d) -> Rect:
         the recovered rectangle
     """
     tfm = ~tfm  # take the inverse
-    x, y = tfm.offset
-    w, h = tfm.linear.scale
+    x, y = tfm.bias
+    linear = glm.mat2sshr(tfm.linear)
+    w, h = linear.xy
     return Rect(x, y, x + w, y + h)
 
 
@@ -448,11 +449,7 @@ def rect2rect(src_rect: Rect, dst_rect: Rect, eps=1e-7) -> Aff2d:
             )
     else:
         sy = dst_rect.h / src_rect.h
-    return (
-        translate2d(dst_rect.cx, dst_rect.cy)
-        * scale2d(sx, sy)
-        / translate2d(src_rect.cx, src_rect.cy)
-    )
+    return translate2d(dst_rect.cx, dst_rect.cy).conjugate(scale2d(sx, sy))
 
 
 def rect2rect_tf(src_rects, dst_rects):
