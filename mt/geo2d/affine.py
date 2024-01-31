@@ -162,6 +162,18 @@ class Aff2d(TwoD, Aff):
     # ----- derived properties -----
 
     @property
+    def affine(self):
+        return glm.mat3(
+            glm.vec3(self.linear[0], 0),
+            glm.vec3(self.linear[1], 0),
+            glm.vec3(self.offset, 1),
+        )
+
+    @property
+    def matrix(self):
+        return np.frombuffer(self.affine.to_bytes(), dtype=np.float32).reshape(4, 4).T
+
+    @property
     def matrix(self):
         a = np.empty((3, 3))
         a[:2, :2] = self.weight

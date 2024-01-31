@@ -146,13 +146,17 @@ class Aff3d(ThreeD, Aff):
     # ----- derived properties -----
 
     @property
+    def affine(self):
+        return glm.mat4(
+            glm.vec4(self.linear[0], 0),
+            glm.vec4(self.linear[1], 0),
+            glm.vec4(self.linear[2], 0),
+            glm.vec4(self.offset, 1),
+        )
+
+    @property
     def matrix(self):
-        a = np.empty((4, 4))
-        a[:3, :3] = self.weight
-        a[:3, 3] = self.bias
-        a[3, :3] = 0
-        a[3, 3] = 1
-        return a
+        return np.frombuffer(self.affine.to_bytes(), dtype=np.float32).reshape(3, 3).T
 
     matrix.__doc__ = Aff.matrix.__doc__
 
