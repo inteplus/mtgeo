@@ -1,4 +1,6 @@
-from mt import np
+import glm
+
+from mt import tp, np
 import mt.base.casting as _bc
 
 from ..geo import TwoD, register_transform, register_transformable
@@ -7,7 +9,7 @@ from .moments import Moments2d
 from .point_list import PointList2d
 from .polygon import Polygon
 from .rect import Rect
-from .linear import Lin2d
+from .linear import Lin2d, sshr2mat
 
 
 __all__ = [
@@ -36,7 +38,19 @@ __all__ = [
 class Aff2d(TwoD, Aff):
     """Affine transformation in 2D.
 
-    The 2D affine transformation defined here consists of a linear/weight part and an offset/bias part.
+    The 2D affine transformation defined here consists of a linear/weight part and an offset/bias
+    part.
+
+    Attributes
+    ----------
+    offset : glm.vec2
+        the bias vector
+    bias : numpy.ndarray
+        the numpy view of `offset`
+    linear : glm.mat2
+        the weight matrix
+    weight : numpy.ndarray
+        the numpy view of `linear`
 
     References
     ----------
@@ -46,7 +60,7 @@ class Aff2d(TwoD, Aff):
     # ----- static methods -----
 
     @staticmethod
-    def from_matrix(mat):
+    def from_matrix(mat: np.ndarray):
         """Obtains an Aff2d instance from a non-singular affine transformation matrix.
 
         Parameters
@@ -63,7 +77,7 @@ class Aff2d(TwoD, Aff):
         -----
         For speed reasons, no checking is involved.
         """
-        return Aff2d(offset=mat[:2, 2], linear=Lin2d.from_matrix(mat[:2, :2]))
+        return Aff2d(offset=mat[:2, 2], linear=mat[:2, :2])
 
     # ----- base adaptation -----
 
@@ -75,22 +89,22 @@ class Aff2d(TwoD, Aff):
         if not isinstance(other, Aff2d):
             return super(Aff2d, self).multiply(other)
         return Aff2d(
-            offset=(self.linear << other.offset) + self.offset,
+            offset=self.linear * other.offset + self.offset,
             linear=self.linear * other.linear,
         )
 
     multiply.__doc__ = Aff.multiply.__doc__
 
     def invert(self):
-        invLinear = ~self.linear
-        invOffset = invLinear << (-self.offset)
+        invLinear = glm.inverse(self.linear)
+        invOffset = invLinear * (-self.offset)
         return Aff2d(offset=invOffset, linear=invLinear)
 
     invert.__doc__ = Aff.invert.__doc__
 
     @property
     def bias(self):
-        return self.__offset
+        return np.frombuffer(self.__offset.to_bytes(), dtype=np.float32)
 
     bias.__doc__ = Aff.bias.__doc__
 
@@ -106,7 +120,7 @@ class Aff2d(TwoD, Aff):
 
     @property
     def weight(self):
-        return self.linear.matrix
+        return np.frombuffer(self.__linear.to_bytes(), dtype=np.float32).reshape(2, 2).T
 
     weight.__doc__ = Aff.weight.__doc__
 
@@ -127,34 +141,31 @@ class Aff2d(TwoD, Aff):
         return self.__offset
 
     @offset.setter
-    def offset(self, offset):
-        if len(offset.shape) != 1 or offset.shape[0] != 2:
-            raise ValueError(
-                "Offset is not a 2D vector, shape {}.".format(offset.shape)
-            )
-        self.__offset = offset
+    def offset(self, value: tp.Union[np.ndarray, glm.vec2]):
+        self.__offset = glm.vec2(value)
 
     @property
     def linear(self):
         return self.__linear
 
     @linear.setter
-    def linear(self, linear):
-        if not isinstance(linear, Lin2d):
-            raise ValueError(
-                "Expected a Lin2d instance. Received a '{}' instance.".format(
-                    linear.__class__
-                )
-            )
-        self.__linear = linear
+    def linear(self, value: tp.Union[np.ndarray, glm.mat2, glm.vec4, Lin2d]):
+        if isinstance(value, Lin2d):
+            value = value.matrix
+        elif isinstance(value, glm.vec4):
+            value = sshr2mat(value)
+        if isinstance(value, np.ndarray):
+            self.__linear = glm.mat2(glm.vec2(value[:, 0]), glm.vec2(value[:, 1]))
+        else:
+            self.__linear = glm.mat2(value)
 
     # ----- derived properties -----
 
     @property
     def matrix(self):
         a = np.empty((3, 3))
-        a[:2, :2] = self.linear.matrix
-        a[:2, 2] = self.offset
+        a[:2, :2] = self.weight
+        a[:2, 2] = self.bias
         a[2, :2] = 0
         a[2, 2] = 1
         return a
@@ -163,18 +174,22 @@ class Aff2d(TwoD, Aff):
 
     @property
     def det(self):
-        return self.linear.det
+        return glm.determinant(self.linear)
 
     det.__doc__ = Aff.det.__doc__
 
     # ----- methods -----
 
-    def __init__(self, offset=np.zeros(2), linear=Lin2d()):
+    def __init__(
+        self,
+        offset=np.zeros(2),
+        linear: tp.Union[np.ndarray, glm.mat2, glm.vec4, Lin2d] = Lin2d(),
+    ):
         self.offset = offset
         self.linear = linear
 
     def __repr__(self):
-        return "Aff2d(offset={}, linear={})".format(self.offset, self.linear)
+        return f"Aff2d(offset={repr(self.offset)}, linear={repr(self.linear)})"
 
 
 # ----- casting -----
@@ -183,9 +198,7 @@ class Aff2d(TwoD, Aff):
 _bc.register_cast(
     Aff2d, Aff, lambda x: Aff(weights=x.weight, bias=x.offset, check_shapes=False)
 )
-_bc.register_cast(
-    Aff, Aff2d, lambda x: Aff2d(offset=x.bias, linear=Lin2d.from_matrix(x.weight))
-)
+_bc.register_cast(Aff, Aff2d, lambda x: Aff2d(offset=x.bias, linear=x.weight))
 _bc.register_castable(Aff, Aff2d, lambda x: x.ndim == 2)
 
 
@@ -291,7 +304,7 @@ register_transform(Aff2d, Polygon, transform_Aff2d_on_Polygon)
 
 def swapAxes2d():
     """Returns the affine transformation that swaps the x-axis with the y-axis."""
-    return Aff2d(linear=Lin2d.from_matrix(np.array([[0, 1], [1, 0]])))
+    return Aff2d(linear=glm.mat2([0, 1], [1, 0]))
 
 
 def flipLR2d(width):
@@ -306,12 +319,12 @@ def flipUD2d(height):
 
 def shearX2d(h):
     """Returns the shearing along the x-axis."""
-    return Aff2d(linear=Lin2d(shear=h))
+    return Aff2d(linear=glm.vec4(1, 1, h, 0))
 
 
 def shearY2d(h):
     """Returns the shearing along the y-axis."""
-    return Aff2d(linear=Lin2d.from_matrix(np.array([[1, 0], [h, 1]])))
+    return Aff2d(linear=glm.mat2([1, h], [0, 1]))
 
 
 def originate2d(tfm, x, y):
@@ -321,7 +334,7 @@ def originate2d(tfm, x, y):
 
 def rotate2d(theta, x, y):
     """Returns the rotation about a reference point (x,y). Theta is in radian."""
-    return originate2d(Aff2d(linear=Lin2d(angle=theta)), x, y)
+    return originate2d(Aff2d(linear=glm.vec4(1, 1, 0, theta)), x, y)
 
 
 def translate2d(x, y):
@@ -333,7 +346,7 @@ def scale2d(scale_x=1, scale_y=None):
     """Returns the scaling."""
     if scale_y is None:
         scale_y = scale_x
-    return Aff2d(linear=Lin2d(scale=[scale_x, scale_y]))
+    return Aff2d(linear=glm.vec4(scale_x, scale_y, 0, 0))
 
 
 def crop2d(tl, br=None):
@@ -355,7 +368,7 @@ def crop2d(tl, br=None):
         return scale2d(1.0 / tl[0], 1.0 / tl[1])
     return Aff2d(
         offset=np.array([-tl[0] / (br[0] - tl[0]), -tl[1] / (br[1] - tl[1])]),
-        linear=Lin2d(scale=[1.0 / (br[0] - tl[0]), 1.0 / (br[1] - tl[1])]),
+        linear=glm.vec4(1.0 / (br[0] - tl[0]), 1.0 / (br[1] - tl[1]), 0, 0),
     )
 
 

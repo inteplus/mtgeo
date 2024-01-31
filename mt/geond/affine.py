@@ -159,37 +159,6 @@ class Aff(LieTransformer, GeometricObject):
             self.weight.diagonal(), self.bias
         )
 
-    @deprecated_func(
-        "0.3.8",
-        suggested_func=[
-            "mt.geo.transformation.transform",
-            "mt.geond.affine_transformation.transform_Aff_on_ndarray",
-        ],
-        removed_version="0.6.0",
-        docstring_prefix="        ",
-    )
-    def transform_points(self, X):
-        """Transforms a list of points.
-
-        Parameters
-        ----------
-        X : numpy.ndarray of shape (N,D)
-            transforms N points. D is the dimensionality of the transformation
-
-        Returns
-        -------
-        X2 : numpy.ndarray of shape (N,D)
-            transformed N points, where `X2 = X @ self.weight.T + self.bias`
-        """
-        if len(X.shape) != 2 or X.shape[1] != self.dim:
-            raise ValueErro("Input shape {} is not (N,{}).".format(X.shape, self.dim))
-        return np.dot(X, self.weight.T) + self.bias
-
-    def weight_sign(self, eps=1e-06):
-        """Returns whether weight determinant is positive (+1), close to zero (0), or negative (-1)."""
-        det = self.det
-        return 1 if det > eps else -1 if det < -eps else 0
-
 
 # ----- transform functions -----
 
