@@ -6,6 +6,8 @@ from libc.math cimport fabs, hypot, atan2, sin, cos, M_PI, M_PI_2
 
 import numpy as np
 
+from mt.base.deprecated import deprecated_class
+
 from ..geo import TwoD, GeometricObject, LieTransformer
 
 
@@ -287,6 +289,7 @@ cdef class Lin2dBase(object):
         self.angle = angle
 
 
+@deprecated_class(deprecated_version="0.12", suggested_class="glm.mat2", removed_version="1.0", docstring_prefix="    ")
 class Lin2d(TwoD, GeometricObject, LieTransformer, Lin2dBase):
     '''Linear transformation in 2D.
 

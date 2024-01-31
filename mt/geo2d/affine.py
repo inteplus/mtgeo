@@ -183,7 +183,7 @@ class Aff2d(TwoD, Aff):
     def __init__(
         self,
         offset=np.zeros(2),
-        linear: tp.Union[np.ndarray, glm.mat2, glm.vec4, Lin2d] = Lin2d(),
+        linear: tp.Union[np.ndarray, glm.mat2, glm.vec4, Lin2d] = glm.mat2(),
     ):
         self.offset = offset
         self.linear = linear
