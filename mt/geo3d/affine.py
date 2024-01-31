@@ -1,8 +1,8 @@
 """Affine transformation in 3D."""
 
-import math as m
+import glm
 
-from mt import np
+from mt import tp, np
 import mt.base.casting as _bc
 
 from ..geo import ThreeD, register_transform, register_transformable
@@ -24,12 +24,46 @@ __all__ = [
 class Aff3d(ThreeD, Aff):
     """Affine transformation in 3D.
 
-    The 3D affine transformation defined here consists of a linear/weight part and an offset/bias part.
+    The 3D affine transformation defined here consists of a linear/weight part and an offset/bias
+    part.
+
+    Attributes
+    ----------
+    offset : glm.vec3
+        the bias vector
+    bias : numpy.ndarray
+        the numpy view of `offset`
+    linear : glm.mat3
+        the weight matrix
+    weight : numpy.ndarray
+        the numpy view of `linear`
 
     References
     ----------
     .. [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not really, cheeky MT is trying to advertise his paper!)
     """
+
+    # ----- static methods -----
+
+    @staticmethod
+    def from_matrix(mat: np.ndarray):
+        """Obtains an Aff3d instance from a non-singular affine transformation matrix.
+
+        Parameters
+        ----------
+        mat : a 3x3 array
+            a non-singular affine transformation matrix
+
+        Returns
+        -------
+        Aff3d
+            An instance representing the transformation
+
+        Notes
+        -----
+        For speed reasons, no checking is involved.
+        """
+        return Aff3d(offset=mat[:3, 3], linear=mat[:3, :3])
 
     # ----- base adaptation -----
 
@@ -38,41 +72,108 @@ class Aff3d(ThreeD, Aff):
         return 3
 
     def multiply(self, other):
-        if not isinstance(other, [Aff3d, Aff]):
-            return super(Aff3d, self).__mul__(other)
-        return Aff3d(self.weight @ other.weight, self << other.bias)
+        if not isinstance(other, Aff3d):
+            return super(Aff3d, self).multiply(other)
+        return Aff3d(
+            offset=self.linear * other.offset + self.offset,
+            linear=self.linear * other.linear,
+        )
 
     multiply.__doc__ = Aff.multiply.__doc__
 
     def invert(self):
-        invWeight = _nl.inv(
-            self.weight
-        )  # slow, and assuming weight matrix is invertible
-        return Aff3d(invWeight, invWeight @ (-self.bias))
+        invLinear = glm.inverse(self.linear)
+        invOffset = invLinear * (-self.offset)
+        return Aff3d(offset=invOffset, linear=invLinear)
 
     invert.__doc__ = Aff.invert.__doc__
 
     @property
+    def bias(self):
+        return np.frombuffer(self.__offset.to_bytes(), dtype=np.float32)
+
+    bias.__doc__ = Aff.bias.__doc__
+
+    @bias.setter
+    def bias(self, bias):
+        raise TypeError("Bias vector is read-only. Use self.offset vector instead.")
+
+    @property
     def bias_dim(self):
-        """Returns the dimension of the bias vector. Raises ValueError if it is not 3."""
-        if self.bias.shape[0] != 3:
-            raise ValueError(
-                "Expected bias dim to be 3, but seeing {}.".format(self.bias.shape[0])
+        return 3
+
+    bias_dim.__doc__ = Aff.bias_dim.__doc__
+
+    @property
+    def weight(self):
+        return np.frombuffer(self.__linear.to_bytes(), dtype=np.float32).reshape(3, 3).T
+
+    weight.__doc__ = Aff.weight.__doc__
+
+    @weight.setter
+    def weight(self, weight):
+        raise TypeError("Weight matrix is read-only. Use self.linear instead.")
+
+    @property
+    def weight_shape(self):
+        return (3, 3)
+
+    weight_shape.__doc__ = Aff.weight_shape.__doc__
+
+    # ----- data encapsulation -----
+
+    @property
+    def offset(self):
+        return self.__offset
+
+    @offset.setter
+    def offset(self, value: tp.Union[np.ndarray, glm.vec3]):
+        self.__offset = glm.vec3(value)
+
+    @property
+    def linear(self):
+        return self.__linear
+
+    @linear.setter
+    def linear(self, value: tp.Union[np.ndarray, glm.mat3]):
+        if isinstance(value, np.ndarray):
+            self.__linear = glm.mat3(
+                glm.vec3(value[:, 0]), glm.vec3(value[:, 1]), glm.vec3(value[:, 2])
             )
+        else:
+            self.__linear = glm.mat3(value)
+
+    # ----- derived properties -----
+
+    @property
+    def matrix(self):
+        a = np.empty((4, 4))
+        a[:3, :3] = self.weight
+        a[:3, 3] = self.bias
+        a[3, :3] = 0
+        a[3, 3] = 1
+        return a
+
+    matrix.__doc__ = Aff.matrix.__doc__
+
+    @property
+    def det(self):
+        return glm.determinant(self.linear)
+
+    det.__doc__ = Aff.det.__doc__
 
     # ----- methods -----
 
-    def __repr__(self):
-        return "Aff3d(weight_diagonal={}, bias={})".format(
-            self.weight.diagonal(), self.bias
-        )
+    def __init__(
+        self,
+        offset=np.zeros(3),
+        linear: tp.Union[np.ndarray, glm.mat3] = glm.mat3(),
+    ):
+        self.offset = offset
+        self.linear = linear
 
-    def as_glMatrix(self):
-        """Returns a float32 16-vector that can be used as an OpenGL 4x4 columnar matrix."""
-        a = np.zeros((4, 4), dtype=np.float32, order="F")
-        a[:3, :3] = self.weight
-        a[:3, 3] = self.bias
-        return a
+    def __repr__(self):
+        return f"Aff3d(offset={repr(self.offset)}, linear={repr(self.linear)})"
 
 
 # ----- casting -----
@@ -105,12 +206,12 @@ def transform_Aff3d_on_Moments3d(aff_tfm, moments):
     Moments3d
         affined-transformed 3D moments
     """
-    A = aff_tfm.weight
+    A = aff_tfm.linear
     old_m0 = moments.m0
-    old_mean = moments.mean
-    old_cov = moments.cov
-    new_mean = A @ old_mean + aff_tfm.bias
-    new_cov = A @ old_cov @ A.T
+    old_mean = moments.mean_glm
+    old_cov = moments.cov_glm
+    new_mean = A * old_mean + aff_tfm.offset
+    new_cov = A * old_cov * glm.transpose(A.T)
     new_m0 = old_m0 * abs(aff_tfm.det)
     new_m1 = new_m0 * new_mean
     new_m2 = new_m0 * (np.outer(new_mean, new_mean) + new_cov)
@@ -176,14 +277,14 @@ def rot3d_x(angle: float):
 
     Returns
     -------
-    tfm : Sim2d
+    tfm : Aff3d
         The output rotation
     """
 
-    sa = m.sin(angle)
-    ca = m.cos(angle)
+    sa = glm.sin(angle)
+    ca = glm.cos(angle)
     weight = np.array([[1.0, 0.0, 0.0], [0.0, ca, -sa], [0.0, sa, ca]])
-    return Aff3d(weight=weight, bias=np.zeros(3), check_shapes=False)
+    return Aff3d(linear=weight)
 
 
 def rot3d_y(angle: float):
@@ -196,14 +297,14 @@ def rot3d_y(angle: float):
 
     Returns
     -------
-    tfm : Sim2d
+    tfm : Aff3d
         The output rotation
     """
 
-    sa = m.sin(angle)
-    ca = m.cos(angle)
+    sa = glm.sin(angle)
+    ca = glm.cos(angle)
     weight = np.array([[ca, 0.0, sa], [0.0, 1.0, 0.0], [-sa, 0.0, ca]])
-    return Aff3d(weight=weight, bias=np.zeros(3), check_shapes=False)
+    return Aff3d(linear=weight)
 
 
 def rot3d_z(angle: float):
@@ -216,11 +317,11 @@ def rot3d_z(angle: float):
 
     Returns
     -------
-    tfm : Sim2d
+    tfm : Aff3d
         The output rotation
     """
 
-    sa = m.sin(angle)
-    ca = m.cos(angle)
+    sa = glm.sin(angle)
+    ca = glm.cos(angle)
     weight = np.array([[ca, -sa, 0.0], [sa, ca, 0.0], [0.0, 0.0, 1.0]])
-    return Aff3d(weight=weight, bias=np.zeros(3), check_shapes=False)
+    return Aff3d(linear=weight)
