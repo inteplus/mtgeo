@@ -171,7 +171,7 @@ class Aff2d(TwoD, Aff):
 
     @property
     def matrix(self):
-        return np.frombuffer(self.affine.to_bytes(), dtype=np.float32).reshape(4, 4).T
+        return np.array(self.affine)
 
     @property
     def matrix(self):

@@ -156,7 +156,7 @@ class Aff3d(ThreeD, Aff):
 
     @property
     def matrix(self):
-        return np.frombuffer(self.affine.to_bytes(), dtype=np.float32).reshape(3, 3).T
+        return np.array(self.affine)
 
     matrix.__doc__ = Aff.matrix.__doc__
 
