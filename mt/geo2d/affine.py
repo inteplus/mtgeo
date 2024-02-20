@@ -461,7 +461,11 @@ def rect2rect(src_rect: Rect, dst_rect: Rect, eps=1e-7) -> Aff2d:
             )
     else:
         sy = dst_rect.h / src_rect.h
-    return translate2d(dst_rect.cx, dst_rect.cy).conjugate(scale2d(sx, sy))
+    return (
+        translate2d(dst_rect.cx, dst_rect.cy)
+        * scale2d(sx, sy)
+        / translate2d(src_rect.cx, src_rect.cy)
+    )
 
 
 def rect2rect_tf(src_rects, dst_rects):
