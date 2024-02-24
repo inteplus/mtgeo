@@ -155,6 +155,11 @@ def cv2cg(height: int):
     -------
     tfm : Sim2d
         The output transformation
+
+    Notes
+    -----
+    This function is essentially the same as :func:`mt.geo2d.flipUD2d`, just different return
+    values.
     """
 
     return Sim2d(offset=np.array([0.0, height]), angle=m.pi, on=True)

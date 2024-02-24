@@ -1,15 +1,7 @@
 #!/usr/bin/env python3
 
-from setuptools import setup, Extension, find_packages, find_namespace_packages
-from Cython.Build import cythonize
+from setuptools import setup, find_packages, find_namespace_packages
 from mt.geo.version import version
-
-extensions = [
-    Extension(
-        name="mt.geo2d.linear_impl",
-        sources=["mt/geo2d/linear_impl.pyx"],
-    )
-]
 
 setup(
     name="mtgeo",
@@ -17,10 +9,6 @@ setup(
     description="The most fundamental geometric modules in Python for Minh-Tri Pham",
     author=["Minh-Tri Pham"],
     packages=find_packages() + find_namespace_packages(include=["mt.*"]),
-    ext_modules=cythonize(extensions, language_level=3),
-    package_data={
-        "mt.geo": ["*.pyx"],
-    },
     include_package_data=True,
     zip_safe=False,
     install_requires=[

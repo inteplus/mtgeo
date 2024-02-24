@@ -7,7 +7,7 @@ from .moments import Moments2d
 from .point_list import PointList2d
 from .polygon import Polygon
 from .rect import Rect
-from .linear import Lin2d, sshr2mat
+from .linear import sshr2mat
 
 
 __all__ = [
@@ -147,9 +147,7 @@ class Aff2d(TwoD, Aff):
         return self.__linear
 
     @linear.setter
-    def linear(self, value: tp.Union[np.ndarray, glm.mat2, glm.vec4, Lin2d]):
-        if isinstance(value, Lin2d):
-            value = value.matrix
+    def linear(self, value: tp.Union[np.ndarray, glm.mat2, glm.vec4]):
         elif isinstance(value, glm.vec4):
             value = sshr2mat(value)
         if isinstance(value, np.ndarray):
@@ -193,7 +191,7 @@ class Aff2d(TwoD, Aff):
     def __init__(
         self,
         offset=np.zeros(2),
-        linear: tp.Union[np.ndarray, glm.mat2, glm.vec4, Lin2d] = glm.mat2(),
+        linear: tp.Union[np.ndarray, glm.mat2, glm.vec4] = glm.mat2(),
     ):
         self.offset = offset
         self.linear = linear
