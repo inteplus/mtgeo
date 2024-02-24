@@ -1,8 +1,6 @@
 """Affine transformation in 3D."""
 
-import glm
-
-from mt import tp, np
+from mt import tp, np, glm
 import mt.base.casting as _bc
 
 from ..geo import ThreeD, register_transform, register_transformable

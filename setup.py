@@ -25,7 +25,7 @@ setup(
     zip_safe=False,
     install_requires=[
         "mtbase>=4.22",  # for basic functionalities
-        "pyglm",  # for matrix operations in C++
+        "mtglm",  # for matrix operations in C++
         "mttf",  # some functions use tensorflow and tensorflow-graphics tensors
         #'shapely', # aarch64 does not have libgeos-dev (deb) or geos-devel (yum) prebuilt yet so we can't run shapely on tx2 for now
     ],

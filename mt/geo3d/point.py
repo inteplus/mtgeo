@@ -5,8 +5,7 @@ representations instead of using single points implemented here.
 """
 
 
-import glm
-import numpy as np
+from mt import np, glm
 import mt.base.casting as _bc
 from ..geo import ThreeD
 from ..geond import Point, castable_ndarray_Point

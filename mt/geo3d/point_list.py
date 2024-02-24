@@ -1,8 +1,6 @@
 """The base class to represent a list of points."""
 
-import glm
-import numpy as np
-from mt import tp
+from mt import tp, np, glm
 import mt.base.casting as bc
 from ..geo import ThreeD
 from ..geond import PointList, castable_ndarray_PointList

@@ -1,7 +1,6 @@
 """Module supporting the Lin2d class."""
 
-import glm
-from mt import np
+from mt import np, glm
 
 from ..geo import register_transform, register_transformable
 from .linear_impl import Lin2d

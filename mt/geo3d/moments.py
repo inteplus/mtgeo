@@ -1,8 +1,6 @@
 """Raw moments up to 2nd order of 3D points."""
 
-import glm
-
-from mt import tp, np
+from mt import tp, np, glm
 import mt.base.casting as _bc
 
 from ..geo import ThreeD
