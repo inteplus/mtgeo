@@ -14,10 +14,9 @@ from ..geo import (
     register_lower_bound,
 )
 from ..geond import Hyperellipsoid
-from .affine import Aff2d, Lin2d, Aff
+from .affine import Aff2d, Aff
 from .rect import Rect
 from .moments import Moments2d
-from .linear import mat2sshr
 
 
 __all__ = [
@@ -56,11 +55,10 @@ class Ellipse(TwoD, GeometricObject):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from mt.geo2d import Aff2d, Ellipse, Lin2d
-    >>> a = Aff2d(offset=np.array([2,3]), linear=Lin2d(scale=np.array([0.3,7]), shear=0.3, angle=0.3))
-    >>> Ellipse(a)
-    Ellipse(aff_tfm=Aff2d(offset=[2 3], linear=Lin2d(scale=[-0.3  7. ], shear=-0.30000000000000787, angle=-1.5702443840777238)))
+    >>> from mt import np, glm, geo2d
+    >>> a = geo2d.Aff2d(offset=np.array([1,2]), linear=glm.vec4(0.3, 7, 0.3, 0.3))
+    >>> geo2d.Ellipse(a)
+    Ellipse(aff_tfm=Aff2d(offset=vec2( 1, 2 ), linear=mat2x2(( -0.0901656, -7 ), ( -0.29995, 0.0038636 ))))
 
     Notes
     -----
@@ -77,9 +75,7 @@ class Ellipse(TwoD, GeometricObject):
             raise ValueError("Only an instance of class `Aff2d` is accepted.")
         if make_normalised:
             U, S, VT = np.linalg.svd(aff_tfm.weight, full_matrices=False)
-            aff_tfm = Aff2d(
-                offset=aff_tfm.offset, linear=Lin2d.from_matrix(U @ np.diag(S))
-            )
+            aff_tfm = Aff2d(offset=aff_tfm.offset, linear=U @ np.diag(S))
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
@@ -144,7 +140,7 @@ def approx_Moments2d_to_Ellipse(obj):
     A = v @ np.diag(np.sqrt(w))
 
     # aff_tfm
-    aff_tfm = Aff2d(offset=obj.mean, linear=Lin2d.from_matrix(A))
+    aff_tfm = Aff2d(offset=obj.mean, linear=A)
     return Ellipse(aff_tfm)
 
 
@@ -192,7 +188,7 @@ def lower_bound_Rect_to_Ellipse(x):
     """
     if not isinstance(x, Rect):
         raise ValueError("Input type must be a `Rect`, '{}' given.".format(x.__class__))
-    return Ellipse(Aff2d(linear=Lin2d(scale=[x.w / 2, x.h / 2]), offset=x.center_pt))
+    return Ellipse(Aff2d(linear=glm.vec4(x.w / 2, x.h / 2, 0, 0), offset=x.center_pt))
 
 
 register_lower_bound(Rect, Ellipse, lower_bound_Rect_to_Ellipse)
