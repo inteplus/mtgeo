@@ -4,7 +4,6 @@ from mt import np
 import mt.base.casting as _bc
 
 from ..geond.dilated_isometry import Dliso
-from .linear import Lin2d
 from .affine import Aff2d
 
 
@@ -17,14 +16,21 @@ __all__ = [
 class Sim2d(Dliso):
     """Similarity (angle-preserving) transformation in 2D.
 
-    Consider the following family of 2D transformations: y = Sim2d(offset, scale, angle, on)(x) = Translate(offset)*UniformScale(scale)*Rotate(angle)*ReflectX(on)(x), where 'x' is a vector of coordinates in 2D, 'on' is a boolean, ReflectX is the reflection through the X axis (the axis of the first dimension), 'angle' is an angle in radian, Rotate is the 2D rotation, 'scale' is a positive scalar, UniformScale is uniform scaling, 'offset' is a vector of 2D coordinates and Translate is the translation.
+    Consider the following family of 2D transformations:
+    y = Sim2d(offset, scale, angle, on)(x) = Translate(offset)*UniformScale(scale)*Rotate(angle)*ReflectX(on)(x),
+    where 'x' is a vector of coordinates in 2D, 'on' is a boolean, ReflectX is the reflection
+    through the X axis (the axis of the first dimension), 'angle' is an angle in radian, Rotate is
+    the 2D rotation, 'scale' is a positive scalar, UniformScale is uniform scaling, 'offset' is a
+    vector of 2D coordinates and Translate is the translation.
 
-    This family forms a Lie group of 2 disconnected components, those without reflection and those with reflection. The Lie group multiplication and inverse operators are derived as below:
+    This family forms a Lie group of 2 disconnected components, those without reflection and those
+    with reflection. The Lie group multiplication and inverse operators are derived as below:
       - multiplication: Sim2d(offset_x, scale_x, angle_x, on_x)*Sim2d(offset_y, scale_y, angle_y, on_y) = Sim2d(offset_x + UniformScale(scale_x)*Rotate(angle_x)*ReflectX(on_x)(offset_y), scale_x*scale_y, angle_x + (-1)^{on_x} angle_y, on_x xor on_y)
       - inverse: ~Sim2d(offset, scale, angle, on) = Sim2d(-linear(scale, angle, on) offset, 1/scale, -(-1)^{on} angle, on)
 
     References:
-        [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not really, cheeky MT is trying to advertise his paper!)
+        [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not really, cheeky
+    MT is trying to advertise his paper!)
     """
 
     # ----- static methods -----
@@ -126,9 +132,7 @@ class Sim2d(Dliso):
 _bc.register_cast(
     Sim2d, Dliso, lambda x: Dliso(offset=x.offset, scale=x.scale, unitary=x.unitary)
 )
-_bc.register_cast(
-    Sim2d, Aff2d, lambda x: Aff2d(offset=x.offset, linear=Lin2d.from_matrix(x.linear))
-)
+_bc.register_cast(Sim2d, Aff2d, lambda x: Aff2d(offset=x.offset, linear=x.linear))
 
 
 # ---- utilities -----
