@@ -1,8 +1,7 @@
 """There are many definitions of an ellipse. In our case, an ellipse is an affine transform of the unit circle x^2+y^2=1."""
 
-from mt import np
+from mt import np, glm
 from mt.base.casting import register_cast, register_castable, cast
-from mt.base.deprecated import deprecated_func
 
 from ..geo import (
     GeometricObject,
@@ -74,8 +73,9 @@ class Ellipse(TwoD, GeometricObject):
         if not isinstance(aff_tfm, Aff2d):
             raise ValueError("Only an instance of class `Aff2d` is accepted.")
         if make_normalised:
-            U, S, VT = np.linalg.svd(aff_tfm.weight, full_matrices=False)
-            aff_tfm = Aff2d(offset=aff_tfm.offset, linear=U @ np.diag(S))
+            v = glm.svd2(aff_tfm.linear)
+            linear = glm.rot2(v.z) * glm.mat2diag(v.xy)
+            aff_tfm = Aff2d(offset=aff_tfm.offset, linear=linear)
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
