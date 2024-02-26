@@ -148,7 +148,7 @@ class Aff2d(TwoD, Aff):
 
     @linear.setter
     def linear(self, value: tp.Union[np.ndarray, glm.mat2, glm.vec4]):
-        elif isinstance(value, glm.vec4):
+        if isinstance(value, glm.vec4):
             value = sshr2mat(value)
         if isinstance(value, np.ndarray):
             self.__linear = glm.mat2(glm.vec2(value[:, 0]), glm.vec2(value[:, 1]))
