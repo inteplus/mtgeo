@@ -7,7 +7,7 @@ from .moments import Moments2d
 from .point_list import PointList2d
 from .polygon import Polygon
 from .rect import Rect
-from .linear import sshr2mat
+from .linear import sshr2mat, mat2sshr
 
 
 __all__ = [
@@ -411,7 +411,7 @@ def uncrop_rect(tfm: Aff2d) -> Rect:
     """
     tfm = ~tfm  # take the inverse
     x, y = tfm.bias
-    linear = glm.mat2sshr(tfm.linear)
+    linear = mat2sshr(tfm.linear)
     w, h = linear.xy
     return Rect(x, y, x + w, y + h)
 
