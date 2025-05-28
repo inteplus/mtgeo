@@ -31,7 +31,7 @@ __all__ = [
 class Ellipse(TwoD, GeometricObject):
     """Ellipse, defined as an affine transform the unit circle x^2+y^2=1.
 
-    If the unit circle is parameterised by `(cos(t), sin(t))` where `t \in [0,2\pi)` then the
+    If the unit circle is parameterised by `(cos(t), sin(t))` where `t \\in [0,2\\pi)` then the
     ellipse is parameterised by `f0 + f1 cos(t) + f2 sin(t)`, where `f0` is the bias vector, `f1`
     and `f2` are the first and second column of the weight matrix respectively, of the affine
     transformation. `f1` and `f2` are called first and second axes of the ellipse.
