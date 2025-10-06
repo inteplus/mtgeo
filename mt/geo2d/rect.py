@@ -235,6 +235,15 @@ class Rect(HasShapely, TwoD, Hyperbox):
             self.max_y + offset[1],
         )
 
+    # ----- approximation -----
+
+    def approx_to_square(self) -> "Rect":
+        """Returns an approximated square of the same area, centered at the same point."""
+        side = np.sqrt(self.area)
+        cx, cy = self.cx, self.cy
+        half_side = side / 2
+        return Rect(cx - half_side, cy - half_side, cx + half_side, cy + half_side)
+
 
 # ----- casting -----
 
