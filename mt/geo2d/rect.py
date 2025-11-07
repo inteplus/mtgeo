@@ -1,6 +1,9 @@
 """A 2D rectangle."""
 
-from mt import np
+
+import math
+
+from mt import np, tp
 from mt.base.casting import *
 
 from ..geo import TwoD, register_approx, register_join_volume, join_volume
@@ -249,6 +252,37 @@ class Rect(HasShapely, TwoD, Hyperbox):
         r = max(self.w, self.h) * 0.5
         cx, cy = self.cx, self.cy
         return Rect(cx - r, cy - r, cx + r, cy + r)
+
+    def enlarge_to_square_crop(self, imgres: tp.Iterable[int], min_length: int = 224) -> "Rect":
+        """Returns an enlarged square containing the rectangle.
+
+        The enlarged square is guaranteed to reside completey in a given image resolution and to
+        have length equal or greater than a minimal length.
+
+        Parameters
+        ----------
+        imgres : iterable
+            tuple [width, height] defining the image resolution where the square must stay fully inside
+        min_length : int
+            minimal number of pixels in each dimension of the output square
+
+        Returns
+        -------
+        Rect
+            a square satisfying the conditions above, with all coordinates being integer
+        """
+        l = math.ceil(max(self.w, self.h))
+        l = int(max(l, min_length))
+
+        mx = int(self.cx - l/2)
+        mx = max(mx, 0)
+        mx = min(mx, imgres[0] - l)
+
+        my = int(self.cy - l/2)
+        my = max(my, 0)
+        my = min(my, imgres[1] - l)
+
+        return Rect(mx, my, mx+l, my+l)
 
 
 # ----- casting -----
