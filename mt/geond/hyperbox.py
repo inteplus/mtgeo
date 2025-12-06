@@ -1,14 +1,15 @@
-'''Hyperrectangle.'''
+"""Hyperrectangle."""
 
 from mt import np
 from ..geo import GeometricObject, join_volume, register_join_volume
 from .dilatation import Dlt
 from .iou import iou_impl
 
-__all__ = ['Hyperbox']
+__all__ = ["Hyperbox"]
+
 
 class Hyperbox(GeometricObject):
-    '''Axis-aligned n-dimensional hyperrectangle.
+    """Axis-aligned n-dimensional hyperrectangle.
 
     An axis-aligned n-dimensional box/hyperrectangle is defined as the set of points of the hypercube [-1,1]^n transformed by a dilatation.
 
@@ -41,13 +42,13 @@ class Hyperbox(GeometricObject):
         center point
     size : size/point
         box size
-    '''
+    """
 
     # ----- data encapsulation -----
 
     @property
     def dlt_tfm(self):
-        '''the dilatation'''
+        """the dilatation"""
         return self.__dlt_tfm
 
     @dlt_tfm.setter
@@ -58,52 +59,52 @@ class Hyperbox(GeometricObject):
 
     @classmethod
     def ndim(self):
-        '''The dimensionality'''
+        """The dimensionality"""
         return self.dim
 
     @property
     def dim(self):
-        '''The dimensionality'''
+        """The dimensionality"""
         return self.dlt_tfm.dim
 
     @property
     def minus_pt(self):
-        '''The (-1,)^n point after being transformed by the dilatation.'''
+        """The (-1,)^n point after being transformed by the dilatation."""
         return self.dlt_tfm.offset - self.dlt_tfm.scale
 
     @property
     def plus_pt(self):
-        '''The (+1,)^n point after being transformed by the dilatation.'''
+        """The (+1,)^n point after being transformed by the dilatation."""
         return self.dlt_tfm.offset + self.dlt_tfm.scale
 
     @property
     def min_coords(self):
-        '''minimum coordinates'''
+        """minimum coordinates"""
         return np.minimum(self.minus_pt, self.plus_pt)
 
     @property
     def max_coords(self):
-        '''maximum coordinates'''
+        """maximum coordinates"""
         return np.maximum(self.minus_pt, self.plus_pt)
 
     @property
     def center_pt(self):
-        '''center point'''
+        """center point"""
         return self.dlt_tfm.offset
 
     @property
     def size(self):
-        '''box size'''
-        return np.abs(self.dlt_tfm.scale*2)
+        """box size"""
+        return np.abs(self.dlt_tfm.scale * 2)
 
     @property
     def signed_volume(self):
-        '''signed (hyper-)volume'''
-        return (self.max_coords-self.min_coords).prod()
+        """signed (hyper-)volume"""
+        return (self.max_coords - self.min_coords).prod()
 
     @property
     def volume(self):
-        '''absolute/unsigned (hyper-)volume'''
+        """absolute/unsigned (hyper-)volume"""
         return abs(self.signed_volume)
 
     # ----- methods -----
@@ -115,12 +116,18 @@ class Hyperbox(GeometricObject):
             if max_coords is None:
                 max_coords = min_coords
                 min_coords = np.zeros(dim)
-            self.dlt_tfm = Dlt(offset=(max_coords + min_coords)/2, scale=(max_coords-min_coords)/2)
+            self.dlt_tfm = Dlt(
+                offset=(max_coords + min_coords) / 2,
+                scale=(max_coords - min_coords) / 2,
+            )
 
         if force_valid:
             min_coords = self.min_coords
             max_coords = self.max_coords
-            self.dlt_tfm = Dlt(offset=(max_coords + min_coords)/2, scale=(max_coords-min_coords)/2)
+            self.dlt_tfm = Dlt(
+                offset=(max_coords + min_coords) / 2,
+                scale=(max_coords - min_coords) / 2,
+            )
 
     def __repr__(self):
         return "Hyperbox({})".format(self.dlt_tfm)
@@ -129,23 +136,36 @@ class Hyperbox(GeometricObject):
         return (self.dlt_tfm.scale >= 0).all()
 
     def validated(self):
-        '''Returns a validated version of the box.'''
+        """Returns a validated version of the box."""
         min_coords = self.min_coords
         max_coords = self.max_coords
-        return Hyperbox(Dlt(offset=(max_coords + min_coords)/2, scale=max_coords-min_coords))
+        return Hyperbox(
+            Dlt(offset=(max_coords + min_coords) / 2, scale=max_coords - min_coords)
+        )
 
     def intersect(self, other):
-        return Hyperbox(np.maximum(self.min_coords, other.min_coords), np.minimum(self.max_coords, other.max_coords))
+        return Hyperbox(
+            np.maximum(self.min_coords, other.min_coords),
+            np.minimum(self.max_coords, other.max_coords),
+        )
 
-    def iou(self, other, epsilon=1E-7):
-        return iou_impl(self.intersect(other).volume, self.volume, other.volume, eps=epsilon)
-        
+    def box_union(self, other):
+        return Hyperbox(
+            np.minimum(self.min_coords, other.min_coords),
+            np.maximum(self.max_coords, other.max_coords),
+        )
+
+    def iou(self, other, epsilon=1e-7):
+        return iou_impl(
+            self.intersect(other).volume, self.volume, other.volume, eps=epsilon
+        )
+
 
 # ----- joining volumes -----
 
 
 def join_volume_Hyperbox_and_Hyperbox(obj1, obj2):
-    '''Joins the volumes of two Hyperboxes of the same dimension.
+    """Joins the volumes of two Hyperboxes of the same dimension.
 
     Parameters
     ----------
@@ -164,12 +184,23 @@ def join_volume_Hyperbox_and_Hyperbox(obj1, obj2):
         the volume of the interior of obj2 that does not belong to obj1
     union_volume : float
         the volume of the union of the two hyperboxes' interior regions
-    '''
+    """
     if obj1.dim != obj2.dim:
-        raise ValueError("Two objects of dimension {} and {} are not in the same space.".format(obj1.dim, obj2.dim))
+        raise ValueError(
+            "Two objects of dimension {} and {} are not in the same space.".format(
+                obj1.dim, obj2.dim
+            )
+        )
     inter = obj1.intersect(obj2)
     inter_volume = inter.volume
     obj1_volume = obj1.volume
     obj2_volume = obj2.volume
-    return (inter_volume, obj1_volume - inter_volume, obj2_volume - inter_volume, obj1_volume + obj2_volume - inter_volume)
+    return (
+        inter_volume,
+        obj1_volume - inter_volume,
+        obj2_volume - inter_volume,
+        obj1_volume + obj2_volume - inter_volume,
+    )
+
+
 register_join_volume(Hyperbox, Hyperbox, join_volume_Hyperbox_and_Hyperbox)

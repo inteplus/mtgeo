@@ -1,6 +1,5 @@
 """A 2D rectangle."""
 
-
 import math
 
 from mt import np, tp
@@ -225,6 +224,12 @@ class Rect(HasShapely, TwoD, Hyperbox):
             res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1]
         )
 
+    def box_union(self, other):
+        res = super(Rect, self).box_union(other)
+        return Rect(
+            res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1]
+        )
+
     def iou(self, other, epsilon=1e-7):
         inter, _, _, union = join_volume(self, other)
         return inter / (union + epsilon)
@@ -253,7 +258,9 @@ class Rect(HasShapely, TwoD, Hyperbox):
         cx, cy = self.cx, self.cy
         return Rect(cx - r, cy - r, cx + r, cy + r)
 
-    def enlarge_to_square_crop(self, imgres: tp.Iterable[int], min_length: int = 224) -> "Rect":
+    def enlarge_to_square_crop(
+        self, imgres: tp.Iterable[int], min_length: int = 224
+    ) -> "Rect":
         """Returns an enlarged square containing the rectangle.
 
         The enlarged square is guaranteed to reside completey in a given image resolution and to
@@ -274,15 +281,15 @@ class Rect(HasShapely, TwoD, Hyperbox):
         l = math.ceil(max(self.w, self.h))
         l = int(max(l, min_length))
 
-        mx = int(self.cx - l/2)
+        mx = int(self.cx - l / 2)
         mx = max(mx, 0)
         mx = min(mx, imgres[0] - l)
 
-        my = int(self.cy - l/2)
+        my = int(self.cy - l / 2)
         my = max(my, 0)
         my = min(my, imgres[1] - l)
 
-        return Rect(mx, my, mx+l, my+l)
+        return Rect(mx, my, mx + l, my + l)
 
 
 # ----- casting -----
