@@ -23,13 +23,13 @@ setup(
         "Documentation": "https://mtdoc.readthedocs.io/en/latest/mt.geo/mt.geo.html",
         "Source Code": "https://github.com/inteplus/mtgeo",
     },
-    setup_requires=["setuptools-git-versioning<2"],
+    setup_requires=["setuptools-git-versioning>=3,<4"],
     setuptools_git_versioning={
         "enabled": True,
         "version_file": VERSION_FILE,
         "count_commits_from_version_file": True,
         "template": "{tag}",
-        "dev_template": "{tag}.dev{ccount}+{branch}",
-        "dirty_template": "{tag}.post{ccount}",
+        "dev_template": "{tag}",
+        "dirty_template": "{tag}",
     },
 )
