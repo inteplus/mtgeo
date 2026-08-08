@@ -13,8 +13,8 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        "mtbase>=4.33.2",  # for basic functionalities
-        "mtglm>=0.1",  # to have svd2() and svd3()
+        "mtbase>=4.33.34",  # for basic functionalities
+        "mtglm>=0.2.0",  # to have svd2() and svd3()
         #'shapely', # aarch64 does not have libgeos-dev (deb) or geos-devel (yum) prebuilt yet so we can't run shapely on tx2 for now
     ],
     url="https://github.com/inteplus/mtgeo",
