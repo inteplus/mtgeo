@@ -1,4 +1,8 @@
-"""Affine transformation in ND."""
+"""Affine transformation in ND.
+
+The module provides :class:`Aff`, an affine map `x -> weight @ x + bias` in an n-dimensional
+space, together with the functions that apply it to numpy point arrays, point lists and moments.
+"""
 
 from mt import np
 from mt.base import logger
@@ -21,6 +25,29 @@ __all__ = ["Aff", "transform_Aff_on_Moments", "transform_Aff_on_PointList"]
 class Aff(LieTransformer, GeometricObject):
     """A transformer to perform affine transformations using the same transformation matrix in n-dim
     space.
+
+    The transformation maps a point `x` to `weight @ x + bias`, where `weight` is a square matrix
+    and `bias` a vector of the same size, whose length is the dimension `dim` (also `ndim`) of the
+    space. Transformations are composed with `a*b` (apply `b` first, then `a`), inverted with `~a`,
+    and applied to objects with `a << obj` (or undone with `a >> obj`). It can transform numpy
+    arrays whose last axis has length `dim`, :class:`PointList` and :class:`Moments`. As a
+    :class:`mt.geo.LieTransformer` it also supports `a/b`, `a%b` and `a.conjugate(b)`.
+
+    Parameters
+    ----------
+    weight : numpy.ndarray
+        the 2D weight/linear matrix. Defaults to the 3x3 identity matrix.
+    bias : numpy.ndarray
+        the 1D bias/translation vector. Defaults to the zero vector of length 3.
+    check_shapes : bool
+        whether to check that `weight` is a square matrix whose size matches the length of `bias`.
+        If the check fails, a `ValueError` is raised.
+
+    See Also
+    --------
+    mt.geo3d.Aff3d : the 3D version, implemented in glm
+    Dlt : dilatation, a special case with a diagonal weight matrix
+    Dliso : dilated isometry, a special case with a uniformly scaled unitary weight matrix
 
     Examples
     --------
@@ -60,6 +87,12 @@ class Aff(LieTransformer, GeometricObject):
     Aff(weight_diagonal=[3 9], bias=[1 0])
     >>> a.conjugate(b)
     Aff(weight_diagonal=[ 6. -3.], bias=[-18.  66.])
+    >>> a << np.array([1, 1])
+    array([3, 5])
+    >>> a >> (a << np.array([1., 1.]))
+    array([1., 1.])
+    >>> a.det
+    1.0
     """
 
     # ----- base adaptation -----
@@ -69,14 +102,41 @@ class Aff(LieTransformer, GeometricObject):
         return self.dim
 
     def invert(self):
-        """Lie inverse"""
+        """Returns the inverse transformation `x -> inv(weight) @ (x - bias)`.
+
+        The weight matrix is assumed to be invertible. A numpy `LinAlgError` is raised if it is
+        singular.
+
+        Returns
+        -------
+        Aff
+            the inverse transformation
+        """
         invWeight = np.linalg.inv(
             self.weight
         )  # slow, and assuming weight matrix is invertible
         return Aff(invWeight, np.dot(invWeight, -self.bias))
 
     def multiply(self, other):
-        """a*b = Lie operator"""
+        """Composes two affine transformations: `a*b` applies `b` first, then `a`.
+
+        The result has weight `a.weight @ b.weight` and bias `a << b.bias`.
+
+        Parameters
+        ----------
+        other : Aff
+            the transformation to apply first
+
+        Returns
+        -------
+        Aff
+            the composed transformation
+
+        Raises
+        ------
+        ValueError
+            if `other` is not an instance of :class:`Aff`
+        """
         if not isinstance(other, Aff):
             raise ValueError(
                 f"Expecting 'other' to be an affine transformation, but {other.__class__} received."
@@ -87,7 +147,10 @@ class Aff(LieTransformer, GeometricObject):
 
     @property
     def bias(self):
-        """The bias component of the affine transformation matrix."""
+        """The bias/translation vector of the affine transformation (1D numpy array).
+
+        The setter raises `ValueError` if the value is not a 1D array.
+        """
         return self.__bias
 
     @bias.setter
@@ -98,7 +161,10 @@ class Aff(LieTransformer, GeometricObject):
 
     @property
     def weight(self):
-        """The weight/linear component of the affine transformation matrix."""
+        """The weight/linear matrix of the affine transformation (2D numpy array).
+
+        The setter raises `ValueError` if the value is not a 2D array.
+        """
         return self.__weight
 
     @weight.setter
@@ -111,17 +177,23 @@ class Aff(LieTransformer, GeometricObject):
 
     @property
     def bias_dim(self):
-        """Returns the dimension of the bias vector."""
+        """Returns the dimension (length) of the bias vector."""
         return self.bias.shape[0]
 
     @property
     def weight_shape(self):
-        """Returns the shape of the weight matrix."""
+        """Returns the shape of the weight matrix, as a tuple."""
         return self.weight.shape
 
     @property
     def dim(self):
-        """Returns the dimension of the transformation."""
+        """Returns the dimension of the transformation, which is the length of the bias vector.
+
+        Raises
+        ------
+        ValueError
+            if the weight matrix is not square with the same size as the bias vector
+        """
         val = self.bias_dim
         if self.weight_shape != (val, val):
             raise ValueError(
@@ -131,7 +203,11 @@ class Aff(LieTransformer, GeometricObject):
 
     @property
     def matrix(self):
-        """Returns the transformation matrix."""
+        """Returns the homogeneous transformation matrix as a `(dim+1, dim+1)` float array.
+
+        The top-left block is the weight matrix, the last column holds the bias and the last row is
+        `[0, ..., 0, 1]`.
+        """
         dim = self.dim
         a = np.empty((dim + 1, dim + 1))
         a[:dim, :dim] = self.weight
@@ -142,7 +218,8 @@ class Aff(LieTransformer, GeometricObject):
 
     @property
     def det(self):
-        """Returns the determinant of the transformation matrix."""
+        """Returns the determinant of the weight matrix. Its absolute value is the factor by which
+        volumes are scaled by the transformation."""
         return np.linalg.det(self.weight)  # slow method
 
     # ----- methods -----
@@ -162,6 +239,10 @@ class Aff(LieTransformer, GeometricObject):
 
 def transform_Aff_on_Moments(aff_tfm, moments):
     """Transform the Moments using an affine transformation.
+
+    The mean becomes `A @ mean + bias`, the covariance matrix becomes `A @ cov @ A.T` and the 0th
+    moment is multiplied by `abs(det A)`, where `A` is the weight matrix. It is the function
+    registered to apply an :class:`Aff` to a :class:`Moments`.
 
     Parameters
     ----------
@@ -193,18 +274,21 @@ register_transform(Aff, Moments, transform_Aff_on_Moments)
 def transform_Aff_on_ndarray(aff_tfm, point_array):
     """Transform an array of points using an affine transformation.
 
+    It computes `point_array @ weight.T + bias`, so each row (or last-axis vector) of the array is
+    a point. It is the function registered to apply an :class:`Aff` to a `numpy.ndarray`.
+
     Parameters
     ----------
     aff_tfm : Aff
         general affine transformation
-    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of
-    the transformation
-        a point array
+    point_array : numpy.ndarray
+        a point array whose last dimension has the same length as the dimensionality of the
+        transformation
 
     Returns
     -------
     numpy.ndarray
-        affine-transformed point array
+        affine-transformed point array, of the same shape as the input
     """
     return point_array @ aff_tfm.weight.T + aff_tfm.bias
 
@@ -215,6 +299,8 @@ register_transformable(Aff, np.ndarray, lambda x, y: x.ndim == y.shape[-1])
 
 def transform_Aff_on_PointList(aff_tfm, point_list):
     """Transform a point list using an affine transformation.
+
+    It is the function registered to apply an :class:`Aff` to a :class:`PointList`.
 
     Parameters
     ----------

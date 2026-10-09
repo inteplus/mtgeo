@@ -12,19 +12,21 @@ class Hypercube(GeometricObject):
     '''Axis-aligned n-dimensional hypercube.
 
     An axis-aligned n-dimensional hypercube is defined as the set of points of the hypercube
-    [-1,1]^n transformed by a dilated translation.
+    [-1,1]^n transformed by a dilated translation. Its center is the offset of the translation and
+    its half side length is the scale.
 
     Parameters
     ----------
     offset_or_dltra : 1d array or Dltra
         array of coordinate values of the center of the hypercube or the dilated translation itself.
     scale : float
-        if the first argument is an offset, this argument specifies the uniform scale
+        if the first argument is an offset, this argument specifies the uniform scale. Defaults to
+        1.
 
     Attributes
     ----------
-    dltra_tfm : Dlt
-        the dilatation equivalent, which can be get/set
+    dltra_tfm : Dltra
+        the dilated translation equivalent, which can be get/set
     dim : int
         number of dimensions
     minus_pt : point
@@ -39,13 +41,26 @@ class Hypercube(GeometricObject):
         center point
     size : size/point
         box size
+
+    See Also
+    --------
+    Hyperbox : axis-aligned box with a possibly different length per dimension
+    Dltra : the dilated translation behind the hypercube
+
+    Notes
+    -----
+    The code of this class is not finished: the constructor currently raises `NameError` (it tests
+    the undefined name `min_coords` instead of `offset_or_dltra`), and `center_pt` and `size` refer
+    to a non-existing attribute `dlt_tfm`, so a hypercube cannot be created yet. The class is
+    registered to cast to :class:`Hyperbox` and as an approximation of a :class:`Hyperbox`.
     '''
 
     # ----- data encapsulation -----
 
     @property
     def dltra_tfm(self):
-        '''the dilatation'''
+        '''the dilated translation mapping the hypercube [-1,1]^n to this hypercube, which can be
+        get and set'''
         return self.__dltra_tfm
 
     @dltra_tfm.setter
@@ -56,42 +71,45 @@ class Hypercube(GeometricObject):
 
     @classmethod
     def ndim(self):
-        '''The dimensionality'''
+        '''The dimensionality.
+
+        As written, it is a class method returning the unevaluated `dim` property; use `dim`.
+        '''
         return self.dim
 
     @property
     def dim(self):
-        '''The dimensionality'''
+        '''The dimensionality, i.e. the number of dimensions of the dilated translation.'''
         return self.dltra_tfm.dim
 
     @property
     def minus_pt(self):
-        '''The (-1,)^n point after being transformed by the dilatation.'''
+        '''The (-1,)^n point after being transformed, i.e. `offset - scale`.'''
         return self.dltra_tfm.offset - self.dltra_tfm.scale
 
     @property
     def plus_pt(self):
-        '''The (+1,)^n point after being transformed by the dilatation.'''
+        '''The (+1,)^n point after being transformed, i.e. `offset + scale`.'''
         return self.dltra_tfm.offset + self.dltra_tfm.scale
 
     @property
     def min_coords(self):
-        '''minimum coordinates'''
+        '''minimum coordinates (`minus_pt` if the scale is non-negative, else `plus_pt`)'''
         return self.minus_pt if self.dltra_tfm.scale >= 0 else self.plus_pt
 
     @property
     def max_coords(self):
-        '''maximum coordinates'''
+        '''maximum coordinates (`plus_pt` if the scale is non-negative, else `minus_pt`)'''
         return self.plus_pt if self.dltra_tfm.scale >= 0 else self.minus_pt
 
     @property
     def center_pt(self):
-        '''center point'''
+        '''center point, intended to be the offset of the dilated translation'''
         return self.dlt_tfm.offset
 
     @property
     def size(self):
-        '''box size'''
+        '''box size, intended to be `abs(2 * scale)`'''
         return np.abs(self.dlt_tfm.scale*2)
 
     # ----- methods -----

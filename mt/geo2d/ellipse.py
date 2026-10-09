@@ -48,17 +48,38 @@ class Ellipse(TwoD, GeometricObject):
     Parameters
     ----------
     aff_tfm : Aff2d
-        an affine transformation
+        an affine transformation of the unit circle
     make_normalised : bool
-        whether or not to adjust the affine transformation to make a normalised representation of
-        the ellipse
+        whether or not to adjust the affine transformation (via an SVD of its linear part) to make
+        a normalised representation of the ellipse. Default is True.
+
+    Raises
+    ------
+    ValueError
+        if `aff_tfm` is not an instance of :class:`~mt.geo2d.Aff2d`
+
+    Attributes
+    ----------
+    aff_tfm : Aff2d
+        the affine transformation (after normalisation if requested)
+    f0 : numpy.ndarray
+        the origin (center), shape (2,)
+    f1, f2 : numpy.ndarray
+        the first and second axes, shape (2,)
+    area : float
+        the area of the ellipse's interior
 
     Examples
     --------
     >>> from mt import np, glm, geo2d
-    >>> a = geo2d.Aff2d(offset=np.array([1,2]), linear=glm.vec4(0.3, 7, 0.3, 0.3))
-    >>> geo2d.Ellipse(a)
-    Ellipse(aff_tfm=Aff2d(offset=vec2( 1, 2 ), linear=mat2x2(( -0.0901656, -7 ), ( -0.29995, 0.0038636 ))))
+    >>> a = geo2d.Aff2d(offset=np.array([5., 5.]), linear=glm.vec4(3, 2, 0, 0))  # scales (3,2)
+    >>> e = geo2d.Ellipse(a)
+    >>> e
+    Ellipse(aff_tfm=Aff2d(offset=vec2( 5, 5 ), linear=mat2x2(( 3, 0 ), ( 0, 2 ))))
+    >>> e.f0, e.f1, e.f2
+    (array([5., 5.], dtype=float32), array([3., 0.], dtype=float32), array([0., 2.], dtype=float32))
+    >>> round(e.area, 3)  # pi * 3 * 2
+    18.85
 
     Notes
     -----
@@ -70,7 +91,7 @@ class Ellipse(TwoD, GeometricObject):
     """
 
     def __init__(self, aff_tfm, make_normalised=True):
-        """Initialises an ellipse with an affine transformation."""
+        """Initialises an ellipse with an affine transformation. See the class docstring."""
         if not isinstance(aff_tfm, Aff2d):
             raise ValueError("Only an instance of class `Aff2d` is accepted.")
         if make_normalised:
@@ -84,27 +105,34 @@ class Ellipse(TwoD, GeometricObject):
 
     @property
     def f0(self):
-        """origin"""
+        """numpy.ndarray: the origin (center), the bias of the affine transformation."""
         return self.aff_tfm.bias
 
     @property
     def f1(self):
-        """first axis"""
+        """numpy.ndarray: the first axis, the first column of the weight matrix."""
         return self.aff_tfm.weight[:, 0]
 
     @property
     def f2(self):
-        """second axis"""
+        """numpy.ndarray: the second axis, the second column of the weight matrix."""
         return self.aff_tfm.weight[:, 1]
 
     @property
     def area(self):
-        """The absolute area of the ellipse's interior."""
+        """The absolute area of the ellipse's interior, `pi*abs(det)` of the linear part."""
         return np.pi * abs(self.aff_tfm.det)
 
     def normalised(self):
         """Returns an equivalent ellipse where f1 and f2 are perpendicular (linearly
-        independent)."""
+        independent).
+
+        Returns
+        -------
+        Ellipse
+            the same ellipse, represented with a weight matrix being a rotation times a diagonal
+            matrix
+        """
         return Ellipse(self.aff_tfm, make_normalised=True)
 
 
@@ -125,7 +153,14 @@ register_castable(Hyperellipsoid, Ellipse, lambda x: x.ndim == 2)
 
 
 def cast_Ellipse_to_Moments2d(obj):
-    """Extracts Moments2d from an Ellipse instance."""
+    """Extracts Moments2d from an Ellipse instance.
+
+    The moments are those of the ellipse's interior: the moments of the unit disk transformed by
+    the ellipse's affine transformation.
+
+    Note that it currently fails, because the transformation of Moments2d by Aff2d
+    (:func:`~mt.geo2d.transform_Aff2d_on_Moments2d`) raises AttributeError.
+    """
     a = np.pi / 4
     moments = Moments2d(np.pi, [0, 0], [[a, 0], [0, a]])  # unit circle's moments
     return transform(obj.aff_tfm, moments)  # transform
@@ -136,7 +171,26 @@ register_cast(Ellipse, Moments2d, cast_Ellipse_to_Moments2d)
 
 def approx_Moments2d_to_Ellipse(obj):
     """Approximates a Moments2d instance with a normalised Ellipse that has the same mean and
-    covariance as the mean and covariance of the instance."""
+    covariance as the mean and covariance of the instance.
+
+    Parameters
+    ----------
+    obj : Moments2d
+        the moments to approximate
+
+    Returns
+    -------
+    Ellipse
+        the normalised ellipse whose interior has the mean and covariance of `obj` (the area
+        `m0` of the moments is not used)
+
+    Examples
+    --------
+    >>> from mt.geo2d import Moments2d, approx_Moments2d_to_Ellipse
+    >>> m = Moments2d(1, [3, 4], [[13, 12], [12, 17]])  # mean (3,4), covariance diag(4,1)
+    >>> approx_Moments2d_to_Ellipse(m)
+    Ellipse(aff_tfm=Aff2d(offset=vec2( 3, 4 ), linear=mat2x2(( 4, 0 ), ( 0, 2 ))))
+    """
     # A
     AAT = obj.cov * 4
     w, v = np.linalg.eig(AAT)
@@ -164,7 +218,15 @@ def upper_bound_Ellipse_to_Rect(obj):
     Returns
     -------
     Rect
-        a bounding Rect of the ellipse
+        a bounding Rect of the ellipse (the tightest axis-aligned one)
+
+    Examples
+    --------
+    >>> from mt import np, glm
+    >>> from mt.geo2d import Aff2d, Ellipse, upper_bound_Ellipse_to_Rect
+    >>> e = Ellipse(Aff2d(offset=np.array([5., 5.]), linear=glm.vec4(3, 2, 0, 0)))
+    >>> upper_bound_Ellipse_to_Rect(e)
+    Rect(x=2.0, y=3.0, w=6.0, h=4.0)
     """
     weight = obj.aff_tfm.weight
     mx = np.linalg.norm(weight[0])
@@ -187,7 +249,18 @@ def lower_bound_Rect_to_Ellipse(x):
     Returns
     -------
     Ellipse
-        the axis-aligned ellipse enclosed by the rectangle
+        the axis-aligned ellipse enclosed by the rectangle (touching the four sides)
+
+    Raises
+    ------
+    ValueError
+        if `x` is not a :class:`~mt.geo2d.Rect`
+
+    Examples
+    --------
+    >>> from mt.geo2d import Rect, lower_bound_Rect_to_Ellipse
+    >>> lower_bound_Rect_to_Ellipse(Rect(0, 0, 6, 4))
+    Ellipse(aff_tfm=Aff2d(offset=vec2( 3, 2 ), linear=mat2x2(( 3, 0 ), ( 0, 2 ))))
     """
     if not isinstance(x, Rect):
         raise ValueError(f"Input type must be a `Rect`, '{x.__class__}' given.")
@@ -215,6 +288,15 @@ def transform_Aff2d_on_Ellipse(aff_tfm, obj):
     -------
     Ellipse
         the affine-transformed ellipse
+
+    Examples
+    --------
+    >>> from mt import np, glm
+    >>> from mt.geo import transform
+    >>> from mt.geo2d import Aff2d, Ellipse, translate2d
+    >>> e = Ellipse(Aff2d(offset=np.array([5., 5.]), linear=glm.vec4(3, 2, 0, 0)))
+    >>> transform(translate2d(1, 1), e)
+    Ellipse(aff_tfm=Aff2d(offset=vec2( 6, 6 ), linear=mat2x2(( 3, 0 ), ( 0, 2 ))))
     """
     return Ellipse(aff_tfm * obj.aff_tfm)
 

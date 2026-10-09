@@ -14,9 +14,38 @@ class Dlt(Aff):
     '''Dilatation (scaling and translation) in n-dim space. Here, scaling is per dimension, not
     uniform scaling.
 
+    A dilatation maps a point `x` to `scale * x + offset` (element-wise product), so it is an affine
+    transformation whose weight matrix is `diag(scale)` and whose bias is `offset`. It is cheaper
+    than :class:`Aff` and is the representation behind :class:`Hyperbox`. A negative scale flips
+    the corresponding axis. The inherited operators `*`, `/`, `%`, `~`, `<<` and `>>` work as in
+    :class:`Aff`; multiplying two dilatations gives a dilatation, while mixing with another affine
+    transformation gives an :class:`Aff`.
+
+    Parameters
+    ----------
+    offset : numpy.ndarray
+        the 1D translation vector. Defaults to the zero vector of length 3.
+    scale : numpy.ndarray
+        the 1D vector of per-dimension scales. Defaults to the ones vector of length 3.
+    check_shapes : bool
+        whether to check that `offset` and `scale` have the same length, raising `ValueError`
+        otherwise
+
+    Attributes
+    ----------
+    offset : numpy.ndarray
+        the offset vector, same as `bias`
+    scale : numpy.ndarray
+        the scale vector. The weight matrix is `weight = diag(scale)`.
+
+    See Also
+    --------
+    Aff : general affine transformation
+    Hyperbox : axis-aligned box defined via a dilatation
+
     Examples
     --------
-    >>> import numpy as _np
+    >>> import numpy as np
     >>> from mt.geond.dilatation import Dlt
     >>> a = Dlt(offset=np.array([1,2]), scale=np.array([3,4]))
     >>> ~a
@@ -27,7 +56,7 @@ class Dlt(Aff):
     Dlt(offset=[0. 0.], scale=[1. 1.])
     >>> a%a
     Dlt(offset=[0. 0.], scale=[1. 1.])
-    >>> b = _mg.Dlt(offset=np.array([1,0.5]), scale=np.array([1/3,0.25]))
+    >>> b = Dlt(offset=np.array([1,0.5]), scale=np.array([1/3,0.25]))
     >>> a*b
     Dlt(offset=[4. 4.], scale=[1. 1.])
     >>> b*a
@@ -38,6 +67,13 @@ class Dlt(Aff):
     Dlt(offset=[0.88888889 0.375     ], scale=[0.11111111 0.0625    ])
     >>> a << np.ones(2)
     array([4., 6.])
+    >>> a.weight
+    array([[3, 0],
+           [0, 4]])
+    >>> a.matrix
+    array([[3., 0., 1.],
+           [0., 4., 2.],
+           [0., 0., 1.]])
     '''
 
     # ----- base adaptation -----
@@ -81,7 +117,10 @@ class Dlt(Aff):
 
     @property
     def offset(self):
-        '''The offset/bias part of the dilated isometry.'''
+        '''The offset/bias vector of the dilatation (1D numpy array).
+
+        The setter raises `ValueError` if the value is not a 1D array.
+        '''
         return self.__offset
 
     @offset.setter
@@ -92,7 +131,10 @@ class Dlt(Aff):
 
     @property
     def scale(self):
-        '''The scale component/scalar of the dilated isometry.'''
+        '''The per-dimension scale vector of the dilatation (1D numpy array).
+
+        The setter raises `ValueError` if the value is not a 1D array.
+        '''
         return self.__scale
 
     @scale.setter
@@ -141,7 +183,11 @@ _bc.register_castable(
 
 
 def transform_Dlt_on_Moments(dlt_tfm, moments):
-    '''Transform the Moments using an affine transformation.
+    '''Transform the Moments using a dilatation.
+
+    The mean becomes `scale * mean + offset`, the covariance matrix becomes
+    `diag(scale) @ cov @ diag(scale)` and the 0th moment is multiplied by `abs(prod(scale))`. It is
+    the function registered to apply a :class:`Dlt` to a :class:`Moments`.
 
     Parameters
     ----------
@@ -153,7 +199,7 @@ def transform_Dlt_on_Moments(dlt_tfm, moments):
     Returns
     -------
     Moments
-        affined-transformed moments
+        dilated moments
     '''
     a = dlt_tfm.scale
     A = np.diag(a)
@@ -172,18 +218,21 @@ register_transform(Dlt, Moments, transform_Dlt_on_Moments)
 def transform_Dlt_on_ndarray(dlt_tfm, point_array):
     '''Transform an array of points using a dilatation.
 
+    It computes `point_array * scale + offset` with broadcasting over the last axis. It is the
+    function registered to apply a :class:`Dlt` to a `numpy.ndarray`.
+
     Parameters
     ----------
     dlt_tfm : Dlt
         general dilatation
-    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of
-    the transformation
-        a point array
+    point_array : numpy.ndarray
+        a point array whose last dimension has the same length as the dimensionality of the
+        transformation
 
     Returns
     -------
     numpy.ndarray
-        affine-transformed point array
+        dilated point array, of the same shape as the input
     '''
     return point_array * dlt_tfm.scale + dlt_tfm.offset
 register_transform(Dlt, np.ndarray, transform_Dlt_on_ndarray)
@@ -191,7 +240,9 @@ register_transformable(Dlt, np.ndarray, lambda x, y: x.ndim == y.shape[-1])
 
 
 def transform_Dlt_on_PointList(dlt_tfm, point_list):
-    '''Transform a point list using an affine transformation.
+    '''Transform a point list using a dilatation.
+
+    It is the function registered to apply a :class:`Dlt` to a :class:`PointList`.
 
     Parameters
     ----------
@@ -203,7 +254,12 @@ def transform_Dlt_on_PointList(dlt_tfm, point_list):
     Returns
     -------
     PointList
-        affine-transformed point list
+        dilated point list
+
+    Notes
+    -----
+    The body refers to the names `aff_tfm` instead of `dlt_tfm`, so calling it currently raises
+    `NameError`.
     '''
     return PointList(point_list.points * aff_tfm.scale + aff_tfm.offset, check=False)
 register_transform(Dlt, PointList, transform_Dlt_on_PointList)

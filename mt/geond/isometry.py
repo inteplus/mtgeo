@@ -12,7 +12,34 @@ class Iso(Dliso):
     '''Isometry = orthogonal transformation followed by translation.
 
     An isometry is a (Euclidean-)metric-preserving transformation. In other words, it is an affine
-    transformation but the linear part is a unitary matrix.
+    transformation but the linear part is a unitary matrix. It maps a point `x` to
+    `unitary @ x + offset`. It is a :class:`Dliso` whose scale is fixed to 1 (assigning `scale`
+    raises `TypeError`). The product of two isometries is an isometry.
+
+    Parameters
+    ----------
+    offset : numpy.ndarray
+        the 1D translation vector. Defaults to the zero vector of length 2.
+    unitary : numpy.ndarray
+        the 2D unitary (orthogonal) matrix, assumed but not checked to be unitary. Defaults to the
+        2x2 identity matrix.
+
+    See Also
+    --------
+    Dliso : dilated isometry, which also has a uniform scale
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mt.geond.isometry import Iso
+    >>> R = np.array([[0., -1.], [1., 0.]])  # rotation by 90 degrees
+    >>> i = Iso(offset=np.array([1., 2.]), unitary=R)
+    >>> i
+    Iso(offset=[1. 2.], unitary_diagonal=[0. 0.])
+    >>> i << np.array([1., 0.])
+    array([1., 3.])
+    >>> i * ~i
+    Iso(offset=[0. 0.], unitary_diagonal=[1. 1.])
 
     References:
         [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not true but cheeky MT is trying to advertise his paper!)
@@ -31,7 +58,8 @@ class Iso(Dliso):
 
     @property
     def linear(self):
-        '''Returns the linear part of the affine transformation matrix of the isometry.'''
+        '''Returns the linear part of the affine transformation matrix of the isometry, which is
+        the unitary matrix.'''
         return self.unitary
 
     # ----- methods -----

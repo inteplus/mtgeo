@@ -16,6 +16,20 @@ class Polygon(HasShapely, PointList2d):
     """A 2D polygon, represented as a point list of vertices in either clockwise or
     counter-clockwise order.
 
+    The polygon is implicitly closed: the last vertex connects back to the first one. The
+    constructor is the one of :class:`~mt.geo2d.PointList2d`.
+
+    Examples
+    --------
+    >>> from mt.geo2d import Polygon
+    >>> p = Polygon([[0, 0], [4, 0], [4, 3]])
+    >>> p.points
+    array([[0., 0.],
+           [4., 0.],
+           [4., 3.]], dtype=float32)
+    >>> round(p.shapely.area, 2)  # shapely area is slightly inflated by a 0.0001 buffer
+    6.0
+
     See Also
     --------
     PointList2d
@@ -26,7 +40,11 @@ class Polygon(HasShapely, PointList2d):
 
     @property
     def shapely(self):
-        """Shapely representation for fast intersection operations."""
+        """Shapely representation for fast intersection operations.
+
+        It is a shapely polygon of the vertices, buffered by 0.0001 to turn any non-simple polygon
+        into a simple one. The result is cached in the instance.
+        """
         if not hasattr(self, "_shapely"):
             import shapely.geometry as _sg
 

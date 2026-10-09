@@ -1,4 +1,7 @@
-"""The base class to represent a list of points."""
+"""The class to represent a list of 3D points.
+
+The module provides :class:`PointList3d`, a list of 3D points stored as a `glm.array` of `glm.vec3`.
+"""
 
 from mt import tp, np, glm
 import mt.base.casting as bc
@@ -12,22 +15,45 @@ __all__ = ["PointList3d"]
 class PointList3d(ThreeD, PointList):
     """A list of 3D points.
 
-    See :class:`PointList` for more details.
+    The coordinates are stored in single precision (float32) in a `glm.array` of `glm.vec3`. See
+    :class:`PointList` for more details.
 
     Parameters
     ----------
     point_list : list or numpy.ndarray or glm.array
-        A list of points, each of which is an iterable of D items, where D is the `ndim` of the
-        class.
-    check : bool
-        Whether or not to check if the shape is valid
+        A list of points, each of which is an iterable of 3 items. An empty list gives an empty
+        array. A `glm.array` of `glm.vec3` is used as it is, and a `glm.array` of another type is
+        reinterpreted as `glm.vec3`.
 
     Attributes
     ----------
     points_glm : glm.array
         The array of vec3 points
-    points : `numpy.ndarray(shape=(N,3))`
-        The numpy view of `points_glm`
+    points : `numpy.ndarray(shape=(N,3), dtype=numpy.float32)`
+        The numpy view of `points_glm`. Assigning to it updates `points_glm`.
+
+    See Also
+    --------
+    mt.geond.PointList : the dimension-agnostic base class
+    Point3d : a single 3D point
+
+    Notes
+    -----
+    The constructor has no `check` argument, unlike :class:`PointList`. The registered casts and
+    the affine transformation of a point list call the constructor with `check=False` and
+    therefore currently raise `TypeError`.
+
+    Examples
+    --------
+    >>> from mt.geo3d import PointList3d
+    >>> pl = PointList3d([[1, 2, 3], [4, 5, 6]])
+    >>> pl.ndim
+    3
+    >>> pl.points
+    array([[1., 2., 3.],
+           [4., 5., 6.]], dtype=float32)
+    >>> PointList3d([]).points.shape
+    (0, 3)
     """
 
     def __init__(self, point_list: tp.Union[list, np.ndarray, glm.array]):

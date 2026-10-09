@@ -1,4 +1,10 @@
-"""Raw moments up to 2nd order of ND points."""
+"""Raw moments up to 2nd order of ND points.
+
+The module provides :class:`Moments`, which summarises a (possibly weighted or continuous) set of
+points by its 0th-, 1st- and 2nd-order raw moments, from which the mean and covariance matrix are
+derived, and :func:`moments_from_pointlist` to compute the moments of a point list. `EPSILON` is the
+threshold below which `m0` is considered to be zero.
+"""
 
 from mt import np
 import sys as _sys
@@ -18,7 +24,14 @@ EPSILON = np.sqrt(_sys.float_info.epsilon)
 class Moments(GeometricObject):
     """Raw moments up to 2nd order of points living in the same Euclidean space.
 
+    For a set of points `x_i` (or a continuous region), the raw moments are `m0 = sum 1` (the
+    number of points, or the volume), `m1 = sum x_i` and `m2 = sum x_i x_i^T`. From them the
+    properties `mean = m1/m0` and `cov = m2/m0 - mean mean^T` are derived. If `abs(m0)` is smaller
+    than `EPSILON`, the mean is the zero vector and the covariance matrix is the identity matrix.
+
     Overloaded operators are negation, multiplication with a scalar and true division with a scalar.
+    Each returns a new instance of the same type with all three moments negated, multiplied or
+    divided.
 
     Parameters
     ----------
@@ -29,25 +42,16 @@ class Moments(GeometricObject):
     m2 : numpy DxD matrix
         2nd-order raw moment
 
-    Examples
+    See Also
     --------
-    >>> import mt.geo2d.polygon as gp
-    >>> poly = gp.Polygon([[0,0],[0,1],[1,2],[1,0]])
-    >>> import mt.geond.moments as gm
-    >>> from mt.base.casting import cast
-    >>> m = cast(poly, gm.Moments2d)
-    >>> m.m0
-    4.0
-    >>> m.m1
-    array([2, 3])
-    >>> m.m2
-    array([[2, 2],
-           [2, 5]])
-    >>> m.mean
-    array([0.5 , 0.75])
-    >>> m.cov
-    array([[0.25  , 0.125 ],
-           [0.125 , 0.6875]])
+    moments_from_pointlist : computes the moments of a point list
+    mt.geo3d.Moments3d : the 3D version, implemented in glm
+
+    Notes
+    -----
+    The constructor of this base class calls `np.float`, which no longer exists in numpy 1.24+, so
+    with a recent numpy the base class cannot be instantiated. Use a subclass instead, for example
+    :class:`mt.geo3d.Moments3d`, which does not have this limitation.
     """
 
     def __init__(self, m0, m1, m2):
@@ -62,22 +66,26 @@ class Moments(GeometricObject):
 
     @property
     def m0(self):
-        """0th-order moment"""
+        """0th-order raw moment: the number of points, or the volume of the region (scalar)."""
         return self._m0
 
     @property
     def m1(self):
-        """1st-order moment"""
+        """1st-order raw moment: the sum of the points, a vector of length `ndim`."""
         return self._m1
 
     @property
     def m2(self):
-        """2nd-order moment"""
+        """2nd-order raw moment: the sum of the outer products of the points, a `ndim` x `ndim`
+        matrix."""
         return self._m2
 
     @property
     def mean(self):
-        """Returns the mean vector."""
+        """Returns the mean vector `m1/m0`, or the zero vector if `abs(m0) < EPSILON`.
+
+        The result is computed once and cached.
+        """
         if self._mean is None:
             self._mean = (
                 np.zeros(self.ndim) if abs(self.m0) < EPSILON else self.m1 / self.m0
@@ -86,7 +94,11 @@ class Moments(GeometricObject):
 
     @property
     def cov(self):
-        """Returns the covariance matrix."""
+        """Returns the covariance matrix `m2/m0 - outer(mean, mean)`.
+
+        If `abs(m0) < EPSILON`, the identity matrix is returned instead. The result is computed
+        once and cached.
+        """
         if self._cov is None:
             self._cov = (
                 np.eye(self.ndim)
@@ -102,20 +114,26 @@ class Moments(GeometricObject):
         return len(self.m1)
 
     def __neg__(self):
-        """Returns a new instance where all the moments are negated."""
+        """Returns a new instance of the same type where all the moments are negated."""
         return type(self)(-self.m0, -self.m1, -self.m2)
 
     def __mul__(self, scalar):
-        """Returns a new instance where all the moments are multiplied by a scalar."""
+        """Returns a new instance of the same type where all the moments are multiplied by a
+        scalar."""
         return type(self)(self.m0 * scalar, self.m1 * scalar, self.m2 * scalar)
 
     def __truediv__(self, scalar):
-        """Returns a new instance where all the moments are divided by a scalar."""
+        """Returns a new instance of the same type where all the moments are divided by a
+        scalar."""
         return type(self)(self.m0 / scalar, self.m1 / scalar, self.m2 / scalar)
 
 
 def moments_from_pointlist(pl):
     """Constructs a Moments object from a list of points.
+
+    The moments are `m0 = N`, `m1 = pl.points.sum(axis=0)` and `m2 = pl.points.T @ pl.points`. It
+    is registered as the cast function from :class:`PointList` to :class:`Moments`, and from
+    :class:`mt.geo3d.PointList3d` to :class:`mt.geo3d.Moments3d`.
 
     Parameters
     ----------
@@ -125,7 +143,13 @@ def moments_from_pointlist(pl):
     Returns
     -------
     Moments, Moments2d or Moments3d
-        raw moments of the point list, depending on the value of `ndim` provided
+        raw moments of the point list, depending on the dimension of the points (the number of
+        columns of `pl.points`): 2 gives `Moments2d`, 3 gives `Moments3d`, otherwise `Moments`
+
+    Notes
+    -----
+    This module does not import `Moments2d` or `Moments3d`, so the function raises `NameError` for
+    2D and 3D point lists, and the `Moments` constructor needs `np.float` (see :class:`Moments`).
     """
     arr = pl.points
     m0 = len(arr)

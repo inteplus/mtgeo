@@ -23,8 +23,8 @@ class RRect(HasShapely, TwoD, GeometricObject):
     An RRect represents a 2D axis-aligned rectangle rotated by an angle. It is parametrised by
     center point, signed width, height and angle. Internally, an affine transformation is computed
     that transforms the unit square '[0,0,1,1]' to the rotated rectangle. Signed width cannot be
-    zero and height must be positive. Angle is in radian. Note that we do not care if the rectangle
-    is open or partially closed or closed.
+    zero and height must be positive (this is not enforced by the constructor). Angle is in radian.
+    Note that we do not care if the rectangle is open or partially closed or closed.
 
     Parameters
     ----------
@@ -52,13 +52,13 @@ class RRect(HasShapely, TwoD, GeometricObject):
     br : point
         the transform of point (1,1)
     tr : point
-        the transform of point (0,1)
-    bl : point
         the transform of point (1,0)
+    bl : point
+        the transform of point (0,1)
     tfm : mt.geo2d.Aff2d
         the 2D affine transformation turning unit square [0,0,1,1] into the given rectangle
     corners : numpy.ndarray
-        the four corners [tl,tr,bl,br] above
+        the four corners [tl,tr,bl,br] above, as an array of shape (4,2)
     area : float
         the area
     circumference : float
@@ -67,12 +67,45 @@ class RRect(HasShapely, TwoD, GeometricObject):
         the sign of the rectangle
     signed_area : float
         the signed area
+    angle : float
+        the rotation angle, as given to the constructor
+    signed_width, height : float
+        the signed width and height, as given to the constructor
+    center_pt : numpy.ndarray
+        the rectangle's centroid `[cx, cy]`
 
     Notes
     -----
 
     For more details, see `this page <https://structx.com/Shape_Formulas_033.html>`_. But note that
     we primarily use CV convention for images, top left is (0,0).
+
+    The serialisation methods :meth:`to_json` and :meth:`to_tensor` currently fail, because they
+    read non-existing attributes `cx` and `cy`. Use `RRect(*rrect_list)` or :meth:`from_json` only
+    for loading.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mt.geo2d import RRect
+    >>> r = RRect(4, 2, cx=10, cy=10, angle=0)  # a 4x2 rectangle centered at (10,10)
+    >>> r.corners  # [tl, tr, bl, br]
+    array([[ 8.,  9.],
+           [12.,  9.],
+           [ 8., 11.],
+           [12., 11.]])
+    >>> r.area, r.circumference
+    (8, 12)
+    >>> r = RRect(4, 2, cx=10, cy=10, angle=np.pi / 2)  # rotated by 90 degrees
+    >>> r.corners.round(3)
+    array([[11.,  8.],
+           [11., 12.],
+           [ 9.,  8.],
+           [ 9., 12.]])
+
+    See Also
+    --------
+    Rect : the axis-aligned rectangle
     '''
 
     
@@ -81,7 +114,11 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
     @property
     def shapely(self):
-        '''Shapely representation for fast intersection operations.'''
+        '''Shapely representation for fast intersection operations.
+
+        It is a shapely polygon of the four corners (in cyclic order), buffered by 0.0001 (so its
+        area is slightly larger than the exact one). The result is cached in the instance.
+        '''
         if not hasattr(self, '_shapely'):
             import shapely.geometry as _sg
             points = self.corners[[0,1,3,2] if self.signed_width >= 0 else [2,3,1,0]]
@@ -96,7 +133,7 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
     @property
     def width(self):
-        '''The actual (positive) width.'''
+        '''The actual (positive) width, i.e. the absolute value of `signed_width`.'''
         return abs(self.signed_width)
     
     @property
@@ -121,16 +158,18 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
     @property
     def sign(self):
+        '''The sign of the signed width, one of -1, 0, 1 or nan. -1 means the rectangle is flipped
+        left-right.'''
         return np.sign(self.signed_width)
 
     @property
     def area(self):
-        '''Absolute area.'''
+        '''Absolute area (width times height).'''
         return abs(self.signed_width*self.height)
 
     @property
     def circumference(self):
-        '''Circumference.'''
+        '''Circumference (perimeter), i.e. twice the sum of width and height.'''
         return (self.width+self.height)*2
 
 
@@ -138,7 +177,24 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
 
     def left_square(self):
-        '''The interior square attaching to the left edge.'''
+        '''The interior square attaching to the left edge.
+
+        Returns
+        -------
+        RRect
+            a square RRect with side equal to `height`, with the same angle and sign
+
+        Raises
+        ------
+        ValueError
+            if the width is less than the height
+
+        Examples
+        --------
+        >>> from mt.geo2d import RRect
+        >>> RRect(4, 2, cx=10, cy=10).left_square()
+        RRect(signed_width=2, height=2, cx=9.0, cy=10.0, angle=0.0)
+        '''
 
         if self.width < self.height:
             raise ValueError("The left square does not exist because width is less than height.")
@@ -155,7 +211,24 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
 
     def right_square(self):
-        '''The interior square attaching to the right edge.'''
+        '''The interior square attaching to the right edge.
+
+        Returns
+        -------
+        RRect
+            a square RRect with side equal to `height`, with the same angle and sign
+
+        Raises
+        ------
+        ValueError
+            if the width is less than the height
+
+        Examples
+        --------
+        >>> from mt.geo2d import RRect
+        >>> RRect(4, 2, cx=10, cy=10).right_square()
+        RRect(signed_width=2, height=2, cx=11.0, cy=10.0, angle=0.0)
+        '''
 
         if self.width < self.height:
             raise ValueError("The right square does not exist because width is less than height.")
@@ -176,12 +249,13 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
     @property
     def signed_area(self):
-        '''Signed area.'''
+        '''Signed area, i.e. `signed_width*height`. Negative if the rectangle is flipped.'''
         return self.signed_width*self.height
 
     @property
     def moment1(self):
-        '''First-order moment.'''
+        '''First-order moment, as implemented: `sign*center_pt`. Note that, unlike
+        :attr:`Rect.moment1`, it is not multiplied by the area (the sign only is used).'''
         return self.sign*self.center_pt
 
     @property
@@ -196,7 +270,8 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
     @property
     def moment2(self):
-        '''Second-order moment.'''
+        '''Second-order moment, i.e. the symmetric 2x2 numpy array `[[xx, xy], [xy, yy]]` of
+        integrals of `x*x`, `x*y` and `y*y` over the rectangle's interior (rotation included).'''
         if not hasattr(self, '_moment2'):
             # 2nd-order central moments if the rectangle were not rotated
             rx = self.signed_width/2
@@ -267,7 +342,11 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
 
     def to_json(self):
-        '''Returns a list [signed_width, height, cx, cy, angle].'''
+        '''Returns a list [signed_width, height, cx, cy, angle].
+
+        Note that it currently raises AttributeError, because `self.cx` and `self.cy` do not
+        exist (the center is stored in `center_pt`).
+        '''
         return [self.signed_width, self.height, self.cx, self.cy, self.angle]
 
 
@@ -284,12 +363,21 @@ class RRect(HasShapely, TwoD, GeometricObject):
         -------
         RRect
             output rotated rectangle
+
+        Examples
+        --------
+        >>> from mt.geo2d import RRect
+        >>> RRect.from_json([4, 2, 10, 10, 0])
+        RRect(signed_width=4, height=2, cx=10, cy=10, angle=0)
         '''
         return RRect(*json_obj)
 
 
     def to_tensor(self):
-        '''Returns a tensor [signed_width, height, cx, cy, angle] representing the RRect .'''
+        '''Returns a tensorflow tensor [signed_width, height, cx, cy, angle] representing the RRect.
+
+        Note that it currently fails like :meth:`to_json`.
+        '''
         from mt import tf
         return tf.convert_to_tensor(self.to_json())
 
@@ -300,6 +388,7 @@ class RRect(HasShapely, TwoD, GeometricObject):
     def __init__(
         self, signed_width: float, height: float, cx: float = 0., cy: float = 0., angle: float = 0.
     ):
+        '''Initialises a rotated rectangle. See the class docstring for the parameters.'''
         self.signed_width = signed_width
         self.height = height
         self.center_pt = np.array([cx, cy])
@@ -329,6 +418,7 @@ class RRect(HasShapely, TwoD, GeometricObject):
         
 
 def cast_RRect_to_Moments2d(obj):
+    '''Casts an RRect to a Moments2d made of its signed area, `moment1` and `moment2`.'''
     return Moments2d(obj.signed_area, obj.moment1, obj.moment2)
 register_cast(RRect, Moments2d, cast_RRect_to_Moments2d)
 
@@ -339,7 +429,10 @@ register_cast(RRect, Moments2d, cast_RRect_to_Moments2d)
 def approx_Moments2d_to_RRect(obj):
     '''Approximates a Moments2d instance with a RRect such that the mean aligns with the RRect's
     center, and the covariance matrix of the instance is closest to the moment convariance matrix of
-    the RRect.'''
+    the RRect.
+
+    Not implemented yet: it always raises NotImplementedError.
+    '''
     raise NotImplementedError("MT-TODO: to implement one day")
     #cx, cy = obj.mean
     #cov = obj.cov

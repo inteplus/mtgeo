@@ -1,5 +1,9 @@
 """There are many definitions of a hyperellipsoid. In our case, a hyperellipsoid is an affine
-transform of the unit hypersphere x^2+y^2+...=1."""
+transform of the unit hypersphere x^2+y^2+...=1.
+
+The module provides :class:`Hyperellipsoid`, its upper bound by a :class:`mt.geond.Hyperbox`, its
+lower bound from a hyperbox, and the function to transform it with an affine map.
+"""
 
 from mt import np
 from mt.base.casting import register_cast, cast
@@ -40,10 +44,33 @@ class Hyperellipsoid(GeometricObject):
     Parameters
     ----------
     aff_tfm : Aff
-        an affine transformation
+        an affine transformation. A `ValueError` is raised if it is not an instance of
+        :class:`Aff`.
     make_normalised : bool
         whether or not to adjust the affine transformation to make a normalised representation of
-        the hyperellipsoid
+        the hyperellipsoid. Normalising replaces the weight matrix by `U @ diag(S)` from its
+        singular value decomposition, with the singular values `S` sorted in decreasing order, so
+        the axes (columns) can be permuted compared to the input.
+
+    Attributes
+    ----------
+    aff_tfm : Aff
+        the (normalised) affine transformation of the unit hypersphere
+
+    See Also
+    --------
+    Aff : affine transformation
+    Hyperbox : axis-aligned box, an upper or lower bound of a hyperellipsoid
+    mt.geo3d.Ellipsoid : the 3D version
+
+    Notes
+    -----
+    - `ndim` currently returns the bias vector `aff_tfm.bias` instead of its length.
+    - The upper bound to a :class:`Hyperbox` refers to undefined names (`off`, `self`) and so
+      raises `NameError`.
+    - Because of the `ndim` issue above, the transformable check of an :class:`Aff` applied on a
+      hyperellipsoid returns an array rather than a bool, so `aff << hyperellipsoid` fails. Calling
+      :func:`transform_Aff_on_Hyperellipsoid` directly works.
 
     Examples
     --------
@@ -57,6 +84,10 @@ class Hyperellipsoid(GeometricObject):
     array([[0., 4., 2.],
            [5., 0., 3.],
            [0., 0., 1.]])
+    >>> Hyperellipsoid(a, make_normalised=False).aff_tfm.matrix
+    array([[4., 0., 2.],
+           [0., 5., 3.],
+           [0., 0., 1.]])
     """
 
     # ----- base adaptation -----
@@ -68,7 +99,20 @@ class Hyperellipsoid(GeometricObject):
     # ----- construction ------
 
     def __init__(self, aff_tfm, make_normalised=True):
-        """Initialises a hyperellipsoid with an affine transformation."""
+        """Initialises a hyperellipsoid with an affine transformation.
+
+        Parameters
+        ----------
+        aff_tfm : Aff
+            an affine transformation of the unit hypersphere
+        make_normalised : bool
+            whether or not to normalise the representation. See the class docstring.
+
+        Raises
+        ------
+        ValueError
+            if `aff_tfm` is not an instance of :class:`Aff`
+        """
         if not isinstance(aff_tfm, Aff):
             raise ValueError("Only an instance of class `Aff` is accepted.")
         if make_normalised:
@@ -83,7 +127,13 @@ class Hyperellipsoid(GeometricObject):
 
     def normalised(self):
         """Returns an equivalent hyperellipsoid where f1 and f2 are perpendicular (linearly
-        independent)."""
+        independent).
+
+        Returns
+        -------
+        Hyperellipsoid
+            a new hyperellipsoid with a normalised affine transformation
+        """
         return Hyperellipsoid(self.aff_tfm, make_normalised=True)
 
 
@@ -92,6 +142,10 @@ class Hyperellipsoid(GeometricObject):
 
 def upper_bound_Hyperellipsoid_to_Hyperbox(obj):
     """Returns a bounding axis-aligned box of the hyperellipsoid.
+
+    The box is centered at the bias of the affine transformation, with half side lengths equal to
+    the norms of the rows of the weight matrix. It is registered as the upper bound from
+    :class:`Hyperellipsoid` to :class:`Hyperbox`.
 
     Parameters
     ----------
@@ -102,6 +156,11 @@ def upper_bound_Hyperellipsoid_to_Hyperbox(obj):
     -------
     Hyperbox
         a bounding Hyperbox of the hyperellipsoid
+
+    Notes
+    -----
+    The current body refers to the undefined names `off` and `self`, so calling it raises
+    `NameError`.
     """
     weight = obj.aff_tfm.weight
     c = off.aff_tfm.bias
@@ -115,6 +174,10 @@ register_upper_bound(Hyperellipsoid, Hyperbox, upper_bound_Hyperellipsoid_to_Hyp
 def lower_bound_Hyperbox_to_Hyperellipsoid(x):
     """Returns an axis-aligned hyperellipsoid bounded by the given axis-aligned box.
 
+    The returned hyperellipsoid is the one inscribed in the box, obtained by casting the box's
+    dilatation to an affine transformation. It is registered as the lower bound from
+    :class:`Hyperbox` to :class:`Hyperellipsoid`.
+
     Parameters
     ----------
     x : Hyperbox
@@ -124,6 +187,25 @@ def lower_bound_Hyperbox_to_Hyperellipsoid(x):
     -------
     Hyperellipsoid
         the axis-aligned hyperellipsoid enclosed by the box
+
+    Raises
+    ------
+    ValueError
+        if `x` is not an instance of :class:`Hyperbox`
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mt.geo import lower_bound
+    >>> from mt.geond import Hyperbox
+    >>> from mt.geond.hyperellipsoid import Hyperellipsoid
+    >>> b = Hyperbox(np.array([0., 0.]), np.array([2., 4.]))
+    >>> e = lower_bound(b, Hyperellipsoid)
+    >>> e.aff_tfm.bias
+    array([1., 2.])
+    >>> e.aff_tfm.weight
+    array([[0., 1.],
+           [2., 0.]])
     """
     if not isinstance(x, Hyperbox):
         raise ValueError(
@@ -141,6 +223,8 @@ register_lower_bound(Hyperbox, Hyperellipsoid, lower_bound_Hyperbox_to_Hyperelli
 def transform_Aff_on_Hyperellipsoid(aff_tfm, obj):
     """Affine-transforms a hyperellipsoid. The resultant Hyperellipsoid has affine transformation
     `aff_tfm*obj.aff_tfm`.
+
+    It is registered as the function applying an :class:`Aff` to a :class:`Hyperellipsoid`.
 
     Parameters
     ----------

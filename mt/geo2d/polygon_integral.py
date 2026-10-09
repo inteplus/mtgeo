@@ -2,6 +2,12 @@
 
 A polygon is represented as a collection of 2D points in either clockwise or counter-clockwise
 order. It is stored in a numpy array of shape (N,2).
+
+This module integrates polynomials of x and y over the polygon's interior using the Shoelace
+algorithm. All integrals are signed: with the x-axis pointing right and the y-axis pointing up,
+they are positive if the vertices are in clockwise order and negative if counter-clockwise (and the
+other way around if the y-axis points down, as in image coordinates). Take absolute values or use
+:func:`signed_area` first if you do not know the orientation.
 '''
 
 import mt.base.casting as _bc
@@ -20,17 +26,22 @@ def trapezium_integral(poly, func):
     '''Applies the Shoelace algorithm to integrate a function over the interior of a polygon.
     Shoelace algorithm views the polygon as a sum of trapeziums.
 
+    The function is evaluated on every edge `(x1, y1) -> (x2, y2)` of the polygon (including the
+    closing edge from the last vertex to the first one) and the results are summed.
+
     Parameters
     ----------
     poly : Polygon
         a polygon
     func : function
-        a function that takes x1, y1, x2, y2 as input and returns a scalar
+        a function that takes x1, y1, x2, y2 (the coordinates of the start and end vertices of an
+        edge) as input and returns a scalar
 
     Returns
     -------
     scalar
-        the integral over the polygon's interior
+        the integral over the polygon's interior. It is 0 if the polygon has at most 2 vertices
+        (in which case `func` is never called).
 
     Notes
     -----
@@ -48,7 +59,7 @@ def trapezium_integral(poly, func):
     0
     >>> poly = Polygon([[1,1],[0,0],[1,0]])
     >>> trapezium_integral(poly, lambda x1, y1, x2, y2: x1*y2-x2*y1)
-    1
+    1.0
 
     References
     ----------
@@ -69,6 +80,9 @@ def trapezium_integral(poly, func):
 def signed_area(poly):
     '''Returns the signed area of a polygon.
 
+    The sign is positive if the vertices are in clockwise order (y-axis pointing up) and negative
+    otherwise.
+
     Parameters
     ----------
     poly : Polygon
@@ -77,7 +91,7 @@ def signed_area(poly):
     Returns
     -------
     scalar
-        the signed area over the polygon's interior
+        the signed area of the polygon's interior
 
     Examples
     --------
@@ -101,7 +115,7 @@ def moment_x(poly):
     Returns
     -------
     scalar
-        the moment `int(x, dx, dy)` over the polygon's interior
+        the moment `int(x, dx, dy)` over the polygon's interior (signed, see the module docstring)
 
     Examples
     --------
@@ -126,7 +140,7 @@ def moment_y(poly):
     Returns
     -------
     scalar
-        the moment `int(y, dx, dy)` over the polygon's interior
+        the moment `int(y, dx, dy)` over the polygon's interior (signed, see the module docstring)
 
     Examples
     --------
@@ -149,7 +163,8 @@ def moment_xy(poly):
     Returns
     -------
     scalar
-        the moment `int(x*y, dx, dy)` over the polygon's interior
+        the moment `int(x*y, dx, dy)` over the polygon's interior (signed, see the module
+        docstring)
 
     Examples
     --------
@@ -175,7 +190,8 @@ def moment_xx(poly):
     Returns
     -------
     scalar
-        the moment `int(x*x, dx, dy)` over the polygon's interior
+        the moment `int(x*x, dx, dy)` over the polygon's interior (signed, see the module
+        docstring)
 
     Examples
     --------
@@ -201,7 +217,8 @@ def moment_yy(poly):
     Returns
     -------
     scalar
-        the moment `int(y*y, dx, dy)` over the polygon's interior
+        the moment `int(y*y, dx, dy)` over the polygon's interior (signed, see the module
+        docstring)
 
     Examples
     --------
@@ -217,6 +234,11 @@ def moment_yy(poly):
 def to_moments2d(poly):
     '''Computes all moments, up to 2nd-order of the polygon's interior.
 
+    The result is built from :func:`signed_area`, :func:`moment_x`, :func:`moment_y`,
+    :func:`moment_xx`, :func:`moment_xy` and :func:`moment_yy`, so it is signed too: for a
+    counter-clockwise polygon (y-axis up), `m0` is negative. The mean is still the centroid.
+    This function is registered as the cast from :class:`Polygon` to :class:`Moments2d`.
+
     Parameters
     ----------
     poly : Polygon
@@ -224,8 +246,8 @@ def to_moments2d(poly):
 
     Returns
     -------
-    Momens2d
-        th ecollection of moments up to 2nd order
+    Moments2d
+        the collection of moments up to 2nd order
 
     Examples
     --------
@@ -242,7 +264,12 @@ def to_moments2d(poly):
     >>> round(m.mean.sum(), 3)
     4.667
     >>> round(m.cov.sum(), 3)
-    -22.444
+    0.222
+    >>> m = to_moments2d(mp.Polygon([[0,0],[1,0],[1,1],[0,1]]))  # unit square, counter-clockwise
+    >>> round(m.m0, 3)
+    -1.0
+    >>> m.mean
+    array([0.5, 0.5], dtype=float32)
     '''
     m0 = signed_area(poly)
     m1 = [moment_x(poly), moment_y(poly)]

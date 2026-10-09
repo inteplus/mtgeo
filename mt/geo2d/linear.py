@@ -1,4 +1,10 @@
-"""Module supporting the 2x2 linear transformation."""
+"""Module supporting the 2x2 linear transformation.
+
+A 2x2 matrix can be parametrised by an "sshr" tuple `(sx, sy, h, r)`: scaling along x and y,
+shearing and rotation angle (in radian). This module converts between the two representations (for
+single :class:`glm.mat2` matrices and for batches of tensorflow tensors) and builds batches of 3x3
+affine matrices.
+"""
 
 from mt import glm
 
@@ -19,9 +25,10 @@ __all__ = [
 
 
 def sshr2mat(sshr: glm.vec4) -> glm.mat2:
-    """Converts an sshr tuple into a mat2 transformation matrices.
+    """Converts an sshr tuple into a mat2 transformation matrix.
 
-    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation.
+    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation,
+    where `r` is the rotation angle in radian.
 
     Formula::
 
@@ -36,12 +43,26 @@ def sshr2mat(sshr: glm.vec4) -> glm.mat2:
     Parameters
     ----------
     sshr : glm.vec4
-        the input sshr tuple
+        the input sshr tuple `(sx, sy, h, r)`
 
     Returns
     -------
     glm.mat2
-        the output 2d transformation matrix
+        the output 2d transformation matrix (glm matrices are column-major)
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mt import glm
+    >>> from mt.geo2d import sshr2mat
+    >>> m = sshr2mat(glm.vec4(2, 3, 0.5, 0))  # scales (2,3), shear 0.5, no rotation
+    >>> np.array(m.to_list()).T  # as a row-major array
+    array([[2., 1.],
+           [0., 3.]])
+
+    See Also
+    --------
+    mat2sshr : the inverse conversion
 
     References
     ----------
@@ -63,7 +84,10 @@ def sshr2mat(sshr: glm.vec4) -> glm.mat2:
 def sshr2mat_tf(tensor):
     """Converts an array of sshr tuples into an array of 2x2 transformation matrices.
 
-    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation.
+    A tensorflow version of :func:`sshr2mat`, working on a batch.
+
+    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation,
+    where `r` is the rotation angle in radian.
 
     Formula::
 
@@ -78,7 +102,7 @@ def sshr2mat_tf(tensor):
     Parameters
     ----------
     tensor : tensorflow.Tensor
-        a tensor of shape (batch, 4) containing sshr tuples
+        a tensor of shape (batch, 4) containing sshr tuples `(sx, sy, h, r)`
 
     Returns
     -------
@@ -114,7 +138,10 @@ def sshr2mat_tf(tensor):
 def mat2sshr(m: glm.mat2) -> glm.vec4:
     """Converts a 2d transformation matrix into an sshr tuple.
 
-    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation.
+    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation,
+    where `r` is the rotation angle in radian. The formulas below are the generic case. The code
+    handles the degenerate cases `sy == 0` (assumes `r = 0`) and `sx == 0` (assumes `h = 0`)
+    separately, and computes `h` from whichever of `a0`, `a1` is better conditioned.
 
     Formula::
 
@@ -128,12 +155,23 @@ def mat2sshr(m: glm.mat2) -> glm.vec4:
     Parameters
     ----------
     m : glm.mat2
-        the input 2d transformation matrix
+        the input 2d transformation matrix (glm matrices are column-major)
 
     Returns
     -------
     sshr : glm.vec4
-        the output sshr tuple
+        the output sshr tuple `(sx, sy, h, r)`
+
+    Examples
+    --------
+    >>> from mt import glm
+    >>> from mt.geo2d import sshr2mat, mat2sshr
+    >>> [round(v, 4) for v in mat2sshr(sshr2mat(glm.vec4(2, 3, 0.5, 0.3)))]
+    [2.0, 3.0, 0.5, 0.3]
+
+    See Also
+    --------
+    sshr2mat : the inverse conversion
 
     References
     ----------
@@ -166,7 +204,11 @@ def mat2sshr(m: glm.mat2) -> glm.vec4:
 def mat2sshr_tf(tensor):
     """Converts an array of 2x2 transformation matrices into an array of sshr tuples.
 
-    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation.
+    A tensorflow version of :func:`mat2sshr`, working on a batch. Unlike :func:`mat2sshr`, it only
+    implements the generic formulas below, with `tf.math.divide_no_nan` guarding the divisions.
+
+    An sshr tuple (sx,sy,h,r) represents the scale2d(sx,sy) shear2d(h) rotate2d(r) transformation,
+    where `r` is the rotation angle in radian.
 
     Formula::
 
@@ -185,7 +227,7 @@ def mat2sshr_tf(tensor):
     Returns
     -------
     tensorflow.Tensor
-        a tensor of shape (batch, 4) containing sshr tuples
+        a tensor of shape (batch, 4) containing sshr tuples `(sx, sy, h, r)`
 
     References
     ----------

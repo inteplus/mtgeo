@@ -12,7 +12,57 @@ class Dliso(Aff):
     '''Dilated isometry = Isometry following a uniform scaling.
 
     An isometry is a (Euclidean-)metric-preserving transformation. In other words, it is an affine
-    transformation but the linear part is a unitary matrix.
+    transformation but the linear part is a unitary matrix. A dilated isometry maps a point `x` to
+    `scale * (unitary @ x) + offset`, so its weight (linear) matrix is `scale * unitary`. The
+    inherited operators `*`, `/`, `%`, `~`, `<<` and `>>` work as in :class:`Aff`; the product of
+    two dilated isometries is a dilated isometry.
+
+    Parameters
+    ----------
+    offset : numpy.ndarray
+        the 1D translation vector. Defaults to the zero vector of length 2.
+    scale : float
+        the positive uniform scale. A `ValueError` is raised if it is not positive. Defaults to 1.
+    unitary : numpy.ndarray
+        the 2D unitary (orthogonal) matrix, assumed but not checked to be unitary. Defaults to the
+        2x2 identity matrix.
+
+    Attributes
+    ----------
+    offset : numpy.ndarray
+        the offset vector, same as `bias`
+    scale : float
+        the uniform scale
+    unitary : numpy.ndarray
+        the unitary matrix
+    linear : numpy.ndarray
+        the weight matrix `unitary * scale`, same as `weight`
+
+    See Also
+    --------
+    Aff : general affine transformation
+    Iso : isometry, the special case of unit scale
+    Dltra : dilated translation, the special case of identity unitary matrix
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mt.geond.dilated_isometry import Dliso
+    >>> R = np.array([[0., -1.], [1., 0.]])  # rotation by 90 degrees
+    >>> s = Dliso(offset=np.array([1., 2.]), scale=2., unitary=R)
+    >>> s
+    Dliso(offset=[1. 2.], scale=2.0, unitary_diagonal=[0. 0.])
+    >>> s.linear
+    array([[ 0., -2.],
+           [ 2.,  0.]])
+    >>> s << np.array([1., 0.])
+    array([1., 4.])
+    >>> s.matrix
+    array([[ 0., -2.,  1.],
+           [ 2.,  0.,  2.],
+           [ 0.,  0.,  1.]])
+    >>> s * ~s
+    Dliso(offset=[0. 0.], scale=1.0, unitary_diagonal=[1. 1.])
 
     References
     ----------
@@ -55,7 +105,10 @@ class Dliso(Aff):
 
     @property
     def offset(self):
-        '''The offset/bias part of the dilated isometry.'''
+        '''The offset/bias vector of the dilated isometry (1D numpy array).
+
+        The setter raises `ValueError` if the value is not a 1D array.
+        '''
         return self.__offset
 
     @offset.setter
@@ -66,7 +119,10 @@ class Dliso(Aff):
 
     @property
     def scale(self):
-        '''The scale component/scalar of the dilated isometry.'''
+        '''The uniform positive scale of the dilated isometry.
+
+        The setter raises `ValueError` if the value is not positive.
+        '''
         return self.__scale
 
     @scale.setter
@@ -77,7 +133,11 @@ class Dliso(Aff):
 
     @property
     def unitary(self):
-        '''The unitary matrix of the dilated isometry.'''
+        '''The unitary matrix of the dilated isometry (2D numpy array).
+
+        The setter raises `ValueError` if the value is not a 2D array, but does not check that it
+        is unitary.
+        '''
         return self.__unitary
 
     @unitary.setter
@@ -90,7 +150,8 @@ class Dliso(Aff):
 
     @property
     def linear(self):
-        '''Returns the linear part of the affine transformation matrix of the dilated isometry.'''
+        '''Returns the linear part of the affine transformation matrix of the dilated isometry,
+        which is `unitary * scale`.'''
         return self.unitary*self.scale
 
     # ----- methods -----
@@ -129,7 +190,28 @@ class Dliso(Aff):
 
 
 def approx_Aff_to_Dliso(obj):
-    '''Approximates an Aff instance with a Dliso.'''
+    '''Approximates an Aff instance with a Dliso.
+
+    The intended approximation keeps the offset, takes the geometric mean of the singular values of
+    the weight matrix as the scale and the product `U @ VT` of the singular-vector matrices as the
+    unitary matrix. If the weight matrix is singular, the scale is 0. It is registered as the
+    approximation from :class:`Aff` to :class:`Dliso`.
+
+    Parameters
+    ----------
+    obj : Aff
+        the affine transformation to approximate
+
+    Returns
+    -------
+    Dliso
+        the approximating dilated isometry
+
+    Notes
+    -----
+    The current body uses an attribute `obj.linear` that :class:`Aff` does not have and the
+    undefined names `ndim`, so calling it raises `AttributeError`.
+    '''
     ndom = obj.ndim
     U, S, VT = np.linalg.svd(obj.linear, full_matrices=True)
     if len(S) < ndim or S[ndim-1] == 0:

@@ -1,4 +1,4 @@
-"""The base class to represent a list of points."""
+"""The class to represent a list of 2D points."""
 
 from mt import tp, np, glm
 import mt.base.casting as bc
@@ -28,13 +28,29 @@ class PointList2d(TwoD, PointList):
         The array of vec2 points
     points : `numpy.ndarray(shape=(N,2))`
         The numpy view of `points_glm`
+
+    Examples
+    --------
+    >>> from mt.geo2d import PointList2d
+    >>> PointList2d([[1, 2], [3, 4]]).points
+    array([[1., 2.],
+           [3., 4.]], dtype=float32)
+    >>> PointList2d([]).points.shape
+    (0, 2)
     """
 
     def __init__(self, point_list: tp.Union[list, np.ndarray, glm.array]):
+        """Initialises the point list. See the class docstring for the accepted types.
+
+        Note that the signature has no `check` argument, although the class docstring (and some
+        casting functions) mention it.
+        """
         self.points = point_list
 
     @property
     def points(self):
+        """numpy.ndarray: the points as a float32 array of shape (N,2), N being the number of
+        points. Assigning accepts a list, a numpy array or a `glm.array` of points."""
         p = np.frombuffer(self.points_glm.to_bytes(), dtype=np.float32)
         return p.reshape((len(p) // 2, 2))
 

@@ -1,7 +1,11 @@
-"""The base class to represent a point.
+"""The class to represent a 3D point.
 
 For efficiency reasons, please try to bunch points into arrays or lists and use appropriate
 representations instead of using single points implemented here.
+
+The module provides :class:`Point3d`, a 3D point stored as a `glm.vec3`, and registers casts between
+numpy arrays of shape `(3,)`, :class:`Point3d` and :class:`mt.geond.Point` (see
+:func:`mt.base.casting.cast`).
 """
 
 
@@ -17,14 +21,43 @@ __all__ = ["Point3d"]
 class Point3d(ThreeD, Point):
     """A 3D point implemented in glm.
 
-    See :class:`Point` for more details.
+    The coordinates are stored in single precision (float32) in a `glm.vec3`. See :class:`Point`
+    for more details.
+
+    Parameters
+    ----------
+    point : iterable
+        the 3 coordinates `(x, y, z)` of the point, e.g. a list or a numpy array. A `TypeError` is
+        raised by glm if it does not hold exactly 3 numbers.
+    check : bool
+        unused. It is accepted for compatibility with :class:`Point`, but the length is always
+        checked by glm.
 
     Attributes
     ----------
     point_glm : `glm.vec3`
         The point in glm.
     point : `numpy.ndarray(shape=(3,), dtype=numpy.float32)`
-        The numpy view of `point_glm`
+        The numpy copy of `point_glm`. Assigning to it updates `point_glm`.
+
+    See Also
+    --------
+    mt.geond.Point : the dimension-agnostic base class
+    PointList3d : a list of 3D points
+
+    Examples
+    --------
+    >>> from mt.geo3d import Point3d
+    >>> p = Point3d([1, 2, 3])
+    >>> p.ndim
+    3
+    >>> p.point
+    array([1., 2., 3.], dtype=float32)
+    >>> p.point_glm
+    vec3( 1, 2, 3 )
+    >>> p.point = [4, 5, 6]
+    >>> p.point_glm
+    vec3( 4, 5, 6 )
     """
 
     def __init__(self, point, check=True):

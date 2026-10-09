@@ -28,6 +28,50 @@ class Sim2d(Dliso):
       - multiplication: Sim2d(offset_x, scale_x, angle_x, on_x)*Sim2d(offset_y, scale_y, angle_y, on_y) = Sim2d(offset_x + UniformScale(scale_x)*Rotate(angle_x)*ReflectX(on_x)(offset_y), scale_x*scale_y, angle_x + (-1)^{on_x} angle_y, on_x xor on_y)
       - inverse: ~Sim2d(offset, scale, angle, on) = Sim2d(-linear(scale, angle, on) offset, 1/scale, -(-1)^{on} angle, on)
 
+    Parameters
+    ----------
+    offset : numpy.ndarray
+        the translation vector of length 2. Default is the zero vector.
+    scale : float
+        the positive uniform scaling factor. Default is 1.
+    angle : float
+        the rotation angle in radian, from the x-axis towards the y-axis. Default is 0.
+    on : bool
+        whether the reflection through the x-axis (applied first, before the rotation) is active.
+        Default is False.
+
+    Attributes
+    ----------
+    offset : numpy.ndarray
+        the translation vector
+    scale : float
+        the scaling factor
+    angle : float
+        the rotation angle in radian
+    on : bool
+        whether the transformation includes the reflection
+    linear : numpy.ndarray
+        the 2x2 linear part `scale*Rotate(angle)*ReflectX(on)`
+    unitary : numpy.ndarray
+        the 2x2 linear part without the scale (read-only)
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mt.geo import transform
+    >>> from mt.geo2d import Sim2d
+    >>> s = Sim2d(offset=np.array([1., 2.]), scale=2, angle=np.pi / 2)
+    >>> transform(s, np.array([[1., 0.]])).round(6)  # scale 2, rotate 90 degrees, then translate
+    array([[1., 4.]])
+    >>> t = ~s * s  # the identity, up to rounding
+    >>> t.offset.round(6) + 0.0, round(t.scale, 6), round(t.angle, 6)
+    (array([0., 0.]), 1.0, 0.0)
+
+    See Also
+    --------
+    mt.geo2d.Aff2d : general affine transformation, to which a Sim2d can be cast
+    cv2cg : the reflection between OpenCV and OpenGL image coordinates
+
     References:
         [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not really, cheeky
     MT is trying to advertise his paper!)
@@ -38,7 +82,31 @@ class Sim2d(Dliso):
     @staticmethod
     def get_linear(angle, on, scale=1.0):
         """Forms the linear part of the transformation matrix representing
-        scaling*rotation*reflection."""
+        scaling*rotation*reflection.
+
+        Parameters
+        ----------
+        angle : float
+            the rotation angle in radian
+        on : bool
+            whether to include the reflection through the x-axis
+        scale : float
+            the uniform scaling factor
+
+        Returns
+        -------
+        numpy.ndarray
+            the 2x2 matrix `scale*Rotate(angle)*ReflectX(on)`, which is
+            `[[c, -s], [s, c]]*scale` without reflection and `[[-c, -s], [-s, c]]*scale` with it,
+            where `c = cos(angle)` and `s = sin(angle)`
+
+        Examples
+        --------
+        >>> from mt.geo2d import Sim2d
+        >>> Sim2d.get_linear(0, True, scale=2) + 0.0
+        array([[-2.,  0.],
+               [ 0.,  2.]])
+        """
         ca = np.cos(angle) * scale
         sa = np.sin(angle) * scale
         return (
@@ -55,6 +123,8 @@ class Sim2d(Dliso):
 
     @property
     def unitary(self):
+        """numpy.ndarray: the 2x2 unitary part (rotation and optional reflection) of the linear
+        matrix. It is read-only: setting it raises TypeError."""
         return Sim2d.get_linear(self.angle, self.on)
 
     @unitary.setter
@@ -63,12 +133,14 @@ class Sim2d(Dliso):
 
     @property
     def weight_shape(self):
+        """tuple: the shape of the weight matrix, always (2, 2)."""
         return (2, 2)
 
     # ----- data encapsulation -----
 
     @property
     def angle(self):
+        """float: the rotation angle in radian."""
         return self.__angle
 
     @angle.setter
@@ -77,6 +149,7 @@ class Sim2d(Dliso):
 
     @property
     def on(self):
+        """bool: whether the transformation includes the reflection through the x-axis."""
         return self.__on
 
     @on.setter
@@ -94,6 +167,7 @@ class Sim2d(Dliso):
     # ----- methods -----
 
     def __init__(self, offset=np.zeros(2), scale=1, angle=0, on=False):
+        """Initialises a 2D similarity transformation. See the class docstring."""
         self.offset = offset
         self.scale = scale
         self.angle = angle
@@ -159,6 +233,15 @@ def cv2cg(height: int):
     -----
     This function is essentially the same as :func:`mt.geo2d.flipUD2d`, just different return
     values.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from mt.geo import transform
+    >>> from mt.geo2d import cv2cg
+    >>> transform(cv2cg(480), np.array([[10., 0.], [10., 480.]])).round(6) + 0.0
+    array([[ 10., 480.],
+           [ 10.,   0.]])
     """
 
     return Sim2d(offset=np.array([0.0, height]), angle=m.pi, on=True)

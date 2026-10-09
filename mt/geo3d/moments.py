@@ -1,4 +1,8 @@
-"""Raw moments up to 2nd order of 3D points."""
+"""Raw moments up to 2nd order of 3D points.
+
+The module provides :class:`Moments3d`, the 3D version of :class:`mt.geond.Moments` implemented in
+glm.
+"""
 
 from mt import tp, np, glm
 import mt.base.casting as _bc
@@ -14,7 +18,13 @@ __all__ = ["Moments3d"]
 class Moments3d(ThreeD, Moments):
     """Raw moments up to 2nd order of points living in 3D, implemnted in GLM.
 
+    The raw moments of a set of points `x_i` are `m0 = sum 1`, `m1 = sum x_i` and
+    `m2 = sum x_i x_i^T`, from which `mean = m1/m0` and `cov = m2/m0 - mean mean^T` are derived
+    (the zero vector and the identity matrix respectively when `abs(m0)` is below
+    :data:`mt.geond.EPSILON`). Vectors and matrices are stored in single precision (float32).
+
     Overloaded operators are negation, multiplication with a scalar and true division with a scalar.
+    Each returns a new `Moments3d`.
 
     Parameters
     ----------
@@ -51,12 +61,25 @@ class Moments3d(ThreeD, Moments):
     --------
     >>> import numpy as np
     >>> from mt.geo3d.moments import Moments3d
-    >>> gm.Moments3d(10, np.array([2,3,1]), np.array([[1,2,0],[3,4,0],[0,0,1]]))
+    >>> m = Moments3d(10, np.array([2,3,1]), np.array([[1,2,0],[3,4,0],[0,0,1]]))
+    >>> m
     Moments3d(m0=10, mean=vec3( 0.2, 0.3, 0.1 ), cov=mat3x3(( 0.06, 0.24, -0.02 ), ( 0.14, 0.31, -0.03 ), ( -0.02, -0.03, 0.09 )))
+    >>> m.m1
+    array([2., 3., 1.], dtype=float32)
+    >>> m.m2
+    array([[1., 2., 0.],
+           [3., 4., 0.],
+           [0., 0., 1.]], dtype=float32)
+    >>> m.mean
+    array([0.2, 0.3, 0.1], dtype=float32)
+    >>> (m * 2).m0
+    20
+    >>> (-m).m0
+    -10
 
     See Also
     --------
-    Moments
+    mt.geond.Moments
         base class
     """
 
@@ -95,7 +118,7 @@ class Moments3d(ThreeD, Moments):
 
     @property
     def mean_glm(self):
-        """Returns the mean vector as a vec3."""
+        """Returns the mean vector as a glm vec3 (zero if `abs(m0)` is tiny)."""
         if self._mean is None:
             self._mean = (
                 glm.vec3() if glm.abs(self._m0) < EPSILON else self._m1 / self._m0
@@ -104,12 +127,13 @@ class Moments3d(ThreeD, Moments):
 
     @property
     def mean(self):
-        """Returns the mean vector."""
+        """Returns the mean vector as a float32 numpy array of shape `(3,)`."""
         return np.frombuffer(self.mean_glm.to_bytes(), dtype=np.float32)
 
     @property
     def cov_glm(self):
-        """Returns the column-major covariance matrix as a mat3."""
+        """Returns the column-major covariance matrix as a glm mat3 (identity if `abs(m0)` is
+        tiny)."""
         if self._cov is None:
             mean = self.mean_glm
             self._cov = (
@@ -121,7 +145,7 @@ class Moments3d(ThreeD, Moments):
 
     @property
     def cov(self):
-        """Returns the row-major covariance matrix as a numpy array."""
+        """Returns the row-major covariance matrix as a float32 numpy array of shape `(3, 3)`."""
         return np.frombuffer(self.cov_glm.to_bytes(), dtype=np.float32).reshape(3, 3).T
 
     def __repr__(self):

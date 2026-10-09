@@ -18,19 +18,33 @@ class Point2d(TwoD, Point):
 
     See :class:`Point` for more details.
 
+    Parameters
+    ----------
+    point : numpy.ndarray or list or glm.vec2
+        the point's `(x, y)` coordinates
+
     Attributes
     ----------
     point_glm : `glm.vec2`
         The point in glm.
     point : `numpy.ndarray(shape=(2,), dtype=numpy.float32)`
         The numpy view of `point_glm`
+
+    Examples
+    --------
+    >>> from mt.geo2d import Point2d
+    >>> Point2d([1, 2]).point
+    array([1., 2.], dtype=float32)
     """
 
     def __init__(self, point):
+        """Initialises the point from its `(x, y)` coordinates."""
         self.point = point
 
     @property
     def point(self):
+        """numpy.ndarray: the coordinates as a float array of shape (2,). Assigning converts the
+        value to a `glm.vec2`."""
         return np.array(self.point_glm)
 
     @point.setter

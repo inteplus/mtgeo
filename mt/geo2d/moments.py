@@ -51,8 +51,13 @@ class Moments2d(TwoD, Moments):
     --------
     >>> import numpy as np
     >>> from mt.geo2d.moments import Moments2d
-    >>> gm.Moments2d(10, np.array([2,3]), np.array([[1,2],[3,4]]))
-    Moments2d(m0=10, mean=vec2( 0.2, 0.3 ), cov=mat2x2(( 0.06, 0.14 ), ( 0.24, 0.31 )))
+    >>> Moments2d(10, np.array([2,3]), np.array([[1,2],[3,4]]))
+    Moments2d(m0=10, mean=vec2( 0.2, 0.3 ), cov=mat2x2(( 0.06, 0.24 ), ( 0.14, 0.31 )))
+    >>> m = Moments2d(10, [20, 30], [[50, 60], [60, 100]])  # 10 points with mean (2,3)
+    >>> m.mean
+    array([2., 3.], dtype=float32)
+    >>> (m * 2).m0
+    20
 
     See Also
     --------
@@ -77,23 +82,28 @@ class Moments2d(TwoD, Moments):
 
     @property
     def m1_glm(self):
+        """Returns the 1st-order raw moment as a vec2."""
         return self._m1
 
     @property
     def m1(self):
+        """Returns the 1st-order raw moment as a numpy array of shape (2,)."""
         return np.frombuffer(self._m1.to_bytes(), dtype=np.float32)
 
     @property
     def m2_glm(self):
+        """Returns the column-major 2nd-order raw moment as a mat2."""
         return self._m2
 
     @property
     def m2(self):
+        """Returns the row-major 2nd-order raw moment as a numpy array of shape (2,2)."""
         return np.frombuffer(self._m2.to_bytes(), dtype=np.float32).reshape(2, 2).T
 
     @property
     def mean_glm(self):
-        """Returns the mean vector as a vec2."""
+        """Returns the mean vector as a vec2. It is `m1/m0`, or the zero vector if `m0` is
+        (nearly) zero."""
         if self._mean is None:
             self._mean = (
                 glm.vec2() if glm.abs(self._m0) < EPSILON else self._m1 / self._m0
@@ -102,12 +112,13 @@ class Moments2d(TwoD, Moments):
 
     @property
     def mean(self):
-        """Returns the mean vector."""
+        """Returns the mean vector as a numpy array of shape (2,)."""
         return np.frombuffer(self.mean_glm.to_bytes(), dtype=np.float32)
 
     @property
     def cov_glm(self):
-        """Returns the column-major covariance matrix as a mat2."""
+        """Returns the column-major covariance matrix as a mat2. It is `m2/m0 - mean mean^T`, or
+        the zero matrix if `m0` is (nearly) zero."""
         if self._cov is None:
             mean = self.mean_glm
             self._cov = (

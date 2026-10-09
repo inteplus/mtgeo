@@ -1,5 +1,27 @@
 '''Registry to store all the functions to upper-bound and lower-bound a geometric object of type A
-with an object of type B.'''
+with an object of type B.
+
+An upper bound of an object is an object of type B whose interior contains the interior of the
+original object (for example, a box enclosing an ellipsoid). A lower bound is an object of type B
+whose interior lies inside the interior of the original object (for example, an ellipsoid inscribed
+in a box). Each registry is keyed by the exact pair `(src_type, dst_type)`; lookup uses `type(obj)`
+so subclasses do not inherit registrations.
+
+Examples
+--------
+>>> from mt.geo import register_upper_bound, upper_bound, upper_boundable
+>>> class Disc:
+...     def __init__(self, radius):
+...         self.radius = radius
+>>> class Square:
+...     def __init__(self, side):
+...         self.side = side
+>>> register_upper_bound(Disc, Square, lambda d: Square(2 * d.radius))
+>>> upper_boundable(Disc(1), Square)
+True
+>>> upper_bound(Disc(1.5), Square).side
+3.0
+'''
 
 
 __all__ = [
@@ -21,6 +43,11 @@ _upper_boundable_registry = {}
 def upper_boundable(obj, dst_type):
     '''Checks if an object can be upper-bounded to a target type.
 
+    If a function was registered with :func:`register_upper_boundable` for the key
+    `(type(obj), dst_type)`, it is called with `obj` and its result is returned. Otherwise the
+    object is deemed upper-boundable if and only if a function was registered with
+    :func:`register_upper_bound` for that key. The lookup uses the exact type of `obj`.
+
     Parameters
     ----------
     obj : object
@@ -31,13 +58,20 @@ def upper_boundable(obj, dst_type):
     Returns
     -------
     bool
-        whether or not the object is upper-boundable to `dst_type`
+        whether or not the object is upper-boundable to `dst_type`. It is False, and no exception
+        is raised, if nothing has been registered for the pair of types.
 
-    Raises
-    ------
-    NotImplementedError
-        if the upper-boundable function has not been registered using functions
-        `register_upper_boundable` or `register_upper_bound`
+    See Also
+    --------
+    upper_bound : performs the bounding
+    register_upper_boundable : registers a per-instance predicate
+    register_upper_bound : registers a bounding function
+
+    Examples
+    --------
+    >>> from mt.geo import upper_boundable
+    >>> upper_boundable(3, str)
+    False
     '''
     key = (type(obj), dst_type)
     if key in _upper_boundable_registry:
@@ -47,6 +81,10 @@ def upper_boundable(obj, dst_type):
 
 def upper_bound(obj, dst_type):
     '''Upper-bounds an object to a target type.
+
+    Calls the function registered with :func:`register_upper_bound` for the key
+    `(type(obj), dst_type)`. The result is an object of type `dst_type` whose interior
+    contains the interior of `obj`. The lookup uses the exact type of `obj`.
 
     Parameters
     ----------
@@ -58,12 +96,25 @@ def upper_bound(obj, dst_type):
     Returns
     -------
     object
-        the upper-bounded version of `obj`
+        the upper-bounded version of `obj`, as returned by the registered function
 
     Raises
     ------
     NotImplementedError
         if the upper-bound function has not been registered using function `register_upper_bound`
+
+    See Also
+    --------
+    upper_boundable : checks whether an object can be upper-bounded
+    register_upper_bound : registers a bounding function
+
+    Examples
+    --------
+    >>> from mt.geo import upper_bound
+    >>> upper_bound(3, str)
+    Traceback (most recent call last):
+        ...
+    NotImplementedError: Upper-bound function from type <class 'int'> to ... not found.
     '''
     key = (type(obj), dst_type)
     if key in _upper_bound_registry:
@@ -83,7 +134,17 @@ def register_upper_bound(src_type, dst_type, func):
     dst_type : type
         type or class to upper-bound to
     func : function
-        upper-bound function to register
+        upper-bound function `f(obj) -> obj2` to register, taking an instance of `src_type` and
+        returning an instance of `dst_type`
+
+    Raises
+    ------
+    SyntaxError
+        if a function has already been registered for the pair `(src_type, dst_type)`
+
+    See Also
+    --------
+    upper_bound : uses the registered function
     '''
 
     key = (src_type, dst_type)
@@ -105,7 +166,16 @@ def register_upper_boundable(src_type, dst_type, func):
     dst_type : type
         type or class to upper-bound to
     func : function
-        upper-boundable function to register
+        upper-boundable function `f(obj) -> bool` to register, taking an instance of `src_type`
+
+    Raises
+    ------
+    SyntaxError
+        if a function has already been registered for the pair `(src_type, dst_type)`
+
+    See Also
+    --------
+    upper_boundable : uses the registered function
     '''
 
     key = (src_type, dst_type)
@@ -130,6 +200,11 @@ _lower_boundable_registry = {}
 def lower_boundable(obj, dst_type):
     '''Checks if an object can be lower-bounded to a target type.
 
+    If a function was registered with :func:`register_lower_boundable` for the key
+    `(type(obj), dst_type)`, it is called with `obj` and its result is returned. Otherwise the
+    object is deemed lower-boundable if and only if a function was registered with
+    :func:`register_lower_bound` for that key. The lookup uses the exact type of `obj`.
+
     Parameters
     ----------
     obj : object
@@ -140,13 +215,20 @@ def lower_boundable(obj, dst_type):
     Returns
     -------
     bool
-        whether or not the object is lower-boundable to `dst_type`
+        whether or not the object is lower-boundable to `dst_type`. It is False, and no exception
+        is raised, if nothing has been registered for the pair of types.
 
-    Raises
-    ------
-    NotImplementedError
-        if the lower-boundable function has not been registered using functions
-        `register_lower_boundable` or `register_lower_bound`
+    See Also
+    --------
+    lower_bound : performs the bounding
+    register_lower_boundable : registers a per-instance predicate
+    register_lower_bound : registers a bounding function
+
+    Examples
+    --------
+    >>> from mt.geo import lower_boundable
+    >>> lower_boundable(3, str)
+    False
     '''
     key = (type(obj), dst_type)
     if key in _lower_boundable_registry:
@@ -156,6 +238,10 @@ def lower_boundable(obj, dst_type):
 
 def lower_bound(obj, dst_type):
     '''Lower-bounds an object to a target type.
+
+    Calls the function registered with :func:`register_lower_bound` for the key
+    `(type(obj), dst_type)`. The result is an object of type `dst_type` whose interior
+    lies inside the interior of `obj`. The lookup uses the exact type of `obj`.
 
     Parameters
     ----------
@@ -167,12 +253,25 @@ def lower_bound(obj, dst_type):
     Returns
     -------
     object
-        the lower-bounded version of `obj`
+        the lower-bounded version of `obj`, as returned by the registered function
 
     Raises
     ------
     NotImplementedError
         if the lower-bound function has not been registered using function `register_lower_bound`
+
+    See Also
+    --------
+    lower_boundable : checks whether an object can be lower-bounded
+    register_lower_bound : registers a bounding function
+
+    Examples
+    --------
+    >>> from mt.geo import lower_bound
+    >>> lower_bound(3, str)
+    Traceback (most recent call last):
+        ...
+    NotImplementedError: Lower-bound function from type <class 'int'> to ... not found.
     '''
     key = (type(obj), dst_type)
     if key in _lower_bound_registry:
@@ -192,7 +291,17 @@ def register_lower_bound(src_type, dst_type, func):
     dst_type : type
         type or class to lower-bound to
     func : function
-        lower-bound function to register
+        lower-bound function `f(obj) -> obj2` to register, taking an instance of `src_type` and
+        returning an instance of `dst_type`
+
+    Raises
+    ------
+    SyntaxError
+        if a function has already been registered for the pair `(src_type, dst_type)`
+
+    See Also
+    --------
+    lower_bound : uses the registered function
     '''
 
     key = (src_type, dst_type)
@@ -214,7 +323,16 @@ def register_lower_boundable(src_type, dst_type, func):
     dst_type : type
         type or class to lower-bound to
     func : function
-        lower-boundable function to register
+        lower-boundable function `f(obj) -> bool` to register, taking an instance of `src_type`
+
+    Raises
+    ------
+    SyntaxError
+        if a function has already been registered for the pair `(src_type, dst_type)`
+
+    See Also
+    --------
+    lower_boundable : uses the registered function
     '''
 
     key = (src_type, dst_type)

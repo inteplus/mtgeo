@@ -1,5 +1,23 @@
 '''Registry to store all the functions to join the interior volumes of two geometric objects in the
-same space.'''
+same space.
+
+The registry is keyed by the ordered pair of exact types `(type1, type2)`; the pair `(B, A)` is not
+looked up when only `(A, B)` is registered.
+
+Examples
+--------
+>>> from mt.geo import join_volume, register_join_volume
+>>> class Segment:
+...     def __init__(self, a, b):
+...         self.a, self.b = a, b
+>>> def join_segments(s1, s2):
+...     inter = max(0.0, min(s1.b, s2.b) - max(s1.a, s2.a))
+...     len1, len2 = s1.b - s1.a, s2.b - s2.a
+...     return inter, len1 - inter, len2 - inter, len1 + len2 - inter
+>>> register_join_volume(Segment, Segment, join_segments)
+>>> join_volume(Segment(0, 2), Segment(1, 4))
+(1, 1, 2, 4)
+'''
 
 
 __all__ = ['join_volume', 'register_join_volume']
@@ -11,6 +29,10 @@ _join_volume_registry = {}
 
 def join_volume(obj1, obj2):
     '''Joins the interior volumes of two geometric objects in the same space.
+
+    This is the building block for intersection-over-union style measures. It calls the function
+    registered with :func:`register_join_volume` for the key `(type(obj1), type(obj2))`. In 1D the
+    "volume" is a length, in 2D an area, in 3D a volume, and so on.
 
     Parameters
     ----------
@@ -34,6 +56,10 @@ def join_volume(obj1, obj2):
     ------
     NotImplementedError
         if the join_volume function has not been registered using function `register_join_volume`
+
+    See Also
+    --------
+    register_join_volume : registers a join function
     '''
     key = (type(obj1), type(obj2))
     if key in _join_volume_registry:
@@ -53,7 +79,17 @@ def register_join_volume(type1, type2, func):
     type2 : type
         type or class of the second object to join_volume
     func : function
-        join_volume function to register
+        join_volume function `f(obj1, obj2) -> (intersection, obj1_only, obj2_only, union)` to
+        register. See :func:`join_volume` for the meaning of the 4 returned volumes.
+
+    Raises
+    ------
+    SyntaxError
+        if a function has already been registered for the pair `(type1, type2)`
+
+    See Also
+    --------
+    join_volume : uses the registered function
     '''
 
     key = (type1, type2)
