@@ -9,6 +9,8 @@ setup(
     name="mtgeo",
     description="The most fundamental geometric modules in Python for Minh-Tri Pham",
     author="Minh-Tri Pham",
+    license="MIT",
+    license_files=["LICENSE"],
     packages=find_packages() + find_namespace_packages(include=["mt.*"]),
     include_package_data=True,
     zip_safe=False,
