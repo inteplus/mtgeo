@@ -135,7 +135,7 @@ class Hyperbox(GeometricObject):
             )
 
     def __repr__(self):
-        return "Hyperbox({})".format(self.dlt_tfm)
+        return f"Hyperbox({self.dlt_tfm})"
 
     def is_valid(self):
         return (self.dlt_tfm.scale >= 0).all()
@@ -192,9 +192,7 @@ def join_volume_Hyperbox_and_Hyperbox(obj1, obj2):
     """
     if obj1.dim != obj2.dim:
         raise ValueError(
-            "Two objects of dimension {} and {} are not in the same space.".format(
-                obj1.dim, obj2.dim
-            )
+            f"Two objects of dimension {obj1.dim} and {obj2.dim} are not in the same space."
         )
     inter = obj1.intersect(obj2)
     inter_volume = inter.volume

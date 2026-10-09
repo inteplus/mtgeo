@@ -69,7 +69,7 @@ def upper_bound(obj, dst_type):
     if key in _upper_bound_registry:
         return _upper_bound_registry[key](obj)
     raise NotImplementedError(
-        "Upper-bound function from type {} to type {} not found.".format(key[0], key[1])
+        f"Upper-bound function from type {key[0]} to type {key[1]} not found."
     )
 
 
@@ -178,7 +178,7 @@ def lower_bound(obj, dst_type):
     if key in _lower_bound_registry:
         return _lower_bound_registry[key](obj)
     raise NotImplementedError(
-        "Lower-bound function from type {} to type {} not found.".format(key[0], key[1])
+        f"Lower-bound function from type {key[0]} to type {key[1]} not found."
     )
 
 

@@ -167,9 +167,7 @@ class Box(ThreeD, Hyperbox):
         )
 
     def __repr__(self):
-        return "Box(x={}, y={}, z={}, lx={}, ly={}, lz={})".format(
-            self.x, self.y, self.z, self.lx, self.ly, self.lz
-        )
+        return f"Box(x={self.x}, y={self.y}, z={self.z}, lx={self.lx}, ly={self.ly}, lz={self.lz})"
 
     def intersect(self, other):
         res = super(Box, self).intersect(other)

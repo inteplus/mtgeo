@@ -52,7 +52,7 @@ class Dltra(Dliso):
         self.scale = scale
 
     def __repr__(self):
-        return "Dltra(offset={}, scale={})".format(self.offset, self.scale)
+        return f"Dltra(offset={self.offset}, scale={self.scale})"
 
     # ----- base adaptation -----
 

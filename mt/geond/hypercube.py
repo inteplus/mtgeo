@@ -103,7 +103,7 @@ class Hypercube(GeometricObject):
             self.dltra_tfm = Dltra(offset=offset_or_dltra, scale=scale)
 
     def __repr__(self):
-        return "Hypercube({})".format(self.dltra_tfm)
+        return f"Hypercube({self.dltra_tfm})"
 
 
 # ----- casting -----

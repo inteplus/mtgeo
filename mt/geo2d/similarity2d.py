@@ -100,9 +100,7 @@ class Sim2d(Dliso):
         self.on = on
 
     def __repr__(self):
-        return "Sim2d(offset={}, scale={}, angle={}, on={})".format(
-            self.offset, self.scale, self.angle, self.on
-        )
+        return f"Sim2d(offset={self.offset}, scale={self.scale}, angle={self.angle}, on={self.on})"
 
     # ----- base adaptation -----
 

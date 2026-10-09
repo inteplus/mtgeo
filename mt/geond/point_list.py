@@ -37,9 +37,7 @@ class PointList(GeometricObject):
         )
         if check and not castable_ndarray_PointList(points, self.ndim):
             raise ValueError(
-                "Point list in {}D not in the right shape: {}".format(
-                    self.ndim, points.shape
-                )
+                f"Point list in {self.ndim}D not in the right shape: {points.shape}"
             )
         if points.size == 0:
             points = points.reshape((0, self.ndim))

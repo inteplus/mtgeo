@@ -38,6 +38,6 @@ class Point(GeometricObject):
         point = point if isinstance(point, _np.ndarray) else _np.array(point)
         if check and not castable_ndarray_Point(point, self.ndim):
             raise ValueError(
-                "Point in {}D not in the right length: {}".format(self.ndim, len(point))
+                f"Point in {self.ndim}D not in the right length: {len(point)}"
             )
         self.point = point

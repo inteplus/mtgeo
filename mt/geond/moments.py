@@ -58,7 +58,7 @@ class Moments(GeometricObject):
         self._cov = None
 
     def __repr__(self):
-        return "Moments(ndim={}, m0={}, mean={})".format(self.ndim, self.m0, self.mean)
+        return f"Moments(ndim={self.ndim}, m0={self.m0}, mean={self.mean})"
 
     @property
     def m0(self):

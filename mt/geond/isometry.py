@@ -41,7 +41,7 @@ class Iso(Dliso):
         self.unitary = unitary
 
     def __repr__(self):
-        return "Iso(offset={}, unitary_diagonal={})".format(self.offset, self.unitary.diagonal())
+        return f"Iso(offset={self.offset}, unitary_diagonal={self.unitary.diagonal()})"
 
     # ----- base adaptation -----
 

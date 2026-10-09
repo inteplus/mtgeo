@@ -125,9 +125,7 @@ class Moments3d(ThreeD, Moments):
         return np.frombuffer(self.cov_glm.to_bytes(), dtype=np.float32).reshape(3, 3).T
 
     def __repr__(self):
-        return "Moments3d(m0={}, mean={}, cov={})".format(
-            self.m0, repr(self.mean_glm), repr(self.cov_glm)
-        )
+        return f"Moments3d(m0={self.m0}, mean={self.mean_glm!r}, cov={self.cov_glm!r})"
 
 
 _bc.register_cast(Moments3d, Moments, lambda x: Moments(x.m0, x.m1, x.m2))

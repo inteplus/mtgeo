@@ -77,7 +77,7 @@ class Hyperellipsoid(GeometricObject):
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
-        return "Hyperellipsoid(aff_tfm={})".format(self.aff_tfm)
+        return f"Hyperellipsoid(aff_tfm={self.aff_tfm})"
 
     # ----- useful functions
 
@@ -127,7 +127,7 @@ def lower_bound_Hyperbox_to_Hyperellipsoid(x):
     """
     if not isinstance(x, Hyperbox):
         raise ValueError(
-            "Input type must be a `Hyperbox`, '{}' given.".format(x.__class__)
+            f"Input type must be a `Hyperbox`, '{x.__class__}' given."
         )
     return Hyperellipsoid(cast(x.dlt_tfm, Aff))
 

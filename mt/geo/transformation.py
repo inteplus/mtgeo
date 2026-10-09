@@ -78,7 +78,7 @@ def transform(tfm, obj):
         if key in _transform_registry:
             return _transform_registry[key](tfm, obj)
     raise NotImplementedError(
-        "Transformer {} has no function to transform object {}.".format(tfm, obj)
+        f"Transformer {tfm} has no function to transform object {obj}."
     )
 
 
@@ -145,7 +145,7 @@ class Transformer(object):
         transformer.'''
         if not transformable(self, obj):
             raise ValueError(
-                "Object {} cannot by transformed by transformer type {}".format(obj, type(self))
+                f"Object {obj} cannot by transformed by transformer type {type(self)}"
             )
         return transform(self, obj)
 
@@ -161,7 +161,7 @@ class InvertibleTransformer(Transformer):
     
     def invert(self):
         '''Inverses the transformer'''
-        raise NotImplementedError("You must implement the function {}.invert().".format(type(self)))
+        raise NotImplementedError(f"You must implement the function {type(self)}.invert().")
 
     # ----- operators -----
     
@@ -189,7 +189,7 @@ class LieTransformer(InvertibleTransformer):
     def multiply(self, other):
         '''Multiplies the transformer with another transformer.'''
         raise NotImplementedError(
-            "You must implement the function {}.multiply().".format(type(self))
+            f"You must implement the function {type(self)}.multiply()."
         )
 
     # ----- operators -----

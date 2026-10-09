@@ -54,7 +54,7 @@ class Dlt(Aff):
     @bias.setter
     def bias(self, bias):
         if len(bias.shape) != 1:
-            raise ValueError("Bias is not a vector, shape {}.".format(bias.shape))
+            raise ValueError(f"Bias is not a vector, shape {bias.shape}.")
         self.__offset = bias
 
     @property
@@ -87,7 +87,7 @@ class Dlt(Aff):
     @offset.setter
     def offset(self, offset):
         if len(offset.shape) != 1:
-            raise ValueError("Offset is not a vector, shape {}.".format(offset.shape))
+            raise ValueError(f"Offset is not a vector, shape {offset.shape}.")
         self.__offset = offset
 
     @property
@@ -98,7 +98,7 @@ class Dlt(Aff):
     @scale.setter
     def scale(self, scale):
         if len(scale.shape) != 1:
-            raise ValueError("Scale is not a vector, shape {}.".format(scale.shape))
+            raise ValueError(f"Scale is not a vector, shape {scale.shape}.")
         self.__scale = scale
 
     @property
@@ -114,7 +114,7 @@ class Dlt(Aff):
             _ = self.dim # just to check the shapes
 
     def __repr__(self):
-        return "Dlt(offset={}, scale={})".format(self.offset, self.scale)
+        return f"Dlt(offset={self.offset}, scale={self.scale})"
 
     def multiply(self, other):
         if not isinstance(other, Dlt):

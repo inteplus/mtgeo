@@ -29,7 +29,7 @@ class Dliso(Aff):
     @bias.setter
     def bias(self, bias):
         if len(bias.shape) != 1:
-            raise ValueError("Bias is not a vector, shape {}.".format(bias.shape))
+            raise ValueError(f"Bias is not a vector, shape {bias.shape}.")
         self.__offset = bias
 
     @property
@@ -61,7 +61,7 @@ class Dliso(Aff):
     @offset.setter
     def offset(self, offset):
         if len(offset.shape) != 1:
-            raise ValueError("Offset is not a vector, shape {}.".format(offset.shape))
+            raise ValueError(f"Offset is not a vector, shape {offset.shape}.")
         self.__offset = offset
 
     @property
@@ -72,7 +72,7 @@ class Dliso(Aff):
     @scale.setter
     def scale(self, scale):
         if not scale > 0:
-            raise ValueError("Scale is not positive {}.".format(scale))
+            raise ValueError(f"Scale is not positive {scale}.")
         self.__scale = scale
 
     @property
@@ -83,7 +83,7 @@ class Dliso(Aff):
     @unitary.setter
     def unitary(self, unitary):
         if len(unitary.shape) != 2:
-            raise ValueError("Unitary is not a matrix of, shape {} given.".format(unitary.shape))
+            raise ValueError(f"Unitary is not a matrix of, shape {unitary.shape} given.")
         self.__unitary = unitary
 
     # ----- derived properties -----

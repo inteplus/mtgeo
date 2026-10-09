@@ -79,9 +79,7 @@ class Aff(LieTransformer, GeometricObject):
         """a*b = Lie operator"""
         if not isinstance(other, Aff):
             raise ValueError(
-                "Expecting 'other' to be an affine transformation, but {} received.".format(
-                    other.__class__
-                )
+                f"Expecting 'other' to be an affine transformation, but {other.__class__} received."
             )
         return Aff(np.dot(self.weight, other.weight), self << other.bias)
 
@@ -95,7 +93,7 @@ class Aff(LieTransformer, GeometricObject):
     @bias.setter
     def bias(self, bias):
         if len(bias.shape) != 1:
-            raise ValueError("Bias is not a vector, shape {}.".format(bias.shape))
+            raise ValueError(f"Bias is not a vector, shape {bias.shape}.")
         self.__bias = bias
 
     @property
@@ -106,7 +104,7 @@ class Aff(LieTransformer, GeometricObject):
     @weight.setter
     def weight(self, weight):
         if len(weight.shape) != 2:
-            raise ValueError("bias has non-matrix shape {}.".format(weight.shape))
+            raise ValueError(f"bias has non-matrix shape {weight.shape}.")
         self.__weight = weight
 
     # ----- derived properties -----
@@ -156,9 +154,7 @@ class Aff(LieTransformer, GeometricObject):
             _ = self.dim  # just to check shapes
 
     def __repr__(self):
-        return "Aff(weight_diagonal={}, bias={})".format(
-            self.weight.diagonal(), self.bias
-        )
+        return f"Aff(weight_diagonal={self.weight.diagonal()}, bias={self.bias})"
 
 
 # ----- transform functions -----

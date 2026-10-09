@@ -39,7 +39,7 @@ def join_volume(obj1, obj2):
     if key in _join_volume_registry:
         return _join_volume_registry[key](obj1, obj2)
     raise NotImplementedError(
-        "Join_volume function between type {} and type {} not found.".format(key[0], key[1])
+        f"Join_volume function between type {key[0]} and type {key[1]} not found."
     )
 
 

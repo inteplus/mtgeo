@@ -216,7 +216,7 @@ class Rect(HasShapely, TwoD, Hyperbox):
         )
 
     def __repr__(self):
-        return "Rect(x={}, y={}, w={}, h={})".format(self.x, self.y, self.w, self.h)
+        return f"Rect(x={self.x}, y={self.y}, w={self.w}, h={self.h})"
 
     def intersect(self, other):
         res = super(Rect, self).intersect(other)

@@ -70,7 +70,7 @@ class Ellipsoid(ThreeD, GeometricObject):
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
-        return "Ellipsoid(aff_tfm={})".format(self.aff_tfm)
+        return f"Ellipsoid(aff_tfm={self.aff_tfm})"
 
     @property
     def volume(self):
@@ -144,7 +144,7 @@ def lower_bound_Box_to_Ellipsoid(x):
         the axis-aligned ellipsoid enclosed by the box
     """
     if not isinstance(x, Box):
-        raise ValueError("Input type must be a `Box`, '{}' given.".format(x.__class__))
+        raise ValueError(f"Input type must be a `Box`, '{x.__class__}' given.")
     return Ellipsoid(cast(x.dlt_tfm, Aff3d))
 
 

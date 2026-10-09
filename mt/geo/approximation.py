@@ -63,7 +63,7 @@ def approx(obj, dst_type):
     if key in _approx_registry:
         return _approx_registry[key](obj)
     raise NotImplementedError(
-        "Approximate function from type {} to type {} not found.".format(key[0], key[1])
+        f"Approximate function from type {key[0]} to type {key[1]} not found."
     )
 
 

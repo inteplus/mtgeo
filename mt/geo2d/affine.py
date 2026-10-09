@@ -445,9 +445,7 @@ def rect2rect(src_rect: Rect, dst_rect: Rect, eps=1e-7) -> Aff2d:
             sx = 0.0
         else:
             raise ValueError(
-                "Source width is zero {} but destination width is not {}.".format(
-                    src_rect.w, dst_rect.w
-                )
+                f"Source width is zero {src_rect.w} but destination width is not {dst_rect.w}."
             )
     else:
         sx = dst_rect.w / src_rect.w
@@ -456,9 +454,7 @@ def rect2rect(src_rect: Rect, dst_rect: Rect, eps=1e-7) -> Aff2d:
             sy = 0.0
         else:
             raise ValueError(
-                "Source height is zero {} but destination height is not {}.".format(
-                    src_rect.h, dst_rect.h
-                )
+                f"Source height is zero {src_rect.h} but destination height is not {dst_rect.h}."
             )
     else:
         sy = dst_rect.h / src_rect.h

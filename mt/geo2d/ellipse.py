@@ -80,7 +80,7 @@ class Ellipse(TwoD, GeometricObject):
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
-        return "Ellipse(aff_tfm={})".format(self.aff_tfm)
+        return f"Ellipse(aff_tfm={self.aff_tfm})"
 
     @property
     def f0(self):
@@ -190,7 +190,7 @@ def lower_bound_Rect_to_Ellipse(x):
         the axis-aligned ellipse enclosed by the rectangle
     """
     if not isinstance(x, Rect):
-        raise ValueError("Input type must be a `Rect`, '{}' given.".format(x.__class__))
+        raise ValueError(f"Input type must be a `Rect`, '{x.__class__}' given.")
     return Ellipse(Aff2d(linear=glm.vec4(x.w / 2, x.h / 2, 0, 0), offset=x.center_pt))
 
 
