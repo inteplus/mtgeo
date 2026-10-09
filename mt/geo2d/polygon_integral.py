@@ -1,6 +1,7 @@
 '''Polygon in 2D.
 
-A polygon is represented as a collection of 2D points in either clockwise or counter-clockwise order. It is stored in a numpy array of shape (N,2).
+A polygon is represented as a collection of 2D points in either clockwise or counter-clockwise
+order. It is stored in a numpy array of shape (N,2).
 '''
 
 import mt.base.casting as _bc
@@ -9,11 +10,15 @@ from .moments import Moments2d
 from .polygon import Polygon
 
 
-__all__ = ['trapezium_integral', 'signed_area', 'moment_x', 'moment_y', 'moment_xy', 'moment_xx', 'moment_yy', 'to_moments2d']
+__all__ = [
+    'trapezium_integral', 'signed_area', 'moment_x', 'moment_y', 'moment_xy', 'moment_xx',
+    'moment_yy', 'to_moments2d'
+]
 
 
 def trapezium_integral(poly, func):
-    '''Applies the Shoelace algorithm to integrate a function over the interior of a polygon. Shoelace algorithm views the polygon as a sum of trapeziums.
+    '''Applies the Shoelace algorithm to integrate a function over the interior of a polygon.
+    Shoelace algorithm views the polygon as a sum of trapeziums.
 
     Parameters
     ----------
@@ -106,7 +111,9 @@ def moment_x(poly):
     >>> round(moment_x(poly), 3)
     -2.667
     '''
-    return trapezium_integral(poly, lambda x1, y1, x2, y2: 1/6*(x2-x1)*(x1*(y1*2+y2) + x2*(y1+y2*2)))
+    return trapezium_integral(
+        poly, lambda x1, y1, x2, y2: 1/6*(x2-x1)*(x1*(y1*2+y2) + x2*(y1+y2*2))
+    )
 
 def moment_y(poly):
     '''Returns the integral of y over the polygon's interior.
@@ -152,7 +159,10 @@ def moment_xy(poly):
     >>> round(moment_xy(poly), 3)
     -5.333
     '''
-    return trapezium_integral(poly, lambda x1, y1, x2, y2: 1/24*(x2-x1)*(y1*y1*(x1*3+x2) + y1*y2*2*(x1+x2) + y2*y2*(x1+x2*3)))
+    return trapezium_integral(
+        poly,
+        lambda x1, y1, x2, y2: 1/24*(x2-x1)*(y1*y1*(x1*3+x2) + y1*y2*2*(x1+x2) + y2*y2*(x1+x2*3))
+    )
 
 def moment_xx(poly):
     '''Returns the integral of x*x over the polygon's interior.
@@ -175,7 +185,10 @@ def moment_xx(poly):
     >>> round(moment_xx(poly), 3)
     -7.167
     '''
-    return trapezium_integral(poly, lambda x1, y1, x2, y2: 1/12*(x2-x1)*(x1*x1*(y1*3+y2) + x1*x2*2*(y1+y2) + x2*x2*(y1+y2*3)))
+    return trapezium_integral(
+        poly,
+        lambda x1, y1, x2, y2: 1/12*(x2-x1)*(x1*x1*(y1*3+y2) + x1*x2*2*(y1+y2) + x2*x2*(y1+y2*3))
+    )
 
 def moment_yy(poly):
     '''Returns the integral of y*y over the polygon's interior.

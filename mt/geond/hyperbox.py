@@ -11,18 +11,23 @@ __all__ = ["Hyperbox"]
 class Hyperbox(GeometricObject):
     """Axis-aligned n-dimensional hyperrectangle.
 
-    An axis-aligned n-dimensional box/hyperrectangle is defined as the set of points of the hypercube [-1,1]^n transformed by a dilatation.
+    An axis-aligned n-dimensional box/hyperrectangle is defined as the set of points of the
+    hypercube [-1,1]^n transformed by a dilatation.
 
-    Note that is is a many-to-one representation. For each box, there are up to 2^n dilatations that map the hypbercube [-1,1]^n to it.
+    Note that is is a many-to-one representation. For each box, there are up to 2^n dilatations that
+    map the hypbercube [-1,1]^n to it.
 
     Parameters
     ----------
     min_coords : 1d array or Dlt
-        array of minimum coordinate values for all the dimensions, or the dilatation if self. In case of the latter, the `max_coords` argument is ignored.
+        array of minimum coordinate values for all the dimensions, or the dilatation if self. In
+        case of the latter, the `max_coords` argument is ignored.
     max_coords : 1d array
-        array of maximum coordinate values for all the dimensions. If it is None, then `min_coords` represents `max_coords` and the minimum coordinate values are assumed 0.
+        array of maximum coordinate values for all the dimensions. If it is None, then `min_coords`
+        represents `max_coords` and the minimum coordinate values are assumed 0.
     force_valid : bool
-        whether or not to sort out `min_coords` and `max_coords` to make the the minus point meet the min_coords and the plus point meet the max_coords.
+        whether or not to sort out `min_coords` and `max_coords` to make the the minus point meet
+        the min_coords and the plus point meet the max_coords.
 
     Attributes
     ----------

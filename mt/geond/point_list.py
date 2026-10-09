@@ -20,7 +20,8 @@ class PointList(GeometricObject):
     Parameters
     ----------
     point_list : list
-        A list of points, each of which is an iterable of D items, where D is the `ndim` of the class.
+        A list of points, each of which is an iterable of D items, where D is the `ndim` of the
+        class.
     check : bool
         Whether or not to check if the shape is valid
 

@@ -1,4 +1,5 @@
-'''Registry to store all the functions to join the interior volumes of two geometric objects in the same space.'''
+'''Registry to store all the functions to join the interior volumes of two geometric objects in the
+same space.'''
 
 
 __all__ = ['join_volume', 'register_join_volume']
@@ -37,7 +38,9 @@ def join_volume(obj1, obj2):
     key = (type(obj1), type(obj2))
     if key in _join_volume_registry:
         return _join_volume_registry[key](obj1, obj2)
-    raise NotImplementedError("Join_volume function between type {} and type {} not found.".format(key[0], key[1]))
+    raise NotImplementedError(
+        "Join_volume function between type {} and type {} not found.".format(key[0], key[1])
+    )
 
 
 def register_join_volume(type1, type2, func):
@@ -55,5 +58,8 @@ def register_join_volume(type1, type2, func):
 
     key = (type1, type2)
     if key in _join_volume_registry:
-        raise SyntaxError("Join_Volumeimate function from type {} to type {} has been registered before.".format(type1, type2))
+        raise SyntaxError(
+            "Join_Volumeimate function from type {} to "
+            "type {} has been registered before.".format(type1, type2)
+        )
     _join_volume_registry[key] = func

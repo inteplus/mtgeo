@@ -253,7 +253,8 @@ class Rect(HasShapely, TwoD, Hyperbox):
         return Rect(cx - r, cy - r, cx + r, cy + r)
 
     def enlarge_to_square(self) -> "Rect":
-        """Returns an enlarged square, centered at the same point, with side being the maximum of width and height."""
+        """Returns an enlarged square, centered at the same point, with side being the maximum of
+        width and height."""
         r = max(self.w, self.h) * 0.5
         cx, cy = self.cx, self.cy
         return Rect(cx - r, cy - r, cx + r, cy + r)
@@ -269,7 +270,8 @@ class Rect(HasShapely, TwoD, Hyperbox):
         Parameters
         ----------
         imgres : iterable
-            tuple [width, height] defining the image resolution where the square must stay fully inside
+            tuple [width, height] defining the image resolution where the square must stay fully
+            inside
         min_length : int
             minimal number of pixels in each dimension of the output square
 
@@ -320,7 +322,9 @@ register_cast(Rect, Moments2d, cast_Rect_to_Moments2d)
 
 
 def approx_Moments2d_to_Rect(obj):
-    """Approximates a Moments2d instance with a rect such that the mean aligns with the rect's center, and the covariance matrix of the instance is closest to the moment convariance matrix of the rect."""
+    """Approximates a Moments2d instance with a rect such that the mean aligns with the rect's
+    center, and the covariance matrix of the instance is closest to the moment convariance matrix of
+    the rect."""
     cx, cy = obj.mean
     cov = obj.cov
 

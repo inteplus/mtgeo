@@ -13,7 +13,8 @@ __all__ = ["Polygon"]
 
 
 class Polygon(HasShapely, PointList2d):
-    """A 2D polygon, represented as a point list of vertices in either clockwise or counter-clockwise order.
+    """A 2D polygon, represented as a point list of vertices in either clockwise or
+    counter-clockwise order.
 
     See Also
     --------

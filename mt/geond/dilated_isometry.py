@@ -11,7 +11,8 @@ __all__ = ['Dliso', 'approx_Aff_to_Dliso']
 class Dliso(Aff):
     '''Dilated isometry = Isometry following a uniform scaling.
 
-    An isometry is a (Euclidean-)metric-preserving transformation. In other words, it is an affine transformation but the linear part is a unitary matrix.
+    An isometry is a (Euclidean-)metric-preserving transformation. In other words, it is an affine
+    transformation but the linear part is a unitary matrix.
 
     References
     ----------
@@ -100,7 +101,9 @@ class Dliso(Aff):
         self.unitary = unitary
 
     def __repr__(self):
-        return "Dliso(offset={}, scale={}, unitary_diagonal={})".format(self.offset, self.scale, self.unitary.diagonal())
+        return "Dliso(offset={}, scale={}, unitary_diagonal={})".format(
+            self.offset, self.scale, self.unitary.diagonal()
+        )
 
     # ----- base adaptation -----
 
@@ -115,7 +118,8 @@ class Dliso(Aff):
 
     def invert(self):
         invScale = 1/self.scale
-        invUnitary = np.linalg.inv(self.unitary) # slow, and assuming the unitary matrix is invertible
+        # slow, and assuming the unitary matrix is invertible
+        invUnitary = np.linalg.inv(self.unitary)
         return Dliso(np.dot(invUnitary, -self.offset*invScale), invScale, invUnitary)
     invert.__doc__ = Aff.invert.__doc__
 

@@ -38,7 +38,8 @@ def approx_oct(min_x, min_y, max_x, max_y):
     Returns
     -------
     polygon : numpy array
-        list of 2D (x,y) points representing an octagon inside the rectangle (min_x, min_y, max_x, max_y)
+        list of 2D (x,y) points representing an octagon inside the rectangle (min_x, min_y, max_x,
+        max_y)
     '''
     c = np.array([min_x + max_x, min_y + max_y])*0.5
     r = np.array([max_x, max_y]) - c

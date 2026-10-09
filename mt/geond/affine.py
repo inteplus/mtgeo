@@ -19,7 +19,8 @@ __all__ = ["Aff", "transform_Aff_on_Moments", "transform_Aff_on_PointList"]
 
 
 class Aff(LieTransformer, GeometricObject):
-    """A transformer to perform affine transformations using the same transformation matrix in n-dim space.
+    """A transformer to perform affine transformations using the same transformation matrix in n-dim
+    space.
 
     Examples
     --------
@@ -200,7 +201,8 @@ def transform_Aff_on_ndarray(aff_tfm, point_array):
     ----------
     aff_tfm : Aff
         general affine transformation
-    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of the transformation
+    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of
+    the transformation
         a point array
 
     Returns

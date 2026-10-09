@@ -11,7 +11,8 @@ __all__ = ['Dlt']
 
 
 class Dlt(Aff):
-    '''Dilatation (scaling and translation) in n-dim space. Here, scaling is per dimension, not uniform scaling.
+    '''Dilatation (scaling and translation) in n-dim space. Here, scaling is per dimension, not
+    uniform scaling.
 
     Examples
     --------
@@ -131,7 +132,9 @@ class Dlt(Aff):
 
 _bc.register_cast(Dlt, Aff, lambda x: Aff(weight=x.weight, bias=x.bias, check_shapes=False))
 _bc.register_cast(Aff, Dlt, lambda x: Dlt(offset=x.bias, scale=np.diagonal(x.weight)))
-_bc.register_castable(Aff, Dlt, lambda x: np.count_nonzero(x.weight - np.diag(np._diagonal(x.weight))) > 0)
+_bc.register_castable(
+    Aff, Dlt, lambda x: np.count_nonzero(x.weight - np.diag(np._diagonal(x.weight))) > 0
+)
 
 
 # ----- transform functions -----
@@ -173,7 +176,8 @@ def transform_Dlt_on_ndarray(dlt_tfm, point_array):
     ----------
     dlt_tfm : Dlt
         general dilatation
-    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of the transformation
+    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of
+    the transformation
         a point array
 
     Returns

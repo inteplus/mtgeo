@@ -1,4 +1,5 @@
-'''Registry to store all the approximations functions to approximate a geometric object from type A to type B.'''
+'''Registry to store all the approximations functions to approximate a geometric object from type A
+to type B.'''
 
 
 __all__ = ['approx', 'approximable', 'register_approx', 'register_approximable']
@@ -29,7 +30,8 @@ def approximable(obj, dst_type):
     Raises
     ------
     NotImplementedError
-        if the approximable function has not been registered using functions `register_approximable` or `register_approx`
+        if the approximable function has not been registered using functions `register_approximable`
+        or `register_approx`
     '''
     key = (type(obj), dst_type)
     if key in _approximable_registry:
@@ -60,7 +62,9 @@ def approx(obj, dst_type):
     key = (type(obj), dst_type)
     if key in _approx_registry:
         return _approx_registry[key](obj)
-    raise NotImplementedError("Approximate function from type {} to type {} not found.".format(key[0], key[1]))
+    raise NotImplementedError(
+        "Approximate function from type {} to type {} not found.".format(key[0], key[1])
+    )
 
 
 def register_approx(src_type, dst_type, func):
@@ -78,7 +82,10 @@ def register_approx(src_type, dst_type, func):
 
     key = (src_type, dst_type)
     if key in _approx_registry:
-        raise SyntaxError("Approximate function from type {} to type {} has been registered before.".format(src_type, dst_type))
+        raise SyntaxError(
+            "Approximate function from type {} to "
+            "type {} has been registered before.".format(src_type, dst_type)
+        )
     _approx_registry[key] = func
 
 
@@ -97,5 +104,8 @@ def register_approximable(src_type, dst_type, func):
 
     key = (src_type, dst_type)
     if key in _approximable_registry:
-        raise SyntaxError("Approximable function from type {} to type {} has been registered before.".format(src_type, dst_type))
+        raise SyntaxError(
+            "Approximable function from type {} to "
+            "type {} has been registered before.".format(src_type, dst_type)
+        )
     _approximable_registry[key] = func

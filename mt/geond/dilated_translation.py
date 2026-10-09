@@ -41,7 +41,8 @@ class Dltra(Dliso):
 
     @property
     def linear(self):
-        """Returns the linear part of the affine transformation matrix of the dilated translation."""
+        """Returns the linear part of the affine transformation matrix of the dilated
+        translation."""
         return np.identity(self.ndim) * self.scale
 
     # ----- methods -----
@@ -134,7 +135,8 @@ register_approx(Dliso, Dltra, approx_Dliso_to_Dltra)
 def approx_Dlt_to_Dltra(dlt):
     """Approximates a Dlt instance with a Dltra.
 
-    We approximate the scale components with their arithmetic mean in this case for efficiency and numerical stability, breaking theoretical concerns. So use this function with care.
+    We approximate the scale components with their arithmetic mean in this case for efficiency and
+    numerical stability, breaking theoretical concerns. So use this function with care.
 
     Parameters
     ----------
@@ -162,7 +164,8 @@ def transform_Dltra_on_ndarray(dlt_tfm, point_array):
     ----------
     dlt_tfm : Dltra
         a dilated translation
-    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of the transformation
+    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of
+    the transformation
         a point array
 
     Returns

@@ -86,7 +86,8 @@ class RRect(HasShapely, TwoD, GeometricObject):
             import shapely.geometry as _sg
             points = self.corners[[0,1,3,2] if self.signed_width >= 0 else [2,3,1,0]]
             self._shapely = _sg.Polygon(points)
-            self._shapely = self._shapely.buffer(0.0001) # to clean up any (multi and/or non-simple) polygon into a simple polygon
+            # to clean up any (multi and/or non-simple) polygon into a simple polygon
+            self._shapely = self._shapely.buffer(0.0001)
         return self._shapely
 
 
@@ -296,7 +297,9 @@ class RRect(HasShapely, TwoD, GeometricObject):
     # ----- methods -----
 
     
-    def __init__(self, signed_width: float, height: float, cx: float = 0., cy: float = 0., angle: float = 0.):
+    def __init__(
+        self, signed_width: float, height: float, cx: float = 0., cy: float = 0., angle: float = 0.
+    ):
         self.signed_width = signed_width
         self.height = height
         self.center_pt = np.array([cx, cy])
@@ -304,9 +307,11 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
         # compute the transformation
         tfm = translate2d(-0.5, -0.5) # shift the centroid of [0,0,1,1] to the origin
-        tfm = scale2d(scale_x=signed_width, scale_y=height)*tfm # scale it along signed_width and height
+        # scale it along signed_width and height
+        tfm = scale2d(scale_x=signed_width, scale_y=height)*tfm
         tfm = rotate2d(angle, 0., 0.)*tfm # rotate it
-        tfm = translate2d(cx, cy)*tfm # now shift the centroid of the rotated rectangle to the target location
+        # now shift the centroid of the rotated rectangle to the target location
+        tfm = translate2d(cx, cy)*tfm
         self.tfm = tfm
 
         # transform the corners
@@ -315,7 +320,9 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
 
     def __repr__(self):
-        return "RRect(signed_width=%r, height=%r, cx=%r, cy=%r, angle=%r)" % (self.signed_width, self.height, self.center_pt[0], self.center_pt[1], self.angle)
+        return "RRect(signed_width=%r, height=%r, cx=%r, cy=%r, angle=%r)" % (
+            self.signed_width, self.height, self.center_pt[0], self.center_pt[1], self.angle
+        )
 
 
 # ----- casting -----
@@ -330,7 +337,9 @@ register_cast(RRect, Moments2d, cast_RRect_to_Moments2d)
 
 
 def approx_Moments2d_to_RRect(obj):
-    '''Approximates a Moments2d instance with a RRect such that the mean aligns with the RRect's center, and the covariance matrix of the instance is closest to the moment convariance matrix of the RRect.'''
+    '''Approximates a Moments2d instance with a RRect such that the mean aligns with the RRect's
+    center, and the covariance matrix of the instance is closest to the moment convariance matrix of
+    the RRect.'''
     raise NotImplementedError("MT-TODO: to implement one day")
     #cx, cy = obj.mean
     #cov = obj.cov

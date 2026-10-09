@@ -1,4 +1,5 @@
-"""There are many definitions of an ellipsoid. In our case, an ellipsoid is an affine transform of the unit sphere x^2+y^2+z^2=1."""
+"""There are many definitions of an ellipsoid. In our case, an ellipsoid is an affine transform of
+the unit sphere x^2+y^2+z^2=1."""
 
 from mt import np, glm
 from mt.base.casting import register_cast, register_castable, cast
@@ -80,11 +81,13 @@ class Ellipsoid(ThreeD, GeometricObject):
     def surface_area(self):
         """The surface area of the ellipsoid."""
         raise NotImplementedError(
-            "It's quite complicated to compute the surface area of an ellipsoid. I will only be implemented when there's a real demand. MT has to check with the Wiki page first."
+            "It's quite complicated to compute the surface area of an ellipsoid. I will only be "
+            "implemented when there's a real demand. MT has to check with the Wiki page first."
         )
 
     def normalised(self):
-        """Returns an equivalent ellipsoid where f1, f2 and f3 are perpendicular (linearly independent)."""
+        """Returns an equivalent ellipsoid where f1, f2 and f3 are perpendicular (linearly
+        independent)."""
         return Ellipsoid(self.aff_tfm, make_normalised=True)
 
 
@@ -152,7 +155,8 @@ register_lower_bound(Box, Ellipsoid, lower_bound_Box_to_Ellipsoid)
 
 
 def transform_Aff3d_on_Ellipsoid(aff_tfm, obj):
-    """Affine-transforms an Ellipsoid. The resultant Ellipsoid has affine transformation `aff_tfm*obj.aff_tfm`.
+    """Affine-transforms an Ellipsoid. The resultant Ellipsoid has affine transformation
+    `aff_tfm*obj.aff_tfm`.
 
     Parameters
     ----------

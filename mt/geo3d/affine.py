@@ -230,7 +230,8 @@ def transform_Aff3d_on_ndarray(aff_tfm, point_array):
     ----------
     aff_tfm : Aff3d or Aff
         a 3D affine transformation
-    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of the transformation
+    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of
+    the transformation
         an array of 3D points
 
     Returns

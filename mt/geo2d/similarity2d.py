@@ -37,7 +37,8 @@ class Sim2d(Dliso):
 
     @staticmethod
     def get_linear(angle, on, scale=1.0):
-        """Forms the linear part of the transformation matrix representing scaling*rotation*reflection."""
+        """Forms the linear part of the transformation matrix representing
+        scaling*rotation*reflection."""
         ca = np.cos(angle) * scale
         sa = np.sin(angle) * scale
         return (

@@ -11,7 +11,8 @@ __all__ = ['Iso']
 class Iso(Dliso):
     '''Isometry = orthogonal transformation followed by translation.
 
-    An isometry is a (Euclidean-)metric-preserving transformation. In other words, it is an affine transformation but the linear part is a unitary matrix.
+    An isometry is a (Euclidean-)metric-preserving transformation. In other words, it is an affine
+    transformation but the linear part is a unitary matrix.
 
     References:
         [1] Pham et al, Distances and Means of Direct Similarities, IJCV, 2015. (not true but cheeky MT is trying to advertise his paper!)
@@ -51,7 +52,8 @@ class Iso(Dliso):
     multiply.__doc__ = Dliso.multiply.__doc__
 
     def invert(self):
-        invUnitary = np.linalg.inv(self.unitary) # slow, and assuming the unitary matrix is invertible
+        # slow, and assuming the unitary matrix is invertible
+        invUnitary = np.linalg.inv(self.unitary)
         return Iso(offset=np.dot(invUnitary, -self.offset), unitary=invUnitary)
     invert.__doc__ = Dliso.invert.__doc__
 

@@ -250,7 +250,8 @@ def transform_Aff2d_on_ndarray(aff_tfm, point_array):
     ----------
     aff_tfm : Aff
         a 2D affine transformation
-    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of the transformation
+    point_array : numpy.ndarray with last dimension having the same length as the dimensionality of
+    the transformation
         an array of 2D points
 
     Returns
@@ -336,7 +337,8 @@ def shearY2d(h):
 
 
 def originate2d(tfm, x, y):
-    """Tweaks a 2D affine transformation so that it acts as if it originates at (x,y) instead of (0,0)."""
+    """Tweaks a 2D affine transformation so that it acts as if it originates at (x,y) instead of
+    (0,0)."""
     return Aff2d(offset=np.array((x, y))).conjugate(tfm)
 
 
@@ -363,7 +365,9 @@ def crop2d(tl, br=None):
     Parameters
     ----------
     tl : 2d point (x,y)
-        coordinates to be mapped to (0,0) if `br` is specified. If `br` is not specified, then the transformation is 2d scaling. In other words, (0,0) is mapped to (0,0) and tl is mapped to (1,1).
+        coordinates to be mapped to (0,0) if `br` is specified. If `br` is not specified, then the
+        transformation is 2d scaling. In other words, (0,0) is mapped to (0,0) and tl is mapped to
+        (1,1).
     br : 2d point (x,y), optional
         If specified, coordinates to be mapped to (1,1).
 
@@ -419,7 +423,8 @@ def uncrop_rect(tfm: Aff2d) -> Rect:
 def rect2rect(src_rect: Rect, dst_rect: Rect, eps=1e-7) -> Aff2d:
     """Returns an Aff2d that transforms pixels in a source Rect to pixels in a destination Rect.
 
-    The transformation ensures that the source corner pixels match with the destination corner pixels.
+    The transformation ensures that the source corner pixels match with the destination corner
+    pixels.
 
     Parameters
     ----------
@@ -469,7 +474,8 @@ def rect2rect_tf(src_rects, dst_rects):
 
     ----------
     src_rects : tf.Tensor
-        source rectangles of shape `[batch, 4]` where each batch item is `[min_x, min_y, max_x, max_y]`
+        source rectangles of shape `[batch, 4]` where each batch item is `[min_x, min_y, max_x,
+        max_y]`
     dst_rects : tf.Tensor
         destination rectangles of shape `[batch, 4]` where each batch item is
         `[min_x, min_y, max_x, max_y]`

@@ -1,4 +1,5 @@
-"""There are many definitions of a hyperellipsoid. In our case, a hyperellipsoid is an affine transform of the unit hypersphere x^2+y^2+...=1."""
+"""There are many definitions of a hyperellipsoid. In our case, a hyperellipsoid is an affine
+transform of the unit hypersphere x^2+y^2+...=1."""
 
 from mt import np
 from mt.base.casting import register_cast, cast
@@ -21,16 +22,28 @@ __all__ = ["Hyperellipsoid", "transform_Aff_on_Hyperellipsoid"]
 class Hyperellipsoid(GeometricObject):
     """Hyperellipsoid, defined as an affine transform the unit hypersphere x^2+y^2+z^2+...=1.
 
-    If the unit hypersphere is parameterised by `(cos(t_1), sin(t_1)*cos(t_2), sin(t_1)*sin(t_2)*cos(t_3), ...)` where `t_1, t_2, ... \\in [0,\\pi)` but the last `t_{dim-1} \\in [0,2\\pi)` then the hyperellipsoid is parameterised by `f0 + f1 cos(t_1) + f2 sin(t_1) cos(t_2) + f3 sin(t_1) sin(t_2) sin(t_3) cos(t_4) + ...`, where `f0` is the bias vector, `f1, f2, ...` are the columns of the weight matrix from left to right respectively, of the affine transformation. They are also called called axes of the hyperellipsoid.
+    If the unit hypersphere is parameterised by `(cos(t_1), sin(t_1)*cos(t_2),
+    sin(t_1)*sin(t_2)*cos(t_3), ...)` where `t_1, t_2, ... \\in [0,\\pi)` but the last `t_{dim-1}
+    \\in [0,2\\pi)` then the hyperellipsoid is parameterised by `f0 + f1 cos(t_1) + f2 sin(t_1)
+    cos(t_2) + f3 sin(t_1) sin(t_2) sin(t_3) cos(t_4) + ...`, where `f0` is the bias vector, `f1,
+    f2, ...` are the columns of the weight matrix from left to right respectively, of the affine
+    transformation. They are also called called axes of the hyperellipsoid.
 
-    Note that this representation is not unique, the same hyperellipsoid can be represented by an infinite number of affine transforms of the unit hypersphere. To make the representation more useful and more unique, we further assert that when the axes are perpendicular (linearly independent), the hyperellipsoid is normalised. In other words, the weight matrix is a unitary matrix multiplied by a diagonal matrix. After normalisation there can still be an infinite number of ways to represent the same hyperellipsoid, but only in singular cases. You can normalise either at initialisation time, or later by invoking member function `normalised`.
+    Note that this representation is not unique, the same hyperellipsoid can be represented by an
+    infinite number of affine transforms of the unit hypersphere. To make the representation more
+    useful and more unique, we further assert that when the axes are perpendicular (linearly
+    independent), the hyperellipsoid is normalised. In other words, the weight matrix is a unitary
+    matrix multiplied by a diagonal matrix. After normalisation there can still be an infinite
+    number of ways to represent the same hyperellipsoid, but only in singular cases. You can
+    normalise either at initialisation time, or later by invoking member function `normalised`.
 
     Parameters
     ----------
     aff_tfm : Aff
         an affine transformation
     make_normalised : bool
-        whether or not to adjust the affine transformation to make a normalised representation of the hyperellipsoid
+        whether or not to adjust the affine transformation to make a normalised representation of
+        the hyperellipsoid
 
     Examples
     --------
@@ -69,7 +82,8 @@ class Hyperellipsoid(GeometricObject):
     # ----- useful functions
 
     def normalised(self):
-        """Returns an equivalent hyperellipsoid where f1 and f2 are perpendicular (linearly independent)."""
+        """Returns an equivalent hyperellipsoid where f1 and f2 are perpendicular (linearly
+        independent)."""
         return Hyperellipsoid(self.aff_tfm, make_normalised=True)
 
 
@@ -125,7 +139,8 @@ register_lower_bound(Hyperbox, Hyperellipsoid, lower_bound_Hyperbox_to_Hyperelli
 
 
 def transform_Aff_on_Hyperellipsoid(aff_tfm, obj):
-    """Affine-transforms a hyperellipsoid. The resultant Hyperellipsoid has affine transformation `aff_tfm*obj.aff_tfm`.
+    """Affine-transforms a hyperellipsoid. The resultant Hyperellipsoid has affine transformation
+    `aff_tfm*obj.aff_tfm`.
 
     Parameters
     ----------

@@ -8,7 +8,8 @@ __all__ = ['iou']
 
 
 def iou(geo2d_obj1, geo2d_obj2):
-    '''Computes the Intersection-over-Union ratio of two (sets of non-overlapping) 2D geometry objects. Right now we only accept Rect and Polygon.
+    '''Computes the Intersection-over-Union ratio of two (sets of non-overlapping) 2D geometry
+    objects. Right now we only accept Rect and Polygon.
 
     Parameters
     ----------
@@ -20,7 +21,8 @@ def iou(geo2d_obj1, geo2d_obj2):
     Returns
     -------
     float
-        the IoU ratio of the two objects, regardless of whether they are sepcified in clockwise or counter-clockwise order
+        the IoU ratio of the two objects, regardless of whether they are sepcified in clockwise or
+        counter-clockwise order
     '''
     # make sure each object is a list
     inputs = [obj if isinstance(obj, list) else [obj] for obj in [geo2d_obj1, geo2d_obj2]]

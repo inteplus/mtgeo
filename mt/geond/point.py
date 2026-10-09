@@ -1,6 +1,7 @@
 """The base class to represent a point. 
 
-For efficiency reasons, please try to bunch points into arrays or lists and use appropriate representations instead of using single points implemented here.
+For efficiency reasons, please try to bunch points into arrays or lists and use appropriate
+representations instead of using single points implemented here.
 """
 
 
@@ -22,7 +23,8 @@ class Point(GeometricObject):
     Parameters
     ----------
     point : iterable
-        A list of point coordinates, which is an iterable of D items, where D is the `ndim` of the class.
+        A list of point coordinates, which is an iterable of D items, where D is the `ndim` of the
+        class.
     check : bool
         Whether or not to check if the shape is valid
 

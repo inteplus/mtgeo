@@ -1,7 +1,11 @@
-'''Registry to store all the functions to upper-bound and lower-bound a geometric object of type A with an object of type B.'''
+'''Registry to store all the functions to upper-bound and lower-bound a geometric object of type A
+with an object of type B.'''
 
 
-__all__ = ['upper_bound', 'upper_boundable', 'register_upper_bound', 'register_upper_boundable', 'lower_bound', 'lower_boundable', 'register_lower_bound', 'register_lower_boundable']
+__all__ = [
+    'upper_bound', 'upper_boundable', 'register_upper_bound', 'register_upper_boundable',
+    'lower_bound', 'lower_boundable', 'register_lower_bound', 'register_lower_boundable'
+]
 
 
 # ----- upper-bound functions -----
@@ -32,7 +36,8 @@ def upper_boundable(obj, dst_type):
     Raises
     ------
     NotImplementedError
-        if the upper-boundable function has not been registered using functions `register_upper_boundable` or `register_upper_bound`
+        if the upper-boundable function has not been registered using functions
+        `register_upper_boundable` or `register_upper_bound`
     '''
     key = (type(obj), dst_type)
     if key in _upper_boundable_registry:
@@ -63,7 +68,9 @@ def upper_bound(obj, dst_type):
     key = (type(obj), dst_type)
     if key in _upper_bound_registry:
         return _upper_bound_registry[key](obj)
-    raise NotImplementedError("Upper-bound function from type {} to type {} not found.".format(key[0], key[1]))
+    raise NotImplementedError(
+        "Upper-bound function from type {} to type {} not found.".format(key[0], key[1])
+    )
 
 
 def register_upper_bound(src_type, dst_type, func):
@@ -81,7 +88,10 @@ def register_upper_bound(src_type, dst_type, func):
 
     key = (src_type, dst_type)
     if key in _upper_bound_registry:
-        raise SyntaxError("Upper-bound function from type {} to type {} has been registered before.".format(src_type, dst_type))
+        raise SyntaxError(
+            "Upper-bound function from type {} to "
+            "type {} has been registered before.".format(src_type, dst_type)
+        )
     _upper_bound_registry[key] = func
 
 
@@ -100,7 +110,10 @@ def register_upper_boundable(src_type, dst_type, func):
 
     key = (src_type, dst_type)
     if key in _upper_boundable_registry:
-        raise SyntaxError("Upper-boundable function from type {} to type {} has been registered before.".format(src_type, dst_type))
+        raise SyntaxError(
+            "Upper-boundable function from type {} to "
+            "type {} has been registered before.".format(src_type, dst_type)
+        )
     _upper_boundable_registry[key] = func
 
 
@@ -132,7 +145,8 @@ def lower_boundable(obj, dst_type):
     Raises
     ------
     NotImplementedError
-        if the lower-boundable function has not been registered using functions `register_lower_boundable` or `register_lower_bound`
+        if the lower-boundable function has not been registered using functions
+        `register_lower_boundable` or `register_lower_bound`
     '''
     key = (type(obj), dst_type)
     if key in _lower_boundable_registry:
@@ -163,7 +177,9 @@ def lower_bound(obj, dst_type):
     key = (type(obj), dst_type)
     if key in _lower_bound_registry:
         return _lower_bound_registry[key](obj)
-    raise NotImplementedError("Lower-bound function from type {} to type {} not found.".format(key[0], key[1]))
+    raise NotImplementedError(
+        "Lower-bound function from type {} to type {} not found.".format(key[0], key[1])
+    )
 
 
 def register_lower_bound(src_type, dst_type, func):
@@ -181,7 +197,10 @@ def register_lower_bound(src_type, dst_type, func):
 
     key = (src_type, dst_type)
     if key in _lower_bound_registry:
-        raise SyntaxError("Lower-bound function from type {} to type {} has been registered before.".format(src_type, dst_type))
+        raise SyntaxError(
+            "Lower-bound function from type {} to "
+            "type {} has been registered before.".format(src_type, dst_type)
+        )
     _lower_bound_registry[key] = func
 
 
@@ -200,5 +219,8 @@ def register_lower_boundable(src_type, dst_type, func):
 
     key = (src_type, dst_type)
     if key in _lower_boundable_registry:
-        raise SyntaxError("Lower-boundable function from type {} to type {} has been registered before.".format(src_type, dst_type))
+        raise SyntaxError(
+            "Lower-boundable function from type {} to "
+            "type {} has been registered before.".format(src_type, dst_type)
+        )
     _lower_boundable_registry[key] = func

@@ -7,7 +7,11 @@ __all__ = ['GeometricObject', 'TwoD', 'ThreeD']
 class GeometricObject(object):
     '''A geometric object which lives in a d-dimensional Euclidean space.
 
-    A GeometricObject is a geometric object which lives in a d-dimensional Euclidean space. It can be a point, a point set, a polygon, a circle, a sphere, a parallelogram, a paralleloid, etc. This class represents the base class, in which the only property available is `ndim`, telling the number of dimensions. The user needs to implement `ndim`, or use some mixin classes like `TwoD` or `ThreeD`.
+    A GeometricObject is a geometric object which lives in a d-dimensional Euclidean space. It can
+    be a point, a point set, a polygon, a circle, a sphere, a parallelogram, a paralleloid, etc.
+    This class represents the base class, in which the only property available is `ndim`, telling
+    the number of dimensions. The user needs to implement `ndim`, or use some mixin classes like
+    `TwoD` or `ThreeD`.
     '''
     
     # ----- properties -----

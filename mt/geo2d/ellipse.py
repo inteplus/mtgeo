@@ -1,4 +1,5 @@
-"""There are many definitions of an ellipse. In our case, an ellipse is an affine transform of the unit circle x^2+y^2=1."""
+"""There are many definitions of an ellipse. In our case, an ellipse is an affine transform of the
+unit circle x^2+y^2=1."""
 
 from mt import np, glm
 from mt.base.casting import register_cast, register_castable, cast
@@ -102,7 +103,8 @@ class Ellipse(TwoD, GeometricObject):
         return np.pi * abs(self.aff_tfm.det)
 
     def normalised(self):
-        """Returns an equivalent ellipse where f1 and f2 are perpendicular (linearly independent)."""
+        """Returns an equivalent ellipse where f1 and f2 are perpendicular (linearly
+        independent)."""
         return Ellipse(self.aff_tfm, make_normalised=True)
 
 
@@ -133,7 +135,8 @@ register_cast(Ellipse, Moments2d, cast_Ellipse_to_Moments2d)
 
 
 def approx_Moments2d_to_Ellipse(obj):
-    """Approximates a Moments2d instance with a normalised Ellipse that has the same mean and covariance as the mean and covariance of the instance."""
+    """Approximates a Moments2d instance with a normalised Ellipse that has the same mean and
+    covariance as the mean and covariance of the instance."""
     # A
     AAT = obj.cov * 4
     w, v = np.linalg.eig(AAT)
@@ -198,7 +201,8 @@ register_lower_bound(Rect, Ellipse, lower_bound_Rect_to_Ellipse)
 
 
 def transform_Aff2d_on_Ellipse(aff_tfm, obj):
-    """Affine-transforms an Ellipse. The resultant Ellipse has affine transformation `aff_tfm*obj.aff_tfm`.
+    """Affine-transforms an Ellipse. The resultant Ellipse has affine transformation
+    `aff_tfm*obj.aff_tfm`.
 
     Parameters
     ----------

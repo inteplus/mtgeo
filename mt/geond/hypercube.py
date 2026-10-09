@@ -11,7 +11,8 @@ __all__ = ['Hypercube']
 class Hypercube(GeometricObject):
     '''Axis-aligned n-dimensional hypercube.
 
-    An axis-aligned n-dimensional hypercube is defined as the set of points of the hypercube [-1,1]^n transformed by a dilated translation.
+    An axis-aligned n-dimensional hypercube is defined as the set of points of the hypercube
+    [-1,1]^n transformed by a dilated translation.
 
     Parameters
     ----------
