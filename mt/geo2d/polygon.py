@@ -17,7 +17,7 @@ class Polygon(HasShapely, PointList2d):
     counter-clockwise order.
 
     The polygon is implicitly closed: the last vertex connects back to the first one. The
-    constructor is the one of :class:`~mt.geo2d.PointList2d`.
+    constructor is the one of :class:`~mt.geo2d.PointList2d`, including its `check` argument.
 
     Examples
     --------

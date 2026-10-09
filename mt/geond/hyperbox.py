@@ -78,16 +78,6 @@ class Hyperbox(GeometricObject):
     mt.geo3d.Box : the 3D box, with named coordinates
     mt.geo.join_volume : volumes of the intersection and union of two boxes
 
-    Notes
-    -----
-    - The constructor with `max_coords=None` currently raises `NameError`: pass both corners.
-    - `ndim` is declared as a class method that returns the unevaluated property `dim`, so use
-      `dim` to get the number of dimensions (subclasses like :class:`mt.geo3d.Box` fix `ndim`).
-    - `validated()` returns a dilatation scale equal to `max_coords - min_coords` rather than half
-      of it, so the resulting box is twice as large as the original.
-    - `intersect` of two disjoint boxes returns an invalid box (negative scales) instead of an
-      empty one, so its `volume` is not 0 and the join volumes are not meaningful in that case.
-
     Examples
     --------
     >>> import numpy as np
@@ -111,6 +101,8 @@ class Hyperbox(GeometricObject):
     >>> from mt.geo import join_volume
     >>> join_volume(b, c)
     (1.0, 7.0, 3.0, 11.0)
+    >>> b.intersect(Hyperbox(np.array([5., 5.]), np.array([6., 6.]))).volume
+    0.0
     >>> bad = Hyperbox(np.array([2., 4.]), np.array([0., 0.]))
     >>> bad.is_valid()
     False
@@ -132,12 +124,9 @@ class Hyperbox(GeometricObject):
 
     # ----- derived properties -----
 
-    @classmethod
+    @property
     def ndim(self):
-        """The dimensionality.
-
-        As written, it is a class method returning the unevaluated `dim` property; use `dim`.
-        """
+        """The dimensionality, same as `dim`."""
         return self.dim
 
     @property
@@ -173,7 +162,7 @@ class Hyperbox(GeometricObject):
     @property
     def size(self):
         """box size, `abs(2 * scale)`, the side lengths of the box"""
-        return np.abs(self.dlt_tfm.scale * 2)
+        return abs(self.dlt_tfm.scale * 2)
 
     @property
     def signed_volume(self):
@@ -193,7 +182,7 @@ class Hyperbox(GeometricObject):
         else:
             if max_coords is None:
                 max_coords = min_coords
-                min_coords = np.zeros(dim)
+                min_coords = np.zeros_like(max_coords)
             self.dlt_tfm = Dlt(
                 offset=(max_coords + min_coords) / 2,
                 scale=(max_coords - min_coords) / 2,
@@ -219,20 +208,24 @@ class Hyperbox(GeometricObject):
         Returns
         -------
         Hyperbox
-            a box with the same center whose dilatation scale is `max_coords - min_coords` (see
-            the notes of the class about the factor 2)
+            a box with the same extent as the original, but whose dilatation scale is
+            non-negative
         """
         min_coords = self.min_coords
         max_coords = self.max_coords
         return Hyperbox(
-            Dlt(offset=(max_coords + min_coords) / 2, scale=max_coords - min_coords)
+            Dlt(offset=(max_coords + min_coords) / 2, scale=(max_coords - min_coords) / 2)
         )
 
     def intersect(self, other):
-        return Hyperbox(
-            np.maximum(self.min_coords, other.min_coords),
-            np.minimum(self.max_coords, other.max_coords),
-        )
+        """Returns the box with the intersection of the coordinate ranges.
+
+        If the two boxes are disjoint along some axis, the intersection is empty: the returned
+        box is valid and has zero extent (hence zero volume) along that axis.
+        """
+        min_coords = np.maximum(self.min_coords, other.min_coords)
+        max_coords = np.maximum(np.minimum(self.max_coords, other.max_coords), min_coords)
+        return Hyperbox(min_coords, max_coords)
 
     def box_union(self, other):
         return Hyperbox(

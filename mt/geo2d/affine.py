@@ -225,10 +225,6 @@ class Aff2d(TwoD, Aff):
 
     @property
     def matrix(self):
-        return np.array(self.affine)
-
-    @property
-    def matrix(self):
         a = np.empty((3, 3))
         a[:2, :2] = self.weight
         a[:2, 2] = self.bias
@@ -297,10 +293,10 @@ def transform_Aff2d_on_Moments2d(aff_tfm, moments):
     old_mean = moments.mean_glm
     old_cov = moments.cov_glm
     new_mean = A * old_mean + aff_tfm.offset
-    new_cov = A * old_cov * glm.transpose(A.T)
+    new_cov = A * old_cov * glm.transpose(A)
     new_m0 = old_m0 * abs(aff_tfm.det)
     new_m1 = new_m0 * new_mean
-    new_m2 = new_m0 * (np.outer(new_mean, new_mean) + new_cov)
+    new_m2 = new_m0 * (glm.outerProduct(new_mean, new_mean) + new_cov)
     return Moments2d(new_m0, new_m1, new_m2)
 
 

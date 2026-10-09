@@ -75,7 +75,7 @@ class Iso(Dliso):
 
     def multiply(self, other):
         if not isinstance(other, Iso):
-            return super(Iso, self).__mul__(other)
+            return super(Iso, self).multiply(other)
         return Iso(offset=self << other.offset, unitary=np.dot(self.unitary, other.unitary))
     multiply.__doc__ = Dliso.multiply.__doc__
 

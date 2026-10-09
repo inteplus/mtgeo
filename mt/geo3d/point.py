@@ -27,11 +27,10 @@ class Point3d(ThreeD, Point):
     Parameters
     ----------
     point : iterable
-        the 3 coordinates `(x, y, z)` of the point, e.g. a list or a numpy array. A `TypeError` is
-        raised by glm if it does not hold exactly 3 numbers.
+        the 3 coordinates `(x, y, z)` of the point, e.g. a list or a numpy array. .
     check : bool
-        unused. It is accepted for compatibility with :class:`Point`, but the length is always
-        checked by glm.
+        Whether or not to check that the point has exactly 3 coordinates, raising a `ValueError`
+        otherwise. If False, the check is left to glm, which raises a `TypeError`.
 
     Attributes
     ----------
@@ -61,6 +60,10 @@ class Point3d(ThreeD, Point):
     """
 
     def __init__(self, point, check=True):
+        if check:
+            arr = np.asarray(point)
+            if not castable_ndarray_Point(arr, 3):
+                raise ValueError(f"Point in 3D not in the right length: {arr.shape}")
         self.point = point
 
     @property

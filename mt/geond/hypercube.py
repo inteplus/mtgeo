@@ -3,6 +3,7 @@ from mt.base.deprecated import deprecated_func
 from mt.base.casting import cast, register_cast
 
 from ..geo import GeometricObject, approx, register_approx
+from .dilatation import Dlt
 from .dilated_translation import Dltra
 from .hyperbox import Hyperbox
 
@@ -49,10 +50,8 @@ class Hypercube(GeometricObject):
 
     Notes
     -----
-    The code of this class is not finished: the constructor currently raises `NameError` (it tests
-    the undefined name `min_coords` instead of `offset_or_dltra`), and `center_pt` and `size` refer
-    to a non-existing attribute `dlt_tfm`, so a hypercube cannot be created yet. The class is
-    registered to cast to :class:`Hyperbox` and as an approximation of a :class:`Hyperbox`.
+    The class is registered to cast to :class:`Hyperbox` and as an approximation of a
+    :class:`Hyperbox`.
     '''
 
     # ----- data encapsulation -----
@@ -69,12 +68,9 @@ class Hypercube(GeometricObject):
 
     # ----- derived properties -----
 
-    @classmethod
+    @property
     def ndim(self):
-        '''The dimensionality.
-
-        As written, it is a class method returning the unevaluated `dim` property; use `dim`.
-        '''
+        '''The dimensionality, same as `dim`.'''
         return self.dim
 
     @property
@@ -104,18 +100,18 @@ class Hypercube(GeometricObject):
 
     @property
     def center_pt(self):
-        '''center point, intended to be the offset of the dilated translation'''
-        return self.dlt_tfm.offset
+        '''center point, which is the offset of the dilated translation'''
+        return self.dltra_tfm.offset
 
     @property
     def size(self):
-        '''box size, intended to be `abs(2 * scale)`'''
-        return np.abs(self.dlt_tfm.scale*2)
+        '''box size, the side lengths of the box, `abs(2 * scale)` for each dimension'''
+        return np.full(self.dim, abs(self.dltra_tfm.scale*2))
 
     # ----- methods -----
 
     def __init__(self, offset_or_dltra, scale=1):
-        if isinstance(min_coords, Dltra):
+        if isinstance(offset_or_dltra, Dltra):
             self.dltra_tfm = offset_or_dltra
         else:
             self.dltra_tfm = Dltra(offset=offset_or_dltra, scale=scale)

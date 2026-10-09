@@ -20,7 +20,8 @@ class PointList2d(TwoD, PointList):
         A list of points, each of which is an iterable of D items, where D is the `ndim` of the
         class.
     check : bool
-        Whether or not to check if the shape is valid
+        Whether or not to check if the shape is valid. If True and the shape is not `(N, 2)` (an
+        empty list is always accepted), a `ValueError` is raised. A `glm.array` is not checked.
 
     Attributes
     ----------
@@ -39,12 +40,14 @@ class PointList2d(TwoD, PointList):
     (0, 2)
     """
 
-    def __init__(self, point_list: tp.Union[list, np.ndarray, glm.array]):
-        """Initialises the point list. See the class docstring for the accepted types.
-
-        Note that the signature has no `check` argument, although the class docstring (and some
-        casting functions) mention it.
-        """
+    def __init__(
+        self, point_list: tp.Union[list, np.ndarray, glm.array], check: bool = True
+    ):
+        """Initialises the point list. See the class docstring for the accepted types."""
+        if check and not isinstance(point_list, glm.array):
+            arr = np.asarray(point_list)
+            if not castable_ndarray_PointList(arr, 2):
+                raise ValueError(f"Point list in 2D not in the right shape: {arr.shape}")
         self.points = point_list
 
     @property

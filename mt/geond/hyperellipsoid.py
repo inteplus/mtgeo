@@ -63,15 +63,6 @@ class Hyperellipsoid(GeometricObject):
     Hyperbox : axis-aligned box, an upper or lower bound of a hyperellipsoid
     mt.geo3d.Ellipsoid : the 3D version
 
-    Notes
-    -----
-    - `ndim` currently returns the bias vector `aff_tfm.bias` instead of its length.
-    - The upper bound to a :class:`Hyperbox` refers to undefined names (`off`, `self`) and so
-      raises `NameError`.
-    - Because of the `ndim` issue above, the transformable check of an :class:`Aff` applied on a
-      hyperellipsoid returns an array rather than a bool, so `aff << hyperellipsoid` fails. Calling
-      :func:`transform_Aff_on_Hyperellipsoid` directly works.
-
     Examples
     --------
     >>> import numpy as np
@@ -94,7 +85,7 @@ class Hyperellipsoid(GeometricObject):
 
     @property
     def ndim(self):
-        return self.aff_tfm.bias
+        return self.aff_tfm.bias.shape[0]
 
     # ----- construction ------
 
@@ -157,14 +148,10 @@ def upper_bound_Hyperellipsoid_to_Hyperbox(obj):
     Hyperbox
         a bounding Hyperbox of the hyperellipsoid
 
-    Notes
-    -----
-    The current body refers to the undefined names `off` and `self`, so calling it raises
-    `NameError`.
     """
     weight = obj.aff_tfm.weight
-    c = off.aff_tfm.bias
-    m = np.array([np.linalg.norm(weight[i]) for i in range(self.ndim)])
+    c = obj.aff_tfm.bias
+    m = np.array([np.linalg.norm(weight[i]) for i in range(obj.ndim)])
     return Hyperbox(min_coords=c - m, max_coords=c + m)
 
 

@@ -7,7 +7,7 @@ from .dilated_isometry import Dliso
 from .dilatation import Dlt
 
 
-__all__ = ["Dliso", "approx_Dliso_to_Dltra", "approx_Dlt_to_Dltra"]
+__all__ = ["Dltra", "approx_Dliso_to_Dltra", "approx_Dlt_to_Dltra"]
 
 
 class Dltra(Dliso):
@@ -16,9 +16,9 @@ class Dltra(Dliso):
     A dilated translation can be seen as both a dilatation and a dilated isometry. It maps a point
     `x` to `scale * x + offset`. It is a :class:`Dliso` whose unitary matrix is fixed to the
     identity matrix (assigning `unitary` raises `TypeError`). The product of two dilated
-    translations is a dilated translation, but the inverse returned by `~` is a plain
-    :class:`Dliso`. Such transformations form a Lie group, so they have a matrix logarithm
-    :meth:`logm`, a matrix exponential :meth:`expm` and real powers :meth:`pow`.
+    translations is a dilated translation, and so is the inverse returned by `~`. Such
+    transformations form a Lie group, so they have a matrix logarithm :meth:`logm`, a matrix
+    exponential :meth:`expm` and real powers :meth:`pow`.
 
     Parameters
     ----------
@@ -48,7 +48,7 @@ class Dltra(Dliso):
            [0., 2., 2.],
            [0., 0., 1.]])
     >>> ~t
-    Dliso(offset=[-0.5 -1. ], scale=0.5, unitary_diagonal=[1. 1.])
+    Dltra(offset=[-0.5 -1. ], scale=0.5)
     >>> t.pow(2)
     Dltra(offset=[3. 6.], scale=4.0)
 
@@ -105,7 +105,7 @@ class Dltra(Dliso):
 
     def invert(self):
         invScale = 1 / self.scale
-        return Dliso(self.offset * (-invScale), invScale)
+        return Dltra(self.offset * (-invScale), invScale)
 
     invert.__doc__ = Dliso.invert.__doc__
 
@@ -196,11 +196,11 @@ class Dltra(Dliso):
 # ----- casting -----
 
 
-_bc.register_cast(Dltra, Dliso, lambda x: Dliso(offset=x.offset, scale=x.scale))
+_bc.register_cast(Dltra, Dliso, lambda x: Dliso(offset=x.offset, scale=x.scale, unitary=x.unitary))
 _bc.register_cast(
     Dltra,
     Dlt,
-    lambda x: Dlt(offset=x.offset, scale=np.diag(x.scale), check_shapes=False),
+    lambda x: Dlt(offset=x.offset, scale=np.full(x.dim, x.scale), check_shapes=False),
 )
 
 

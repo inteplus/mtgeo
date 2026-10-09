@@ -277,11 +277,8 @@ class Rect(HasShapely, TwoD, Hyperbox):
     def intersect(self, other):
         """Returns the intersection of this rectangle with another one, as a Rect.
 
-        Notes
-        -----
-        If the two rectangles do not overlap, no empty rectangle is returned: the result is the
-        rectangle spanning the gap between them (the coordinates are sorted), which is not
-        meaningful. Check for overlap beforehand if that can happen.
+        If the two rectangles do not overlap, the result is an empty rectangle (zero area), located
+        at the nearest corner of the overlap range on each axis.
 
         Parameters
         ----------
@@ -298,11 +295,12 @@ class Rect(HasShapely, TwoD, Hyperbox):
         >>> from mt.geo2d import Rect
         >>> Rect(0, 0, 10, 10).intersect(Rect(5, 5, 20, 20))
         Rect(x=5.0, y=5.0, w=5.0, h=5.0)
+        >>> Rect(0, 0, 10, 10).intersect(Rect(20, 20, 30, 30)).area  # disjoint
+        0.0
         """
-        res = super(Rect, self).intersect(other)
-        return Rect(
-            res.min_coords[0], res.min_coords[1], res.max_coords[0], res.max_coords[1]
-        )
+        min_coords = np.maximum(self.min_coords, other.min_coords)
+        max_coords = np.maximum(min_coords, np.minimum(self.max_coords, other.max_coords))
+        return Rect(min_coords[0], min_coords[1], max_coords[0], max_coords[1])
 
     def box_union(self, other):
         """Returns the smallest rectangle containing this rectangle and another one.
@@ -332,8 +330,7 @@ class Rect(HasShapely, TwoD, Hyperbox):
         """Computes the Intersection-over-Union ratio with another geometry object.
 
         It uses :func:`mt.geo.join_volume`, so `other` can be any object that has a registered
-        join with Rect (Rect, Polygon, RRect). See :meth:`intersect` for the caveat about
-        non-overlapping Rect pairs.
+        join with Rect (Rect, Polygon, RRect). Disjoint objects give 0.
 
         Parameters
         ----------
@@ -523,8 +520,7 @@ register_approx(Moments2d, Rect, approx_Moments2d_to_Rect)
 def join_volume_Rect_and_Rect(obj1, obj2):
     """Joins the areas of two Rects.
 
-    This function is registered with :func:`mt.geo.join_volume` for the pair (Rect, Rect). See
-    :meth:`Rect.intersect` for the caveat about non-overlapping rectangles.
+    This function is registered with :func:`mt.geo.join_volume` for the pair (Rect, Rect).
 
     Parameters
     ----------
@@ -550,6 +546,8 @@ def join_volume_Rect_and_Rect(obj1, obj2):
     >>> from mt.geo2d.rect import join_volume_Rect_and_Rect
     >>> join_volume_Rect_and_Rect(Rect(0, 0, 2, 2), Rect(1, 1, 3, 3))
     (1.0, 3.0, 3.0, 7.0)
+    >>> join_volume_Rect_and_Rect(Rect(0, 0, 1, 1), Rect(5, 5, 6, 6))  # disjoint
+    (0.0, 1.0, 1.0, 2.0)
     """
     inter = obj1.intersect(obj2)
     inter_area = inter.area

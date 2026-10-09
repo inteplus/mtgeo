@@ -192,10 +192,9 @@ class Dliso(Aff):
 def approx_Aff_to_Dliso(obj):
     '''Approximates an Aff instance with a Dliso.
 
-    The intended approximation keeps the offset, takes the geometric mean of the singular values of
-    the weight matrix as the scale and the product `U @ VT` of the singular-vector matrices as the
-    unitary matrix. If the weight matrix is singular, the scale is 0. It is registered as the
-    approximation from :class:`Aff` to :class:`Dliso`.
+    The approximation keeps the offset, takes the geometric mean of the singular values of the
+    weight matrix as the scale and the product `U @ VT` of the singular-vector matrices as the
+    unitary matrix. It is registered as the approximation from :class:`Aff` to :class:`Dliso`.
 
     Parameters
     ----------
@@ -207,17 +206,17 @@ def approx_Aff_to_Dliso(obj):
     Dliso
         the approximating dilated isometry
 
-    Notes
-    -----
-    The current body uses an attribute `obj.linear` that :class:`Aff` does not have and the
-    undefined names `ndim`, so calling it raises `AttributeError`.
+    Raises
+    ------
+    ValueError
+        if the weight matrix is singular, as :class:`Dliso` requires a positive scale
     '''
-    ndom = obj.ndim
-    U, S, VT = np.linalg.svd(obj.linear, full_matrices=True)
+    ndim = obj.ndim
+    U, S, VT = np.linalg.svd(obj.weight, full_matrices=True)
     if len(S) < ndim or S[ndim-1] == 0:
         return Dliso(offset=obj.bias, scale=0, unitary=np.identity(ndim))
     
-    scale = _m.pow(S.prod(), 1/obj.ndim)
+    scale = _m.pow(S.prod(), 1/ndim)
     return Dliso(offset=obj.bias, scale=scale, unitary=U@VT)
 
 

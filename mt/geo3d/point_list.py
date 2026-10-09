@@ -24,6 +24,9 @@ class PointList3d(ThreeD, PointList):
         A list of points, each of which is an iterable of 3 items. An empty list gives an empty
         array. A `glm.array` of `glm.vec3` is used as it is, and a `glm.array` of another type is
         reinterpreted as `glm.vec3`.
+    check : bool
+        Whether or not to check that a list or numpy array has the shape `(N, 3)`, raising a
+        `ValueError` otherwise. An empty list is always accepted. A `glm.array` is never checked.
 
     Attributes
     ----------
@@ -36,12 +39,6 @@ class PointList3d(ThreeD, PointList):
     --------
     mt.geond.PointList : the dimension-agnostic base class
     Point3d : a single 3D point
-
-    Notes
-    -----
-    The constructor has no `check` argument, unlike :class:`PointList`. The registered casts and
-    the affine transformation of a point list call the constructor with `check=False` and
-    therefore currently raise `TypeError`.
 
     Examples
     --------
@@ -56,7 +53,15 @@ class PointList3d(ThreeD, PointList):
     (0, 3)
     """
 
-    def __init__(self, point_list: tp.Union[list, np.ndarray, glm.array]):
+    def __init__(
+        self, point_list: tp.Union[list, np.ndarray, glm.array], check: bool = True
+    ):
+        if check and not isinstance(point_list, glm.array):
+            arr = np.asarray(point_list)
+            if not castable_ndarray_PointList(arr, 3):
+                raise ValueError(
+                    f"Point list in 3D not in the right shape: {arr.shape}"
+                )
         self.points = point_list
 
     @property

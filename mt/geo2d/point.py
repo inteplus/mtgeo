@@ -22,6 +22,9 @@ class Point2d(TwoD, Point):
     ----------
     point : numpy.ndarray or list or glm.vec2
         the point's `(x, y)` coordinates
+    check : bool
+        Whether or not to check if the number of coordinates is 2. If True and it is not, a
+        `ValueError` is raised.
 
     Attributes
     ----------
@@ -37,8 +40,12 @@ class Point2d(TwoD, Point):
     array([1., 2.], dtype=float32)
     """
 
-    def __init__(self, point):
+    def __init__(self, point, check: bool = True):
         """Initialises the point from its `(x, y)` coordinates."""
+        if check and not isinstance(point, glm.vec2):
+            arr = np.asarray(point)
+            if not castable_ndarray_Point(arr, 2):
+                raise ValueError(f"Point in 2D not in the right length: {arr.shape}")
         self.point = point
 
     @property

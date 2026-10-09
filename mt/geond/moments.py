@@ -47,15 +47,10 @@ class Moments(GeometricObject):
     moments_from_pointlist : computes the moments of a point list
     mt.geo3d.Moments3d : the 3D version, implemented in glm
 
-    Notes
-    -----
-    The constructor of this base class calls `np.float`, which no longer exists in numpy 1.24+, so
-    with a recent numpy the base class cannot be instantiated. Use a subclass instead, for example
-    :class:`mt.geo3d.Moments3d`, which does not have this limitation.
     """
 
     def __init__(self, m0, m1, m2):
-        self._m0 = np.float(m0)
+        self._m0 = float(m0)
         self._m1 = np.array(m1)
         self._m2 = np.array(m2)
         self._mean = None
@@ -146,18 +141,18 @@ def moments_from_pointlist(pl):
         raw moments of the point list, depending on the dimension of the points (the number of
         columns of `pl.points`): 2 gives `Moments2d`, 3 gives `Moments3d`, otherwise `Moments`
 
-    Notes
-    -----
-    This module does not import `Moments2d` or `Moments3d`, so the function raises `NameError` for
-    2D and 3D point lists, and the `Moments` constructor needs `np.float` (see :class:`Moments`).
     """
     arr = pl.points
     m0 = len(arr)
     m1 = arr.sum(axis=0)
     m2 = np.dot(arr.T, arr)
     if arr.shape[1] == 2:
+        from ..geo2d.moments import Moments2d  # local import to avoid a circular import
+
         return Moments2d(m0, m1, m2)
     if arr.shape[1] == 3:
+        from ..geo3d.moments import Moments3d  # local import to avoid a circular import
+
         return Moments3d(m0, m1, m2)
     return Moments(m0, m1, m2)
 

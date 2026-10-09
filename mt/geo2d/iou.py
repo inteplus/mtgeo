@@ -17,9 +17,9 @@ def iou(geo2d_obj1, geo2d_obj2):
 
     The areas are computed with shapely, whose representations are slightly buffered (by 0.0001),
     so the result is accurate up to a small tolerance. Only `list` is recognised as a collection,
-    not tuples. For lists, the areas and intersections are accumulated over every pair of
-    objects (one from each list), so each area is counted once per object in the other list. The
-    result is therefore only reliable when both lists have at most one object.
+    not tuples. For lists, each list is treated as the union of its (non-overlapping) objects: the
+    areas are summed per list and the intersection area is summed over every pair of objects (one
+    from each list).
 
     Parameters
     ----------
@@ -44,6 +44,8 @@ def iou(geo2d_obj1, geo2d_obj2):
     >>> a = Rect(0, 0, 1, 1)
     >>> round(iou([a], [a]), 3)
     1.0
+    >>> round(iou([a, Rect(2, 0, 3, 1)], [a]), 3)  # union of two unit squares vs one of them
+    0.5
 
     See Also
     --------
@@ -57,9 +59,11 @@ def iou(geo2d_obj1, geo2d_obj2):
     sum_right = 0
     sum_inner = 0
     for obj1 in inputs[0]:
+        sum_left += obj1.shapely.area
+    for obj2 in inputs[1]:
+        sum_right += obj2.shapely.area
+    for obj1 in inputs[0]:
         for obj2 in inputs[1]:
-            sum_left += obj1.shapely.area
-            sum_right += obj2.shapely.area
             sum_inner += obj1.shapely.intersection(obj2.shapely).area
 
     # result

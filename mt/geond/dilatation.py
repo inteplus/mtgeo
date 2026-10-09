@@ -175,7 +175,7 @@ class Dlt(Aff):
 _bc.register_cast(Dlt, Aff, lambda x: Aff(weight=x.weight, bias=x.bias, check_shapes=False))
 _bc.register_cast(Aff, Dlt, lambda x: Dlt(offset=x.bias, scale=np.diagonal(x.weight)))
 _bc.register_castable(
-    Aff, Dlt, lambda x: np.count_nonzero(x.weight - np.diag(np._diagonal(x.weight))) > 0
+    Aff, Dlt, lambda x: np.count_nonzero(x.weight - np.diag(np.diagonal(x.weight))) == 0
 )
 
 
@@ -255,11 +255,6 @@ def transform_Dlt_on_PointList(dlt_tfm, point_list):
     -------
     PointList
         dilated point list
-
-    Notes
-    -----
-    The body refers to the names `aff_tfm` instead of `dlt_tfm`, so calling it currently raises
-    `NameError`.
     '''
-    return PointList(point_list.points * aff_tfm.scale + aff_tfm.offset, check=False)
+    return PointList(point_list.points * dlt_tfm.scale + dlt_tfm.offset, check=False)
 register_transform(Dlt, PointList, transform_Dlt_on_PointList)

@@ -64,17 +64,6 @@ class Ellipsoid(ThreeD, GeometricObject):
     mt.geo3d.Box : an axis-aligned box, which can bound an ellipsoid
     mt.geond.Hyperellipsoid : the ellipsoid in any number of dimensions
 
-    Notes
-    -----
-    - With `make_normalised=True` (the default), the constructor currently raises `TypeError`
-      because it builds an :class:`Aff3d` with an unknown keyword `bias`. Use
-      `make_normalised=False` until it is fixed. For the same reason `normalised()` and the
-      affine transformation of an ellipsoid (:func:`transform_Aff3d_on_Ellipsoid`) fail.
-    - The upper bound to a :class:`Box` refers to an undefined name `off`, and the lower bound
-      from a :class:`Box` needs a cast from `Dlt` to `Aff3d` that is not registered, so both
-      raise an error.
-    - `volume` is `4*pi/3*det`, which is negative if the determinant of the linear part is.
-
     Examples
     --------
     >>> import numpy as np
@@ -86,6 +75,11 @@ class Ellipsoid(ThreeD, GeometricObject):
     >>> e.ndim
     3
     >>> round(e.volume, 3)
+    100.531
+    >>> en = Ellipsoid(a)
+    >>> np.round(en.aff_tfm.bias, 3)
+    array([1., 2., 3.], dtype=float32)
+    >>> round(en.volume, 3)
     100.531
     >>> e.aff_tfm.matrix
     array([[2., 0., 0., 1.],
@@ -115,7 +109,7 @@ class Ellipsoid(ThreeD, GeometricObject):
             raise ValueError("Only an instance of class `Aff3d` is accepted.")
         if make_normalised:
             U, S, VT = glm.svd3(aff_tfm.linear)
-            aff_tfm = Aff3d(bias=aff_tfm.bias, linear=U * glm.mat3diag(S))
+            aff_tfm = Aff3d(offset=aff_tfm.offset, linear=U * glm.mat3diag(S))
         self.aff_tfm = aff_tfm
 
     def __repr__(self):
@@ -123,9 +117,9 @@ class Ellipsoid(ThreeD, GeometricObject):
 
     @property
     def volume(self):
-        """The volume of the ellipsoid's interior, computed as `4*pi/3*det` where `det` is the
-        determinant of the linear part of the affine transformation."""
-        return (4 * np.pi / 3) * self.aff_tfm.det
+        """The (absolute) volume of the ellipsoid's interior, computed as `4*pi/3*abs(det)` where
+        `det` is the determinant of the linear part of the affine transformation."""
+        return (4 * np.pi / 3) * abs(self.aff_tfm.det)
 
     @property
     def surface_area(self):
@@ -173,9 +167,9 @@ register_castable(Hyperellipsoid, Ellipsoid, lambda x: x.ndim == 3)
 def upper_bound_Ellipsoid_to_Box(obj):
     """Returns a bounding axis-aligned box of the ellipsoid.
 
-    The box is meant to be centered at the offset of the affine transformation, with half side
-    lengths equal to the norms of the rows of the weight matrix. It is registered as the upper
-    bound from :class:`Ellipsoid` to :class:`Box`.
+    The box is centered at the offset of the affine transformation, with half side lengths equal
+    to the norms of the rows of the weight matrix. It is registered as the upper bound from
+    :class:`Ellipsoid` to :class:`Box`.
 
     Parameters
     ----------
@@ -187,14 +181,13 @@ def upper_bound_Ellipsoid_to_Box(obj):
     Box
         a bounding Box of the ellipsoid
 
-    Notes
-    -----
-    The current body refers to the undefined name `off`, so calling it raises `NameError`.
     """
     weight = obj.aff_tfm.weight
-    c = off.aff_tfm.bias
+    c = obj.aff_tfm.bias
     m = np.array([np.linalg.norm(weight[i]) for i in range(3)])
-    return Box(min_coords=c - m, max_coords=c + m)
+    lo = c - m
+    hi = c + m
+    return Box(lo[0], lo[1], lo[2], hi[0], hi[1], hi[2])
 
 
 register_upper_bound(Ellipsoid, Box, upper_bound_Ellipsoid_to_Box)
@@ -203,7 +196,7 @@ register_upper_bound(Ellipsoid, Box, upper_bound_Ellipsoid_to_Box)
 def lower_bound_Box_to_Ellipsoid(x):
     """Returns an axis-aligned ellipsoid bounded by the given axis-aligned box.
 
-    The ellipsoid is meant to be the one inscribed in the box. It is registered as the lower bound
+    The ellipsoid is the one inscribed in the box. It is registered as the lower bound
     from :class:`Box` to :class:`Ellipsoid`.
 
     Parameters
@@ -220,15 +213,11 @@ def lower_bound_Box_to_Ellipsoid(x):
     ------
     ValueError
         if `x` is not a :class:`Box`
-
-    Notes
-    -----
-    The current body casts the box's dilatation to :class:`Aff3d`, which has no registered cast, so
-    a valid box raises `NotImplementedError`.
     """
     if not isinstance(x, Box):
         raise ValueError(f"Input type must be a `Box`, '{x.__class__}' given.")
-    return Ellipsoid(cast(x.dlt_tfm, Aff3d))
+    dlt = x.dlt_tfm
+    return Ellipsoid(Aff3d(offset=dlt.offset, linear=np.diag(dlt.scale)))
 
 
 register_lower_bound(Box, Ellipsoid, lower_bound_Box_to_Ellipsoid)
@@ -254,11 +243,6 @@ def transform_Aff3d_on_Ellipsoid(aff_tfm, obj):
     -------
     Ellipsoid
         the affine-transformed ellipsoid
-
-    Notes
-    -----
-    The result is built with the default `make_normalised=True`, which currently raises
-    `TypeError` (see :class:`Ellipsoid`).
     """
     return Ellipsoid(aff_tfm * obj.aff_tfm)
 

@@ -80,10 +80,6 @@ class RRect(HasShapely, TwoD, GeometricObject):
     For more details, see `this page <https://structx.com/Shape_Formulas_033.html>`_. But note that
     we primarily use CV convention for images, top left is (0,0).
 
-    The serialisation methods :meth:`to_json` and :meth:`to_tensor` currently fail, because they
-    read non-existing attributes `cx` and `cy`. Use `RRect(*rrect_list)` or :meth:`from_json` only
-    for loading.
-
     Examples
     --------
     >>> import numpy as np
@@ -254,9 +250,9 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
     @property
     def moment1(self):
-        '''First-order moment, as implemented: `sign*center_pt`. Note that, unlike
-        :attr:`Rect.moment1`, it is not multiplied by the area (the sign only is used).'''
-        return self.sign*self.center_pt
+        '''First-order moment, i.e. the numpy array `[moment_x, moment_y]`, equal to
+        `signed_area*center_pt` like :attr:`Rect.moment1`.'''
+        return self.signed_area*self.center_pt
 
     @property
     def moment_x(self):
@@ -343,11 +339,8 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
     def to_json(self):
         '''Returns a list [signed_width, height, cx, cy, angle].
-
-        Note that it currently raises AttributeError, because `self.cx` and `self.cy` do not
-        exist (the center is stored in `center_pt`).
         '''
-        return [self.signed_width, self.height, self.cx, self.cy, self.angle]
+        return [self.signed_width, self.height, self.center_pt[0], self.center_pt[1], self.angle]
 
 
     @staticmethod
@@ -374,10 +367,7 @@ class RRect(HasShapely, TwoD, GeometricObject):
 
 
     def to_tensor(self):
-        '''Returns a tensorflow tensor [signed_width, height, cx, cy, angle] representing the RRect.
-
-        Note that it currently fails like :meth:`to_json`.
-        '''
+        '''Returns a tensorflow tensor [signed_width, height, cx, cy, angle] representing the RRect.'''
         from mt import tf
         return tf.convert_to_tensor(self.to_json())
 

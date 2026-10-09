@@ -45,10 +45,6 @@ class Box(ThreeD, Hyperbox):
 
     Notes
     -----
-    - `surface_area` currently raises `AttributeError` because of a typo in the code.
-    - `intersect` of two disjoint boxes returns a box spanning the gap between them rather than an
-      empty box, so `volume` and the volumes returned by `join_volume` are not meaningful in that
-      case.
     - `box_union` and `validated` return a :class:`mt.geond.Hyperbox`, not a `Box`.
 
     Examples
@@ -75,6 +71,10 @@ class Box(ThreeD, Hyperbox):
     >>> from mt.geo import join_volume
     >>> join_volume(b, c)
     (0.5, 5.5, 2.5, 8.5)
+    >>> b.surface_area
+    22.0
+    >>> b.intersect(Box(5, 5, 5, 6, 6, 6)).volume
+    0.0
     >>> b.moment_x, b.moment_xx
     (3.0, 2.0)
     '''
@@ -160,11 +160,8 @@ class Box(ThreeD, Hyperbox):
 
     @property
     def surface_area(self):
-        '''Surface area, intended to be `2*(lx*ly + ly*lz + lz*lx)`.
-
-        The current code has a typo (`max_coords.self.min_coords`) so it raises `AttributeError`.
-        '''
-        l = np.abs(self.max_coords.self.min_coords)
+        '''Surface area, `2*(lx*ly + ly*lz + lz*lx)`.'''
+        l = abs(self.max_coords - self.min_coords)
         return (l[0]*l[1]+l[1]*l[2]+l[2]*l[0])*2
 
     
@@ -239,6 +236,11 @@ class Box(ThreeD, Hyperbox):
         return f"Box(x={self.x}, y={self.y}, z={self.z}, lx={self.lx}, ly={self.ly}, lz={self.lz})"
 
     def intersect(self, other):
+        '''Returns the box with the intersection of the coordinate ranges.
+
+        If the two boxes are disjoint along some axis, the intersection is empty: the returned
+        box has zero extent (hence zero volume) along that axis.
+        '''
         res = super(Box, self).intersect(other)
         return Box(
             res.min_coords[0], res.min_coords[1], res.min_coords[2],
@@ -305,7 +307,7 @@ register_cast(Hyperbox, Box, cast_Hyperbox_to_Box)
 
 def cast_Box_to_Moments3d(obj):
     m0 = obj.signed_volume
-    m1 = [obj.moment_x, obj.moment_y]
+    m1 = [obj.moment_x, obj.moment_y, obj.moment_z]
     mxy = obj.moment_xy
     myz = obj.moment_yz
     mzx = obj.moment_zx

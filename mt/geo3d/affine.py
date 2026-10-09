@@ -63,13 +63,6 @@ class Aff3d(ThreeD, Aff):
     mt.geond.Aff : the dimension-agnostic version, implemented in numpy
     rot3d_x, rot3d_y, rot3d_z : rotations about the coordinate axes
 
-    Notes
-    -----
-    The casts registered between :class:`Aff3d` and :class:`mt.geond.Aff` currently raise
-    `TypeError` because they pass wrongly named keyword arguments to the constructors. The
-    transformation of a :class:`Moments3d` or of a :class:`PointList3d` also raises an error, see
-    :func:`transform_Aff3d_on_Moments3d` and :func:`transform_Aff3d_on_PointList3d`.
-
     Examples
     --------
     >>> import numpy as np
@@ -254,11 +247,9 @@ class Aff3d(ThreeD, Aff):
 
 
 _bc.register_cast(
-    Aff3d, Aff, lambda x: Aff(weights=x.weight, bias=x.offset, check_shapes=False)
+    Aff3d, Aff, lambda x: Aff(weight=x.weight.copy(), bias=x.bias.copy(), check_shapes=False)
 )
-_bc.register_cast(
-    Aff, Aff3d, lambda x: Aff3d(weight=x.weight, bias=x.bias, check_shape=False)
-)
+_bc.register_cast(Aff, Aff3d, lambda x: Aff3d(offset=x.bias, linear=x.weight))
 _bc.register_castable(Aff, Aff3d, lambda x: x.ndim == 3)
 
 
@@ -283,21 +274,16 @@ def transform_Aff3d_on_Moments3d(aff_tfm, moments):
     -------
     Moments3d
         affined-transformed 3D moments
-
-    Notes
-    -----
-    The current implementation calls `.T` on a glm matrix, which does not exist, so it raises
-    `AttributeError`.
     """
     A = aff_tfm.linear
     old_m0 = moments.m0
     old_mean = moments.mean_glm
     old_cov = moments.cov_glm
     new_mean = A * old_mean + aff_tfm.offset
-    new_cov = A * old_cov * glm.transpose(A.T)
+    new_cov = A * old_cov * glm.transpose(A)
     new_m0 = old_m0 * abs(aff_tfm.det)
     new_m1 = new_m0 * new_mean
-    new_m2 = new_m0 * (np.outer(new_mean, new_mean) + new_cov)
+    new_m2 = new_m0 * (glm.outerProduct(new_mean, new_mean) + new_cov)
     return Moments3d(new_m0, new_m1, new_m2)
 
 
@@ -346,12 +332,6 @@ def transform_Aff3d_on_PointList3d(aff_tfm, point_list):
     -------
     PointList3d
         affine-transformed point list
-
-    Notes
-    -----
-    The current implementation passes `check=False` to the :class:`PointList3d` constructor, which
-    does not accept it, so it raises `TypeError`. Transform `point_list.points` (a numpy array)
-    instead.
     """
     return PointList3d(point_list.points @ aff_tfm.weight.T + aff_tfm.bias, check=False)
 
