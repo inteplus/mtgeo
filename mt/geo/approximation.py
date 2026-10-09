@@ -83,8 +83,8 @@ def register_approx(src_type, dst_type, func):
     key = (src_type, dst_type)
     if key in _approx_registry:
         raise SyntaxError(
-            "Approximate function from type {} to "
-            "type {} has been registered before.".format(src_type, dst_type)
+            f"Approximate function from type {src_type} to "
+            f"type {dst_type} has been registered before."
         )
     _approx_registry[key] = func
 
@@ -105,7 +105,7 @@ def register_approximable(src_type, dst_type, func):
     key = (src_type, dst_type)
     if key in _approximable_registry:
         raise SyntaxError(
-            "Approximable function from type {} to "
-            "type {} has been registered before.".format(src_type, dst_type)
+            f"Approximable function from type {src_type} to "
+            f"type {dst_type} has been registered before."
         )
     _approximable_registry[key] = func

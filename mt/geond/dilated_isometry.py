@@ -101,8 +101,9 @@ class Dliso(Aff):
         self.unitary = unitary
 
     def __repr__(self):
-        return "Dliso(offset={}, scale={}, unitary_diagonal={})".format(
-            self.offset, self.scale, self.unitary.diagonal()
+        return (
+            f"Dliso(offset={self.offset}, scale={self.scale}, "
+            f"unitary_diagonal={self.unitary.diagonal()})"
         )
 
     # ----- base adaptation -----

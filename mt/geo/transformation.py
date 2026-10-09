@@ -99,8 +99,8 @@ def register_transform(tfm_type, obj_type, func):
     key = (tfm_type, obj_type)
     if key in _transform_registry:
         raise SyntaxError(
-            "Transform function using transformer type {} applying to object type {} has been "
-            "registered before.".format(tfm_type, obj_type)
+            f"Transform function using transformer type {tfm_type} applying to object type "
+            f"{obj_type} has been registered before."
         )
     _transform_registry[key] = func
 
@@ -122,8 +122,8 @@ def register_transformable(tfm_type, obj_type, func):
     key = (tfm_type, obj_type)
     if key in _transformable_registry:
         raise SyntaxError(
-            "Transformable function using transformer type {} applying to object type {} has been "
-            "registered before.".format(tfm_type, obj_type)
+            f"Transformable function using transformer type {tfm_type} applying to object type "
+            f"{obj_type} has been registered before."
         )
     _transformable_registry[key] = func
 

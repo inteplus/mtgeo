@@ -59,7 +59,7 @@ def register_join_volume(type1, type2, func):
     key = (type1, type2)
     if key in _join_volume_registry:
         raise SyntaxError(
-            "Join_Volumeimate function from type {} to "
-            "type {} has been registered before.".format(type1, type2)
+            f"Join_Volumeimate function from type {type1} to "
+            f"type {type2} has been registered before."
         )
     _join_volume_registry[key] = func

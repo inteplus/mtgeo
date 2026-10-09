@@ -89,8 +89,8 @@ def register_upper_bound(src_type, dst_type, func):
     key = (src_type, dst_type)
     if key in _upper_bound_registry:
         raise SyntaxError(
-            "Upper-bound function from type {} to "
-            "type {} has been registered before.".format(src_type, dst_type)
+            f"Upper-bound function from type {src_type} to "
+            f"type {dst_type} has been registered before."
         )
     _upper_bound_registry[key] = func
 
@@ -111,8 +111,8 @@ def register_upper_boundable(src_type, dst_type, func):
     key = (src_type, dst_type)
     if key in _upper_boundable_registry:
         raise SyntaxError(
-            "Upper-boundable function from type {} to "
-            "type {} has been registered before.".format(src_type, dst_type)
+            f"Upper-boundable function from type {src_type} to "
+            f"type {dst_type} has been registered before."
         )
     _upper_boundable_registry[key] = func
 
@@ -198,8 +198,8 @@ def register_lower_bound(src_type, dst_type, func):
     key = (src_type, dst_type)
     if key in _lower_bound_registry:
         raise SyntaxError(
-            "Lower-bound function from type {} to "
-            "type {} has been registered before.".format(src_type, dst_type)
+            f"Lower-bound function from type {src_type} to "
+            f"type {dst_type} has been registered before."
         )
     _lower_bound_registry[key] = func
 
@@ -220,7 +220,7 @@ def register_lower_boundable(src_type, dst_type, func):
     key = (src_type, dst_type)
     if key in _lower_boundable_registry:
         raise SyntaxError(
-            "Lower-boundable function from type {} to "
-            "type {} has been registered before.".format(src_type, dst_type)
+            f"Lower-boundable function from type {src_type} to "
+            f"type {dst_type} has been registered before."
         )
     _lower_boundable_registry[key] = func
